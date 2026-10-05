@@ -40,7 +40,7 @@ because reporting a saturated 500 is more useful than a flat line.
 from __future__ import annotations
 
 import math
-from collections.abc import Iterable, Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
@@ -465,7 +465,8 @@ def pollutant_table() -> list[dict[str, Any]]:
 def readings_from_payload(hourly: Mapping[str, Any], index: int) -> dict[str, Any]:
     """Extract a Baahar pollutant mapping from one hour of an Open-Meteo payload.
 
-    Tolerates ``None`` values, which Open-Meteo uses for missing data.
+    Tolerates ``None`` values, which Open-Meteo uses for missing data. Used by
+    the dataset builder, which reads archives rather than live forecasts.
     """
     out: dict[str, Any] = {}
     for key, spec in POLLUTANTS.items():
@@ -473,7 +474,3 @@ def readings_from_payload(hourly: Mapping[str, Any], index: int) -> dict[str, An
         if isinstance(series, list) and 0 <= index < len(series):
             out[key] = series[index]
     return out
-
-
-def iter_specs() -> Iterable[PollutantSpec]:
-    return POLLUTANTS.values()

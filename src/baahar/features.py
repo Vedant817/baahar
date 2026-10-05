@@ -22,8 +22,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from .models import Decision, HourSlot, SlotScore
-from .naqi import band_for_index
+from .models import Decision, HourSlot
 from .weather import weather_category
 
 #: Ordered feature names. Frozen because a trained TabPFN model's column
@@ -283,13 +282,3 @@ def comfort_from_features(features: dict[str, float]) -> float:
 
 def decision_rank(decision: Decision) -> int:
     return {Decision.GO: 0, Decision.WAIT: 1, Decision.SKIP: 2}[decision]
-
-
-def scores_to_slots(scores: Sequence[SlotScore]) -> list[SlotScore]:
-    """No-op passthrough kept for a readable call site in score.build_plan."""
-    return list(scores)
-
-
-def band_from_naqi(naqi: float | None) -> str | None:
-    band = band_for_index(naqi)
-    return band.value if band else None

@@ -55,6 +55,7 @@ from pathlib import Path
 
 from baahar.config import EVAL_DATA_DIR, EVAL_RAW_DIR, get_settings
 from baahar.features import BAND_ORDINALS, NAQI_SKIP, PRECIP_SKIP_MM
+from baahar.score import save_tabpfn_model
 
 sys.path.insert(0, str(Path(__file__).parent))
 from build_dataset import apply_band_policy  # noqa: E402
@@ -348,6 +349,14 @@ def fit_predict(
         # map its column order back onto our global class indices.
         classes = list(getattr(clf, "classes_", range(probs.shape[1])))
         preds = [int(classes[int(np.argmax(row))]) for row in probs]
+        # Persist the fitted classifier so the web app scores with the *exact*
+        # model this table reports, rather than refitting something different at
+        # request time.
+        try:
+            artifact = save_tabpfn_model(clf)
+            print(f"  fitted model saved -> {artifact}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"  could not save the fitted model: {exc}", file=sys.stderr)
         return preds, time.perf_counter() - t0, f"TabPFN {md.version('tabpfn')}, cpu"
 
     raise ValueError(f"unknown model {name}")

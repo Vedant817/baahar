@@ -16,7 +16,7 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | MIT licence | [`LICENSE`](../LICENSE) |
 | **DONE** | Green README: quickstart, architecture, why-open, field test | [`README.md`](../README.md) |
 | **DONE** | No secrets in git | `.env` gitignored; `.env.example` complete and empty |
-| **DONE** | Tests pass offline | `uv run pytest` → 139 passed, no network |
+| **DONE** | Tests pass offline | `uv run pytest` → 158 passed, no network |
 | **DONE** | Lint clean | `uv run ruff check .` |
 | **DONE** | Conventional commits with real explanations | `git log` |
 
