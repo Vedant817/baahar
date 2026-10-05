@@ -1,0 +1,183 @@
+{
+  "run_at": "2026-10-06T03:55:24.026823+05:30",
+  "n_cases": 6,
+  "writers_requested": [
+    "template"
+  ],
+  "keys_present": {
+    "gemini": true,
+    "tinker": false,
+    "tabpfn_license": false,
+    "tabpfn_api": false,
+    "elevenlabs": false,
+    "waqi": false
+  },
+  "judge_model": "gemini-2.5-flash",
+  "judge_is_blind": true,
+  "judge_is_same_family_as_subject": false,
+  "rubric": {
+    "dimensions": [
+      "actionable_time",
+      "place_specificity",
+      "safety_caveat",
+      "length",
+      "sensory_cue"
+    ],
+    "scale": "0-2 each, 10 total"
+  },
+  "failures": [],
+  "summary": {
+    "template": {
+      "n": 6,
+      "length_compliant_rate": 1.0,
+      "mean_words": 60.7,
+      "max_words": 68,
+      "has_time_window_rate": 1.0,
+      "names_right_park_rate": 1.0,
+      "hallucinated_park_rate": 0.0,
+      "safety_caveat_rate": 1.0,
+      "cites_naqi_number_rate": 1.0,
+      "forbidden_term_rate": 0.0,
+      "skip_tone_correct_rate": null,
+      "go_tone_correct_rate": 1.0,
+      "latency_ms_p50": 5,
+      "latency_ms_p95": 7
+    }
+  },
+  "outputs": {
+    "template": [
+      {
+        "case_id": "go-1101-00",
+        "decision": "GO",
+        "text": "Go at 06:00-07:00. Air is clean enough (NAQI 51). It is 19C but feels like 21C. Head to Hesaraghatta Lake. A real wild patch of north Bengaluru - migratory birds in season. Once you are out: Find one thing in the park you have never noticed before. Pocket the phone and let it be boring for twenty minutes.",
+        "writer_used": "template",
+        "note": "",
+        "latency_ms": 7,
+        "checks": {
+          "length_compliant": true,
+          "word_count": 58,
+          "has_time_window": true,
+          "names_right_park": true,
+          "hallucinated_park": [],
+          "safety_caveat": true,
+          "cites_naqi_number": true,
+          "mentions_naqi_value": true,
+          "forbidden_terms": [],
+          "skip_tone_correct": null,
+          "go_tone_correct": true
+        },
+        "rubric": null
+      },
+      {
+        "case_id": "go-1101-01",
+        "decision": "GO",
+        "text": "Go at 07:00-08:00. Air is clean enough (NAQI 39). It is 19C but feels like 21C. Head to Lalbagh Botanical Garden Botanical Garden. Glasshouse, lake, and an absurd density of labelled trees. Once you are out: Find one thing in the park you have never noticed before. Pocket the phone and let it be boring for twenty minutes.",
+        "writer_used": "template",
+        "note": "",
+        "latency_ms": 5,
+        "checks": {
+          "length_compliant": true,
+          "word_count": 58,
+          "has_time_window": true,
+          "names_right_park": true,
+          "hallucinated_park": [],
+          "safety_caveat": true,
+          "cites_naqi_number": true,
+          "mentions_naqi_value": true,
+          "forbidden_terms": [],
+          "skip_tone_correct": null,
+          "go_tone_correct": true
+        },
+        "rubric": null
+      },
+      {
+        "case_id": "go-1102-00",
+        "decision": "GO",
+        "text": "Go at 06:00-07:00. Air is clean enough (NAQI 90). It is 21C but feels like 22C. Head to Corporation Park, Jayanagar, Jayanagar. The classic Jayanagar neighbourhood park: a loop, a gym area, and kids everywhere. Once you are out: Find one thing in the park you have never noticed before. Pocket the phone and let it be boring for twenty minutes.",
+        "writer_used": "template",
+        "note": "",
+        "latency_ms": 5,
+        "checks": {
+          "length_compliant": true,
+          "word_count": 61,
+          "has_time_window": true,
+          "names_right_park": true,
+          "hallucinated_park": [],
+          "safety_caveat": true,
+          "cites_naqi_number": true,
+          "mentions_naqi_value": true,
+          "forbidden_terms": [],
+          "skip_tone_correct": null,
+          "go_tone_correct": true
+        },
+        "rubric": null
+      },
+      {
+        "case_id": "go-1103-00",
+        "decision": "GO",
+        "text": "Go at 06:00-07:00. Air is moderate (NAQI 146) -- fine for an easy loop. It is 21C but feels like 24C. Head to Sankey Lake. A long uninterrupted loop around water with trees on one side and the city on the other. Once you are out: Find one thing in the park you have never noticed before. Pocket the phone and let it be boring for twenty minutes.",
+        "writer_used": "template",
+        "note": "",
+        "latency_ms": 7,
+        "checks": {
+          "length_compliant": true,
+          "word_count": 68,
+          "has_time_window": true,
+          "names_right_park": true,
+          "hallucinated_park": [],
+          "safety_caveat": true,
+          "cites_naqi_number": true,
+          "mentions_naqi_value": true,
+          "forbidden_terms": [],
+          "skip_tone_correct": null,
+          "go_tone_correct": true
+        },
+        "rubric": null
+      },
+      {
+        "case_id": "go-1104-00",
+        "decision": "GO",
+        "text": "Go at 06:00-07:00. Air is clean enough (NAQI 97). It is 21C but feels like 23C. Head to Sankey Lake. A long uninterrupted loop around water with trees on one side and the city on the other. Once you are out: Find one thing in the park you have never noticed before. Pocket the phone and let it be boring for twenty minutes.",
+        "writer_used": "template",
+        "note": "",
+        "latency_ms": 6,
+        "checks": {
+          "length_compliant": true,
+          "word_count": 63,
+          "has_time_window": true,
+          "names_right_park": true,
+          "hallucinated_park": [],
+          "safety_caveat": true,
+          "cites_naqi_number": true,
+          "mentions_naqi_value": true,
+          "forbidden_terms": [],
+          "skip_tone_correct": null,
+          "go_tone_correct": true
+        },
+        "rubric": null
+      },
+      {
+        "case_id": "go-1105-00",
+        "decision": "GO",
+        "text": "Go at 06:00-07:00. Air is clean enough (NAQI 34). It is 21C but feels like 24C. Head to Kadugodi Tree Park Tree Park. Dappled shade and a soft gravel loop. Once you are out: Find one thing in the park you have never noticed before. Pocket the phone and let it be boring for twenty minutes.",
+        "writer_used": "template",
+        "note": "",
+        "latency_ms": 4,
+        "checks": {
+          "length_compliant": true,
+          "word_count": 56,
+          "has_time_window": true,
+          "names_right_park": true,
+          "hallucinated_park": [],
+          "safety_caveat": true,
+          "cites_naqi_number": true,
+          "mentions_naqi_value": true,
+          "forbidden_terms": [],
+          "skip_tone_correct": null,
+          "go_tone_correct": true
+        },
+        "rubric": null
+      }
+    ]
+  }
+}

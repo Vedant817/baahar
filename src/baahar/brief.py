@@ -613,7 +613,13 @@ def _ground_park_names(text: str, park: Park | None) -> str:
         "Venkatagiri",
         "Corporation Park",
     ]
-    other = [b for b in banned if b.lower() != park.name.lower()]
+    chosen = park.name.lower()
+    # Skip any banned name that is a *substring of the chosen park's own name*.
+    # Without this, briefing for "Lalbagh Botanical Garden" matched the bare
+    # token "Lalbagh" and was rewritten to "Lalbagh Botanical Garden Botanical
+    # Garden". Longest-first ordering then reduces partial matches.
+    other = [b for b in banned if b.lower() not in chosen]
+    other.sort(key=len, reverse=True)
     out = text
     for name in other:
         out = re.sub(rf"\b{re.escape(name)}\b(\s+(?:Park|Lake|Gardens?))?", park.name, out)

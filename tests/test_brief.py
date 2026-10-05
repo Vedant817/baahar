@@ -132,6 +132,31 @@ class TestHallucination:
         text = "Go at 06:00. Head to Cubbon Park. NAQI 18."
         assert _ground_park_names(text, go_plan.park) == text
 
+    def test_a_shared_prefix_does_not_duplicate_the_name(self, go_plan) -> None:
+        """Regression: "Lalbagh Botanical Garden" became "... Garden Garden".
+
+        The grounding list holds the short token "Lalbagh". When the chosen park
+        is *Lalbagh Botanical Garden*, replacing that token spliced the full name
+        in front of the suffix that was already there.
+        """
+        from baahar.parks import park_by_id
+
+        lalbagh = park_by_id("lalbagh")
+        text = "Go at 06:00. Head to Lalbagh Botanical Garden. NAQI 18."
+        out = _ground_park_names(text, lalbagh)
+        assert out == text
+        assert "Garden Botanical" not in out
+        assert out.count("Botanical Garden") == 1
+
+    def test_a_genuinely_different_park_is_still_replaced(self, go_plan) -> None:
+        """The fix above must not disable hallucination grounding."""
+        from baahar.parks import park_by_id
+
+        lalbagh = park_by_id("lalbagh")
+        out = _ground_park_names("Go at 06:00. Head to Cubbon Park. NAQI 18.", lalbagh)
+        assert "Cubbon" not in out
+        assert "Lalbagh Botanical Garden" in out
+
     def test_snow_is_stripped_from_an_october_plan(self, go_plan) -> None:
         out = _ground_park_names("Go at 06:00. Watch the snow fall on the trees. NAQI 18.", go_plan.park)
         assert "snow" not in out.lower()
