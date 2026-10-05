@@ -79,7 +79,7 @@ cp .env.example .env      # then put your free Google AI Studio key in .env
 uv run baahar brief --city Bengaluru --model gemma
 ```
 
-Open the web UI (this is the part that matters — Pocket Mode):
+Open the web UI — this is the part that matters:
 
 ```bash
 uv run baahar serve         # http://127.0.0.1:8000
@@ -87,13 +87,33 @@ uv run baahar serve         # http://127.0.0.1:8000
 
 ![Pocket Mode: one instruction, a timer, no scroll](docs/media/03-pocket.png)
 
-Regenerate those screenshots yourself, with a layout audit that fails on console
+Regenerate the screenshots yourself, with a layout audit that fails on console
 errors or horizontal overflow:
 
 ```bash
 uv run baahar serve &
 node scripts/ui_check.mjs --out docs/media
 ```
+
+| | |
+|---|---|
+| **Try the CLI** | `uv run baahar brief --city Bengaluru` |
+| **Try Pocket Mode** | `uv run baahar serve`, then tap "Pocket the phone" |
+| **Record a walk** | `uv run baahar journal --outcome went --note "..."` |
+
+## The three commands
+
+```bash
+uv run baahar brief      # decision, hour table, briefing, Pocket Mode payload
+uv run baahar serve      # the web app -- two screens and a clock
+uv run baahar journal    # after the walk: three taps, one line, markdown out
+```
+
+`journal` is the one most people will not expect. It asks what actually
+happened, counts how many times you reached for the phone, and prints markdown
+ready to paste into a write-up. Local only: a JSONL file or `localStorage`, no
+account, no sync. A journal about where you walk is exactly the data this
+project should not be collecting anywhere.
 
 ### Add the TabPFN tabular model (optional)
 

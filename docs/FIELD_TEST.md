@@ -40,7 +40,6 @@ Suggested kit:
 
 - Phone charged above 80%, notifications off, **do not disturb on**.
 - Earbuds optional — only if using `--voice`, and only outdoors.
-- Something to note on: your phone (but not in Pocket Mode), or paper.
 - Time: **15–25 minutes**. Match Baahar's walk timer or change it.
 
 Suggested places: Cubbon Park, Lalbagh, Bugle Rock, Sankey Lake, or any
@@ -50,20 +49,48 @@ matched reality.
 
 ---
 
+## After: three taps, not a form
+
+Baahar collects the notes for you. When the walk timer ends, the web app asks
+**went · shortened · skipped**, asks how many times you reached for the phone,
+and takes one line of text. It then prints markdown you can copy straight into
+your write-up.
+
+Or from the terminal:
+
+```bash
+uv run baahar journal --outcome went \
+  --decided GO --window "06:00-07:00" --park "Cubbon Park" \
+  --naqi 74 --band satisfactory --planned-min 20 --walked-min 18 --phone 3 \
+  --note "kept reaching for the phone around minute six"
+
+uv run baahar journal --markdown      # paste this into the post
+```
+
+**"How many times did you reach for the phone?" is the most valuable field in
+this project.** The design claim — that the screen is the shortest part of the
+walk — is falsifiable, and this is how it gets falsified instead of asserted.
+Count it honestly. Zero is a great result and so is four.
+
+A day where Baahar said GO and you **skipped** anyway is the single most
+interesting entry you can make. Record it.
+
+---
+
 ## During the walk
 
-Tap **Pocket the phone**. Note honestly whether you reached for it.
+Tap **Pocket the phone**. Note whether you reached for it.
 
 Baahar auto-enters Pocket Mode after 45 seconds if you do nothing, with a
 countdown you can cancel. If you tapped the button yourself, say so — the
-interaction count is a real datum about the design.
+interaction count is real data about the design.
 
 ---
 
 ## After: fill this in
 
-Copy this block into the "Results" section below, or replace it. Rough notes are
-better than polished ones.
+The fastest path is `uv run baahar journal --markdown`, which produces this
+block from your entries. If you are writing it by hand, use this:
 
 ```markdown
 ### The walk
