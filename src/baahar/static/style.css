@@ -28,6 +28,16 @@
 
 * { box-sizing: border-box; }
 
+/* The `hidden` attribute must win, always.
+ *
+ * The browser default is `[hidden] { display: none }` in the *user-agent*
+ * stylesheet, which any author `display: grid` beats. That bit us twice: the
+ * loading spinner stayed painted under the finished brief, and Pocket Mode's
+ * timer and cue stayed visible behind the after-walk journal. Both were silent
+ * visual bugs with no error anywhere. One global rule removes the whole family.
+ */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0;
   padding: 0;
@@ -165,10 +175,6 @@ body { min-height: 100dvh; }
   justify-items: start;
   padding: 3rem 0;
 }
-/* An author `display` rule outranks the UA stylesheet's `[hidden] {display:none}`,
-   so every element JS toggles via the `hidden` property needs this explicitly.
-   Without it the loading spinner stayed painted underneath the rendered brief. */
-.loading[hidden] { display: none; }
 .loading__spin {
   width: 26px; height: 26px;
   border: 2px solid var(--line);
@@ -220,7 +226,6 @@ body { min-height: 100dvh; }
   color: #ffd479;
   line-height: 1.5;
 }
-.degraded[hidden] { display: none; }
 
 /* ── briefing ─────────────────────────────────────────────────────────── */
 
@@ -398,28 +403,97 @@ body { min-height: 100dvh; }
   line-height: 1.5;
 }
 
-/* ── failsafe: the only thing shown after the walk ─────────────────────── */
+/* -- after-walk journal ------------------------------------------------- */
 
-.failsafe {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  background: #000;
+.journal {
   display: grid;
-  place-content: center;
-  justify-items: center;
   gap: 1rem;
+  justify-items: center;
+  width: 100%;
+  max-width: 34rem;
+  margin: 0 auto;
   text-align: center;
-  padding: var(--pad);
 }
-.failsafe[hidden] { display: none; }
-.failsafe p { margin: 0; color: #6a7286; max-width: 26ch; line-height: 1.6; }
-.failsafe #fs-time {
-  font-size: clamp(3rem, 18vw, 6rem);
-  font-weight: 200;
-  color: #333a4a;
-  font-variant-numeric: tabular-nums;
+
+.journal__title {
+  margin: 0;
+  font-size: clamp(1.5rem, 6vw, 2.1rem);
+  font-weight: 800;
+  color: #dfe4f0;
+  letter-spacing: -.02em;
 }
+.journal__sub { margin: 0; color: #6a7286; font-size: .95rem; }
+
+.journal__taps { display: flex; gap: .6rem; flex-wrap: wrap; justify-content: center; }
+
+.jbtn {
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: #dfe4f0;
+  background: #0b0e15;
+  border: 1px solid #232a3a;
+  border-radius: 999px;
+  padding: .8rem 1.5rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color .15s ease, background .15s ease;
+}
+.jbtn:hover, .jbtn:focus-visible { border-color: #3a435c; background: #11151f; }
+.jbtn[aria-pressed="true"] { border-color: var(--go); color: var(--go); }
+
+.journal__note {
+  font: inherit;
+  width: 100%;
+  max-width: 26rem;
+  color: var(--ink);
+  background: #0b0e15;
+  border: 1px solid #1c2130;
+  border-radius: 10px;
+  padding: .8rem 1rem;
+}
+.journal__note::placeholder { color: #4b5364; }
+.journal__note:focus-visible { outline: 2px solid var(--go); outline-offset: 2px; }
+
+.journal__reached {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  color: #6a7286;
+  font-size: .9rem;
+}
+.journal__relabel { letter-spacing: .04em; }
+.jcount {
+  font: inherit;
+  font-size: 1.1rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  border: 1px solid #232a3a;
+  background: #0b0e15;
+  color: #dfe4f0;
+  cursor: pointer;
+}
+.jcount:hover { border-color: #3a435c; }
+#j-count { min-width: 1.5rem; text-align: center; color: #dfe4f0; font-variant-numeric: tabular-nums; }
+
+.journal__done { display: grid; gap: .8rem; justify-items: center; }
+.journal__md {
+  margin: 0;
+  font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: #8b93a7;
+  background: #06080d;
+  border: 1px solid #1c2130;
+  border-radius: 10px;
+  padding: .9rem 1rem;
+  text-align: left;
+  white-space: pre-wrap;
+  max-height: 40vh;
+  overflow: auto;
+  width: 100%;
+}
+
+/* -- sleep: keep the screen from waking to a bright surface -------------- */
 
 /* Sleep/wake must not reveal a bright screen mid-walk. */
 @media (prefers-reduced-motion: no-preference) {

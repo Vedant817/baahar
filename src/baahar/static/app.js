@@ -19,6 +19,7 @@ const state = {
   cueIndex: 0,
   walkSeconds: 20 * 60,
   remaining: 0,
+  walkStartedAt: null,
   pocketTimer: null,
   walkTimer: null,
   countdown: null,
@@ -245,6 +246,7 @@ function enterPocket(auto) {
   $('auto-hint').hidden = true;
   show('pocket');
   state.remaining = state.walkSeconds;
+  state.walkStartedAt = Date.now();
   $('p-timer').textContent = fmtClock(state.remaining);
   document.body.style.background = '#000';
 
@@ -266,17 +268,137 @@ function exitPocket() {
   scheduleAutoPocket();
 }
 
+/* ── after-walk journal ─────────────────────────────────────────────────
+ *
+ * Local only: localStorage, no account, no sync. This is the data an agent
+ * must never invent, so the product's only job is to make writing it take ten
+ * seconds. Three taps, one optional line, then the markdown is ready to paste
+ * into the field-test section of the write-up.
+ */
+
+const JKEY = 'baahar.journal';
+
+function readJournal() {
+  try {
+    return JSON.parse(localStorage.getItem(JKEY) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+function writeJournal(entries) {
+  try {
+    localStorage.setItem(JKEY, JSON.stringify(entries));
+  } catch (e) {
+    /* private mode / quota: the walk still happened, so never block on storage */
+  }
+}
+
+function journalMarkdown(entry, all) {
+  const lines = [`### The walk - ${entry.walked_at}`];
+  if (entry.park) lines.push(`- **Where:** ${entry.park}`);
+  let said = entry.planned_decision || '';
+  if (entry.planned_window) said += `, window ${entry.planned_window}`;
+  lines.push(`- **Baahar said:** ${said || '-'}`);
+  if (entry.naqi !== null && entry.naqi !== undefined) {
+    lines.push(`- **NAQI shown:** ${Math.round(entry.naqi)}${entry.naqi_band ? ` (${entry.naqi_band})` : ''}`);
+  }
+  if (entry.minutes_planned) {
+    lines.push(`- **Walked:** ${entry.minutes_walked ?? 'unknown'} min of ${entry.minutes_planned} planned`);
+  }
+  if (entry.reached_for_phone !== null && entry.reached_for_phone !== undefined) {
+    const n = entry.reached_for_phone;
+    lines.push(`- **Reached for the phone:** ${n} ${n === 1 ? 'time' : 'times'}`);
+  }
+  lines.push(`- **Outcome:** ${entry.outcome}`);
+  if (entry.note) lines.push(`- **Note:** ${entry.note}`);
+  let md = lines.join('\n') + '\n';
+  if (all.length > 1) {
+    const walks = all.filter((e) => e.outcome !== 'skipped').length;
+    const reaches = all.reduce((a, e) => a + (e.reached_for_phone || 0), 0);
+    md += `\n_${all.length} entries - ${walks} walks recorded - ${reaches} phone reaches._\n`;
+  }
+  return md;
+}
+
+function openJournal() {
+  clearInterval(state.walkTimer);
+  // Hide the Pocket Mode content and leave only the journal.
+  //
+  // This element is `#pocket-body`, not `#pocket`: the "Pocket the phone"
+  // button on the brief screen already owns that id. Asking for `$('pocket')`
+  // here returned the button, whose `children` list is empty, so the loop ran
+  // zero times and the timer and cue stayed visible behind the journal with no
+  // error anywhere.
+  const body = $('pocket-body');
+  if (!body) return;
+  Array.from(body.children).forEach((el) => {
+    if (el.id !== 'journal') el.hidden = true;
+  });
+  $('journal').hidden = false;
+  const skipped = state.data && state.data.plan.overall === 'SKIP';
+  $('j-title').textContent = skipped ? 'No walk logged.' : 'Walk done.';
+}
+
+function closeJournal() {
+  $('journal').hidden = true;
+  document.body.style.background = '';
+  show('brief');
+}
+
+function saveJournal(outcome) {
+  const plan = (state.data && state.data.plan) || {};
+  const best = plan.best_slot || {};
+  const air = best.air || {};
+  const pocket = (state.data && state.data.pocket) || {};
+  const whenIST = new Intl.DateTimeFormat('en-GB', {
+    weekday: 'short', day: 'numeric', month: 'short',
+    hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata',
+  }).format(new Date());
+
+  const reached = parseInt($('j-count').textContent, 10) || 0;
+  // How long they actually walked: elapsed since Pocket Mode started, capped at
+  // the planned length. An early-exit walk still reports real minutes rather
+  // than "unknown", which is the difference between a usable field note and a
+  // blank one.
+  const elapsedMin = state.walkStartedAt
+    ? Math.min(pocket.walk_minutes || 0, Math.round((Date.now() - state.walkStartedAt) / 60000))
+    : null;
+
+  const entry = {
+    walked_at: whenIST,
+    outcome,
+    planned_decision: plan.overall || null,
+    planned_window: plan.best_time ? `${fmtTime(plan.best_time)}-${String((parseInt(fmtTime(plan.best_time), 10) + 1) % 24).padStart(2, '0')}:00` : null,
+    park: plan.park ? plan.park.name : null,
+    naqi: air.naqi ?? null,
+    naqi_band: air.naqi_band || null,
+    minutes_planned: pocket.walk_minutes || null,
+    minutes_walked: outcome === 'skipped' ? 0 : elapsedMin,
+    reached_for_phone: reached,
+    note: ($('j-note').value || '').trim(),
+  };
+
+  const all = readJournal();
+  all.push(entry);
+  writeJournal(all);
+
+  document.querySelectorAll('.jbtn').forEach((b) => {
+    b.setAttribute('aria-pressed', String(b.dataset.outcome === outcome));
+  });
+  $('j-md').textContent = journalMarkdown(entry, all);
+  $('j-done').hidden = false;
+}
+
+/* ── failsafe / after-walk ──────────────────────────────────────────────
+ * The journal replaced an earlier "clock only" failsafe screen. Both occupied
+ * the same slot after the walk timer ended, and one screen is easier than two.
+ */
+
 function showFailsafe() {
   clearInterval(state.walkTimer);
   show('pocket');           // stay fullscreen/black
-  $('failsafe').hidden = false;
-  const tick = () => {
-    $('fs-time').textContent = new Date().toLocaleTimeString('en-GB', {
-      hour: '2-digit', minute: '2-digit',
-    });
-  };
-  tick();
-  setInterval(tick, 10000);
+  openJournal();
 }
 
 /* Auto-pocket with a visible, cancellable countdown. The user can always opt
@@ -360,12 +482,30 @@ function boot() {
   $('pocket-exit').addEventListener('click', exitPocket);
   $('next-cue').addEventListener('click', () => { state.cueIndex += 1; paintCue(); });
   $('use-fast').addEventListener('click', () => load('template'));
-  $('fs-back').addEventListener('click', () => {
-    $('failsafe').hidden = true;
-    clearInterval(state.walkTimer);
-    document.body.style.background = '';
-    show('brief');
+
+  // journal
+  document.querySelectorAll('.jbtn').forEach((btn) => {
+    btn.addEventListener('click', () => saveJournal(btn.dataset.outcome));
   });
+  document.querySelectorAll('.jcount').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const el = $('j-count');
+      const next = Math.max(0, (parseInt(el.textContent, 10) || 0) + Number(btn.dataset.delta));
+      el.textContent = String(next);
+    });
+  });
+  $('j-copy').addEventListener('click', async () => {
+    const btn = $('j-copy');
+    try {
+      await navigator.clipboard.writeText($('j-md').textContent);
+      btn.textContent = 'copied';
+      setTimeout(() => { btn.textContent = 'copy for the write-up'; }, 1800);
+    } catch (e) {
+      btn.textContent = 'select the text above';
+    }
+  });
+  $('j-close').addEventListener('click', closeJournal);
+
   populateParks();
 
   // Hide the ambient chrome entirely while walking: no accidental taps, no
@@ -399,11 +539,17 @@ function boot() {
   });
 
   const skipToPocket = window.location.hash === '#pocket';
-  if (params.get('auto') === '1' || skipToPocket) {
+  if (params.get('auto') === '1' || skipToPocket || params.get('journal') === '1') {
     load().then(() => {
-      if (skipToPocket && state.data) {
+      const wantPocket = skipToPocket || params.get('journal') === '1';
+      if (wantPocket && state.data) {
         cancelAutoPocket();
         enterPocket(false);
+      }
+      // `?journal=1` jumps straight to the after-walk screen. Used to verify the
+      // journal in the UI audit without waiting out a real walk.
+      if (params.get('journal') === '1' && state.data) {
+        showFailsafe();
       }
     });
   }

@@ -1,4 +1,4 @@
-"""Typer CLI: `baahar brief`, `baahar score`, `baahar parks`, `baahar serve`.
+"""Typer CLI: `baahar brief`, `score`, `parks`, `journal`, `check`, `serve`.
 
 The CLI is the fastest path to the product and the easiest thing for a judge to
 run. It must work with no keys and no network, which is why every command
@@ -17,6 +17,7 @@ from rich.table import Table
 
 from . import brief as brief_mod
 from . import forecast as forecast_mod
+from . import journal as journal_mod
 from . import parks as parks_mod
 from . import pocket as pocket_mod
 from . import score as score_mod
@@ -53,7 +54,7 @@ def _build(
     scorer: str,
     park_id: str | None,
 ) -> BriefResponse:
-    """Shared pipeline for `brief` and `json`."""
+    """Shared pipeline for `brief` and the API."""
     settings = get_settings()
     target_lat = lat if lat is not None else settings.lat
     target_lon = lon if lon is not None else settings.lon
@@ -125,14 +126,12 @@ def render_brief(resp: BriefResponse) -> None:
     console.rule(f"Baahar · {plan.city}", style="cyan")
     console.print()
 
-    style = DECISION_STYLE[plan.overall]
-    console.print(f"  {plan.overall.value}", style=style, end="")
+    console.print(f"  {plan.overall.value}", style=DECISION_STYLE[plan.overall], end="")
     console.print(f"  {plan.headline}", style="bold")
     console.print()
 
-    if plan.degraded:
-        for item in plan.degraded:
-            console.print(f"  ! {item}", style="yellow")
+    for item in plan.degraded:
+        console.print(f"  ! {item}", style="yellow")
 
     slots = plan.slots[: plan.window_hours]
     if slots:
@@ -147,11 +146,12 @@ def render_brief(resp: BriefResponse) -> None:
             sig = slot.signals
             feels = sig.get("apparent_c")
             temp = sig.get("temp_c")
-            feels_txt = (
-                f"{temp:.0f}/{feels:.0f}°"
-                if temp is not None and feels is not None
-                else (f"{temp:.0f}°" if temp is not None else "-")
-            )
+            if temp is not None and feels is not None:
+                feels_txt = f"{temp:.0f}/{feels:.0f}°"
+            elif temp is not None:
+                feels_txt = f"{temp:.0f}°"
+            else:
+                feels_txt = "-"
             naqi = sig.get("naqi")
             table.add_row(
                 slot.time.strftime("%H:%M"),
@@ -190,6 +190,8 @@ def render_brief(resp: BriefResponse) -> None:
     console.print(f"    [dim]{pocket.safety_note}[/]")
     console.print()
     console.print(f"  [dim]{resp.disclaimer}[/]")
+    console.print()
+    console.print('  [dim]after the walk: uv run baahar journal --outcome went --note "..."[/]')
     console.print()
 
 
@@ -281,6 +283,103 @@ def parks_cmd(
         )
     console.print()
     console.print(table)
+    console.print()
+
+
+@app.command()
+def journal(
+    outcome: Annotated[
+        str | None,
+        typer.Option(help="went | shortened | skipped. Omit to just print the journal."),
+    ] = None,
+    note: Annotated[str, typer.Option(help="One line. The most useful field.")] = "",
+    park: Annotated[str | None, typer.Option(help="Park name.")] = None,
+    naqi: Annotated[float | None, typer.Option(help="NAQI Baahar showed.")] = None,
+    band: Annotated[str | None, typer.Option(help="NAQI band label.")] = None,
+    decided: Annotated[str | None, typer.Option(help="What Baahar decided: GO/WAIT/SKIP")] = None,
+    window: Annotated[str | None, typer.Option(help="Planned window, e.g. 06:00-07:00")] = None,
+    felt_c: Annotated[float | None, typer.Option(help="Temperature you actually felt.")] = None,
+    walked_min: Annotated[int | None, typer.Option(help="Minutes actually walked.")] = None,
+    planned_min: Annotated[int | None, typer.Option(help="Minutes Pocket Mode offered.")] = None,
+    phone: Annotated[
+        int | None, typer.Option(help="How many times you reached for the phone.")
+    ] = None,
+    as_markdown: Annotated[
+        bool, typer.Option("--markdown", help="Print the field-test block.")
+    ] = False,
+    all_entries: Annotated[bool, typer.Option("--all", help="Include every walk.")] = False,
+) -> None:
+    """Record and print the after-walk journal.
+
+    The walk is the only part of Baahar a human has to do, and the notes from it
+    are the part an agent must never invent. So this command exists to make
+    writing them take ten seconds:
+
+        uv run baahar journal --outcome went --note "kept reaching for the phone"
+
+    Then paste the output straight into the field-test section of the write-up.
+    """
+    valid = {"went", "shortened", "skipped"}
+    if outcome is not None and outcome not in valid:
+        raise typer.BadParameter(f"--outcome must be one of {sorted(valid)}")
+
+    if outcome is not None:
+        path = journal_mod.record(
+            outcome,
+            planned_decision=decided,
+            planned_window=window,
+            park=park,
+            naqi=naqi,
+            naqi_band=band,
+            felt_c=felt_c,
+            minutes_planned=planned_min,
+            minutes_walked=walked_min,
+            reached_for_phone=phone,
+            note=note,
+        )
+        err.print(f"[dim]recorded -> {path}[/]")
+
+    entries = journal_mod.load()
+    if as_markdown:
+        console.print()
+        console.print(journal_mod.render_markdown(entries, include_all=all_entries))
+        console.print()
+        return
+
+    if not entries:
+        console.print()
+        console.print("[dim]No walks recorded yet.[/]")
+        console.print('  uv run baahar journal --outcome went --note "..."')
+        console.print()
+        return
+
+    stats = journal_mod.summarise(entries)
+    table = Table(title="Baahar journal", box=None)
+    table.add_column("when", style="bold")
+    table.add_column("said", no_wrap=True)
+    table.add_column("did", no_wrap=True)
+    table.add_column("NAQI", justify="right")
+    table.add_column("park")
+    table.add_column("phone", justify="right")
+    table.add_column("note", style="dim")
+    for entry in entries[-15:]:
+        table.add_row(
+            entry.walked_at[5:16].replace("T", " "),
+            entry.planned_decision or "-",
+            entry.outcome,
+            f"{entry.naqi:.0f}" if entry.naqi is not None else "-",
+            (entry.park or "-")[:22],
+            str(entry.reached_for_phone) if entry.reached_for_phone is not None else "-",
+            (entry.note or "")[:44],
+        )
+    console.print()
+    console.print(table)
+    console.print(
+        f"  {stats['n_entries']} entries · {stats['walks_recorded']} walks · "
+        f"{stats['total_minutes_walked']} min · {stats['times_reached_for_phone']} phone reaches"
+    )
+    console.print()
+    console.print("  [dim]uv run baahar journal --markdown  -> paste into the write-up[/]")
     console.print()
 
 

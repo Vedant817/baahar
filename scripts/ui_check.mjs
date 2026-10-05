@@ -38,9 +38,30 @@ const OUT = arg('out', 'docs/media');
 const BASE = arg('url', 'http://127.0.0.1:8000/');
 
 const SHOTS = [
-  { name: '01-ask', url: BASE, ready: 'screen-ask', wait: 1200 },
+  { name: '01-ask', url: BASE, ready: 'screen-ask', wait: 1500 },
   { name: '02-brief', url: `${BASE}?auto=1&model=template`, ready: 'brief-body', wait: 30000 },
   { name: '03-pocket', url: `${BASE}?model=template#pocket`, ready: 'screen-pocket', wait: 30000 },
+  {
+    // `walk=0` is not allowed by the API, so the shortest walk is used and the
+    // timer is expired programmatically. Verifying the journal must not require
+    // waiting out a real walk.
+    name: '04-journal',
+    url: `${BASE}?model=template&journal=1`,
+    ready: 'journal',
+    wait: 40000,
+    afterReady: async (send) => {
+      await send('Runtime.evaluate', {
+        expression: `(() => {
+          const el = document.getElementById('j-count');
+          el.textContent = '2';
+          document.getElementById('j-note').value =
+            'kept reaching for the phone around minute six';
+          document.querySelector('.jbtn[data-outcome="went"]').click();
+        })()`,
+      });
+      await sleep(300);
+    },
+  },
 ];
 
 /* Poll for a screen to actually render instead of sleeping a fixed amount.
@@ -149,7 +170,8 @@ async function main() {
   for (const shot of SHOTS) {
     await send('Page.navigate', { url: shot.url });
     const ready = await waitForRender(send, shot.ready, shot.wait);
-    await sleep(400); // let fonts/layout settle before capture
+    if (shot.afterReady) await shot.afterReady(send);
+    await sleep(400); // let layout settle before capture
 
     // Layout audit: overflow, hidden-attribute violations, missing text.
     const audit = await send('Runtime.evaluate', {
@@ -179,18 +201,19 @@ async function main() {
           return el.getBoundingClientRect().height > 0 ? 'VISIBLE' : 'zero-height';
         };
         return {
-          scrollWidth: de.scrollWidth,
-          clientWidth: de.clientWidth,
-          overflow,
-          offenders: wide.slice(0, 6),
-          screens: {
-            loading: rendered('loading'),
-            briefBody: rendered('brief-body'),
-            pocket: rendered('screen-pocket'),
-            failsafe: rendered('failsafe'),
-          },
-          decision: (document.getElementById('decision') || {}).textContent || null,
-        };
+            scrollWidth: de.scrollWidth,
+            clientWidth: de.clientWidth,
+            overflow,
+            offenders: wide.slice(0, 6),
+            screens: {
+              loading: rendered('loading'),
+              briefBody: rendered('brief-body'),
+              pocket: rendered('screen-pocket'),
+              journal: rendered('journal'),
+              journalDone: rendered('j-done'),
+            },
+            decision: (document.getElementById('decision') || {}).textContent || null,
+          };
       })()`,
     });
 
@@ -236,7 +259,12 @@ async function main() {
   if (results[1].screens.loading === 'VISIBLE') problems.push('02-brief: loading spinner still painted');
   if (results[1].screens.briefBody !== 'VISIBLE') problems.push('02-brief: brief body not rendered');
   if (results[2].screens.pocket !== 'VISIBLE') problems.push('03-pocket: pocket screen not rendered');
-  if (results[2].screens.failsafe === 'VISIBLE') problems.push('03-pocket: failsafe showing early');
+  if (results[3] && results[3].screens.journal !== 'VISIBLE') {
+    problems.push('04-journal: after-walk journal not rendered');
+  }
+  if (results[3] && results[3].screens.journalDone !== 'VISIBLE') {
+    problems.push('04-journal: journal markdown did not appear after tapping an outcome');
+  }
 
   console.log('');
   if (overflowed.length || problems.length || consoleErrors.length) {

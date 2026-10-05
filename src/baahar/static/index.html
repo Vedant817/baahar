@@ -104,7 +104,7 @@
 
 <!-- ══════════════════════ SCREEN 3: POCKET MODE ══════════════════════ -->
 <main id="screen-pocket" class="screen screen--pocket" hidden>
-  <div class="pocket">
+  <div class="pocket" id="pocket-body">
     <p class="pocket__headline" id="p-headline">Phone in pocket.</p>
     <p class="pocket__subline" id="p-subline"></p>
 
@@ -123,14 +123,31 @@
     <p id="p-safety" class="pocket__safety"></p>
     <button id="pocket-exit" class="pocket__exit">back</button>
   </div>
-</main>
 
-<!-- sleep blocker: shows the clock, never the feed -->
-<div id="failsafe" class="failsafe" hidden>
-  <p id="fs-time"></p>
-  <p>Baahar is done. Your phone has nothing left to show you.</p>
-  <button id="fs-back" class="btn btn--ghost btn--sm">back</button>
-</div>
+  <!-- after-walk journal: three taps and one line -->
+  <div id="journal" class="journal" hidden>
+    <p class="journal__title" id="j-title">Walk done.</p>
+    <p class="journal__sub">Did you go?</p>
+    <div class="journal__taps">
+      <button class="jbtn" data-outcome="went">went</button>
+      <button class="jbtn" data-outcome="shortened">shortened</button>
+      <button class="jbtn" data-outcome="skipped">skipped</button>
+    </div>
+    <input id="j-note" class="journal__note" type="text" maxlength="140"
+           placeholder="one line &mdash; the most useful thing you can write">
+    <div class="journal__reached">
+      <span class="journal__relabel">reached for the phone</span>
+      <button class="jcount" data-delta="-1">&minus;</button>
+      <span id="j-count">0</span>
+      <button class="jcount" data-delta="1">+</button>
+    </div>
+    <div id="j-done" class="journal__done" hidden>
+      <p id="j-md" class="journal__md"></p>
+      <button id="j-copy" class="btn btn--ghost btn--sm">copy for the write-up</button>
+      <button id="j-close" class="btn btn--ghost btn--sm">done</button>
+    </div>
+  </div>
+</main>
 
 <noscript>
   <p style="padding:2rem;color:#e8eaf0;font:16px system-ui">
