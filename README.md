@@ -126,8 +126,18 @@ uv sync --group dev --group ml
 uv run baahar score --city Bengaluru --scorer tabpfn
 ```
 
+> **One human step is required.** `tabpfn >= 2.x` refuses to download model
+> weights until a Prior Labs licence acceptance is recorded in `TABPFN_TOKEN`,
+> *even though the weights are public on Hugging Face* — I verified the repo is
+> not gated. That is a licence gate, not a technical one, so Baahar does not route
+> around it. Until it is accepted, the scorer says so in plain language and uses
+> the policy instead. See [`docs/NEEDS_HUMAN.md`](docs/NEEDS_HUMAN.md).
+
 Baahar tells you which scorer produced every decision, and the heuristic path is
-a first-class fallback rather than a stub.
+a first-class fallback rather than a stub. Without the licence, `run_eval.py`
+reports TabPFN as **`SKIPPED`** with the reason — the tabular category is not
+claimed in the write-up, and the conventional baselines carry the argument
+instead.
 
 ---
 
@@ -171,6 +181,14 @@ PDT is UTC−7, so Oct 11 23:59 PDT = Oct 12 06:59 UTC = Oct 12 12:29 IST.
                               ▼
                        Pocket Mode
 ```
+
+**Status of each box:** weather, air quality, Indian NAQI, the heuristic scorer,
+the Gemma briefing and Pocket Mode all run today with zero keys. **TabPFN** is
+implemented and tested but needs a Prior Labs licence acceptance before it can
+download weights ([why](docs/NEEDS_HUMAN.md)). **Tinker** has a built dataset
+(219 examples) but the API could not be verified, so no endpoint is hard-coded
+([adr/001](docs/adr/001-tinker-outcome.md)). **ElevenLabs** voice is implemented
+against fixtures and never called. None of the three are claimed in the write-up.
 
 Full module-by-module detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 Decision records: [`docs/adr/`](docs/adr/).
