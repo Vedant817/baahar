@@ -77,6 +77,20 @@ jobs:
           fi
           echo "no secrets detected"
 
+      # The honest-numbers guard. `run_eval.py` reads the committed dataset and
+      # needs no network, so CI can reproduce the tabular numbers and then check
+      # that eval/RESULTS.md actually reports them.
+      #
+      # This is what makes "every number came from a real run" enforceable
+      # rather than aspirational: if someone edits a figure in RESULTS.md, or
+      # claims a number for a model whose run reported SKIPPED, this fails the
+      # build.
+      - name: Re-run the tabular eval from the committed dataset
+        run: uv run python scripts/run_eval.py
+
+      - name: Check RESULTS.md against the raw artifacts
+        run: uv run python scripts/check_results.py
+
   ml:
     name: TabPFN path (PyTorch, slow)
     runs-on: ubuntu-latest

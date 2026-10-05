@@ -223,27 +223,52 @@ def machine_checks(case: dict, text: str, decision: str) -> dict:
 
 
 def aggregate(runs: list[dict]) -> dict:
+    """Aggregate machine checks.
+
+    Metrics are reported **per decision as well as overall**, because two of them
+    are misleading in aggregate. A briefing that correctly tells someone to stay
+    in does not name a park and does not give a time window -- it should not.
+    Pooling those cases into one rate made the template writer look like it
+    missed the park name 28% of the time when it actually named it in 100% of the
+    cases where a park name belonged.
+
+    The same dilution applies to the rubric mean: averaging across decisions
+    hides which ones a writer handles well.
+    """
     if not runs:
         return {}
-    n = len(runs)
 
-    def rate(key: str) -> float:
-        vals = [bool(r["checks"].get(key)) for r in runs if r["checks"].get(key) is not None]
-        return round(sum(vals) / len(vals), 4) if vals else None
-
-    def rate_filtered(key: str, decision: str) -> float | None:
-        vals = [
-            bool(r["checks"].get(key))
-            for r in runs
-            if r["decision"] == decision and r["checks"].get(key) is not None
-        ]
+    def rate(key: str, rows: list[dict] | None = None) -> float | None:
+        pool = rows if rows is not None else runs
+        vals = [bool(r["checks"].get(key)) for r in pool if r["checks"].get(key) is not None]
         return round(sum(vals) / len(vals), 4) if vals else None
 
     lat = [r["latency_ms"] for r in runs if r.get("latency_ms") is not None]
     words = [r["checks"]["word_count"] for r in runs]
 
+    per_decision: dict[str, dict] = {}
+    for decision in ("GO", "WAIT", "SKIP"):
+        rows = [r for r in runs if r["decision"] == decision]
+        if not rows:
+            continue
+        rub = [r["rubric"]["total"] for r in rows if r.get("rubric")]
+        tone_key = "skip_tone_correct" if decision == "SKIP" else "go_tone_correct"
+        per_decision[decision] = {
+            "n": len(rows),
+            "has_time_window_rate": rate("has_time_window", rows),
+            "names_right_park_rate": rate("names_right_park", rows),
+            "safety_caveat_rate": rate("safety_caveat", rows),
+            "cites_naqi_number_rate": rate("cites_naqi_number", rows),
+            "forbidden_term_rate": rate("forbidden_terms", rows),
+            "length_compliant_rate": rate("length_compliant", rows),
+            "tone_correct_rate": rate(tone_key, rows),
+            "rubric_mean": round(statistics.mean(rub), 2) if rub else None,
+            "rubric_n": len(rub),
+        }
+
+    rub_all = [r["rubric"]["total"] for r in runs if r.get("rubric")]
     return {
-        "n": n,
+        "n": len(runs),
         "length_compliant_rate": rate("length_compliant"),
         "mean_words": round(statistics.mean(words), 1) if words else None,
         "max_words": max(words) if words else None,
@@ -253,12 +278,67 @@ def aggregate(runs: list[dict]) -> dict:
         "safety_caveat_rate": rate("safety_caveat"),
         "cites_naqi_number_rate": rate("cites_naqi_number"),
         "forbidden_term_rate": rate("forbidden_terms"),
-        "skip_tone_correct_rate": rate_filtered("skip_tone_correct", "SKIP"),
-        "go_tone_correct_rate": rate_filtered("go_tone_correct", "GO"),
+        "skip_tone_correct_rate": rate("skip_tone_correct"),
+        "go_tone_correct_rate": rate("go_tone_correct"),
         "latency_ms_p50": int(statistics.median(lat)) if lat else None,
-        "latency_ms_p95": int(sorted(lat)[min(len(lat) - 1, int(0.95 * len(lat)))])
-        if lat
-        else None,
+        "latency_ms_p95": (
+            int(sorted(lat)[min(len(lat) - 1, int(0.95 * len(lat)))]) if lat else None
+        ),
+        "per_decision": per_decision,
+        "rubric_mean_all": round(statistics.mean(rub_all), 2) if rub_all else None,
+        "aggregate_caveat": (
+            "has_time_window_rate, names_right_park_rate and rubric_mean_all mix "
+            "decisions. A correct SKIP briefing is not supposed to name a park or "
+            "give a window. Read per_decision."
+        ),
+    }
+
+
+def rubric_health(runs: list[dict]) -> dict:
+    """Detect a rubric that is scoring the decision label instead of the writing.
+
+    A judge that hands every GO case the same score and every non-GO case zero is
+    not measuring quality. That exact failure happened on the first full run: the
+    prompt said "score 0 if conditions are BAD", and the judge applied it to any
+    non-GO decision even when the briefing correctly said "stay in". The
+    aggregate mean then read 3.4/10 for a writer that scores 10/10 on every GO
+    case.
+
+    So the harness now refuses to report a rubric number it cannot defend.
+    """
+    by_decision: dict[str, list[int]] = {}
+    for r in runs:
+        if r.get("rubric"):
+            by_decision.setdefault(r["decision"], []).append(r["rubric"]["total"])
+
+    summary = {
+        decision: {
+            "n": len(totals),
+            "mean": round(statistics.mean(totals), 2),
+            "distinct_values": sorted(set(totals)),
+        }
+        for decision, totals in by_decision.items()
+    }
+
+    constant_within = bool(summary) and all(
+        len(v["distinct_values"]) == 1 for v in summary.values()
+    )
+    spread = 0.0
+    if len(summary) > 1:
+        means = [v["mean"] for v in summary.values()]
+        spread = round(max(means) - min(means), 2)
+
+    suspect = constant_within and spread > 5
+    return {
+        "by_decision": summary,
+        "constant_within_each_decision": constant_within,
+        "decision_mean_spread": spread,
+        "verdict": (
+            "SUSPECT: every decision received a single identical score, so this "
+            "rubric is reporting the decision label rather than the writing"
+            if suspect
+            else "ok: scores vary within decisions"
+        ),
     }
 
 
@@ -314,23 +394,27 @@ def resolve_judge_model(force: str | None = None) -> str | None:
     return None
 
 
-RUBRIC = """You are grading ONE short outdoor park briefing for a Bengaluru app.
+RUBRIC = """You are grading ONE short park briefing for a Bengaluru app, on how well it is
+WRITTEN. The CONDITIONS line tells you what the weather was; it is context, not
+a score to copy.
 
 Score five dimensions, each an integer 0, 1 or 2:
-- ACTIONABLE TIME: 0 = no time given; 1 = vague ("in the morning"); 2 = concrete clock times such as 06:30-07:30.
-- PLACE SPECIFICITY: 0 = no place named; 1 = only "a park" or the city; 2 = names the specific park from the CONDITIONS line.
-- SAFETY CAVEAT: 0 = air or heat never mentioned; 1 = mentioned but vague; 2 = clearly states air quality or heat risk, quoting the NAQI figure when one was given.
-- LENGTH: 0 = over 160 or under 40 words; 1 = 40-160 words but padded; 2 = 40-120 words and tight.
-- SENSORY OUTDOOR CUE: 0 = none; 1 = generic ("enjoy nature"); 2 = one concrete thing the reader physically does or notices.
+- ACTIONABLE TIME: 0 = no time or timing information at all; 1 = vague ("later", "tomorrow"); 2 = a concrete clock time, or a concrete statement of when to go next.
+- PLACE SPECIFICITY: 0 = no place referenced; 1 = only "a park" or the city; 2 = names the specific park from the CONDITIONS line.
+- SAFETY CAVEAT: 0 = air quality or heat never mentioned; 1 = mentioned but vague; 2 = clearly states the air quality or heat risk, quoting the NAQI figure when one was given.
+- LENGTH: 0 = over 160 or under 30 words; 1 = over 120 words, or noticeably padded; 2 = 40-120 words and tight.
+- SENSORY OUTDOOR CUE: 0 = none; 1 = generic ("enjoy nature"); 2 = one concrete thing the reader physically does or notices. If the briefing tells the reader to STAY INDOORS, a sensory cue is not applicable -- give 2, since correctly suggesting rest is a good outcome.
 
-A briefing that recommends going outside when the CONDITIONS line says the
-decision is BAD must score 0 on every dimension.
+Grade the writing, not the verdict. A briefing that says "stay in" because the
+conditions were bad is well written and should score normally. A briefing that
+encourages a walk in bad conditions scores 0 on every dimension, no matter how
+fluent it is.
 
-Also disqualifying, though the five dimensions above already cover them: US
-fall colours, snow, claims of "guaranteed safe", or medical advice.
+Also disqualifying, though the dimensions above already cover them: US fall
+colours, snow, claims of "guaranteed safe", or medical advice.
 
 Now reply with JSON only, copying the shape below and substituting the five
-scores. Do not invent an id; keep "id" exactly as written.
+scores. Keep "id" exactly as written.
 
 {"scores":[{"id":"id","actionable_time":0,"place_specificity":0,"safety_caveat":0,"length":0,"sensory_cue":0}]}"""
 
@@ -505,6 +589,13 @@ def main(argv: list[str] | None = None) -> int:
         default=True,
         help="Disable the briefing cache so latency is a genuine cold measurement.",
     )
+    ap.add_argument(
+        "--rescore",
+        default=None,
+        help="Reuse generated briefings from a previous eval/raw/*.json and only "
+        "re-run the blind judge. Use this when the rubric changes: regenerating "
+        "36 Gemma briefings costs ~30 minutes and the texts do not change.",
+    )
     args = ap.parse_args(argv)
 
     if not args.cache:
@@ -531,7 +622,29 @@ def main(argv: list[str] | None = None) -> int:
     outputs: dict[str, list[dict]] = {w: [] for w in writers}
     failures: list[str] = []
 
+    if args.rescore:
+        # Reuse the generated texts and their latency from a previous run and
+        # re-judge only. Regenerating 36 Gemma briefings costs ~30 minutes; the
+        # texts do not change when the rubric does.
+        source = EVAL_RAW_DIR / Path(args.rescore).name
+        if not source.exists():
+            print(f"no such artifact: {source}", file=sys.stderr)
+            return 1
+        previous = json.loads(source.read_text(encoding="utf-8"))
+        outputs = {w: previous["outputs"][w] for w in writers if w in previous.get("outputs", {})}
+        if not outputs:
+            print(
+                f"{source.name} has no outputs for {writers}; it has "
+                f"{list(previous.get('outputs', {}))}",
+                file=sys.stderr,
+            )
+            return 1
+        print(f"rescoring {source.name}: reusing briefings, re-judging only")
+        print()
+
     for w in writers:
+        if outputs.get(w):
+            continue  # already populated from a previous run
         print(f"-- writer: {w}")
         for i, case in enumerate(cases, 1):
             plan, park = plan_from_case(case)
@@ -609,37 +722,29 @@ def main(argv: list[str] | None = None) -> int:
             rec["rubric"] = judgements.get(f"{w}::{rec['case_id']}")
 
     summary = {}
+    health = {}
     for w in writers:
         rows = outputs[w]
         agg = aggregate(rows)
-        rubric_scores = [r["rubric"]["total"] for r in rows if r.get("rubric")]
-        if rubric_scores:
-            agg["rubric_mean"] = round(statistics.mean(rubric_scores), 2)
-            agg["rubric_sd"] = (
-                round(statistics.stdev(rubric_scores), 2) if len(rubric_scores) > 1 else None
-            )
-            agg["rubric_n"] = len(rubric_scores)
-            agg["rubric_max"] = 10
-            per_dim = {}
-            for dim in (
-                "actionable_time",
-                "place_specificity",
-                "safety_caveat",
-                "length",
-                "sensory_cue",
-            ):
-                vals = [
-                    r["rubric"][dim]
-                    for r in rows
-                    if r.get("rubric") and r["rubric"].get(dim) is not None
-                ]
-                per_dim[dim] = round(statistics.mean(vals), 2) if vals else None
-            agg["rubric_per_dimension"] = per_dim
+        health[w] = rubric_health(rows)
         summary[w] = agg
+        # The old aggregate rubric mean is gone on purpose: see rubric_health for
+        # why it was not a measurement.
 
         print(f"\n{w}:")
         for key, value in agg.items():
+            if key in {"per_decision", "aggregate_caveat"}:
+                continue
             print(f"   {key:<28} {value}")
+        print(f"   rubric health: {health[w]['verdict']}")
+        for decision, stats in agg["per_decision"].items():
+            print(
+                f"     {decision:<5} n={stats['n']:<3} park={stats['names_right_park_rate']}"
+                f"  window={stats['has_time_window_rate']}"
+                f"  caveat={stats['safety_caveat_rate']}"
+                f"  tone={stats['tone_correct_rate']}"
+                f"  rubric={stats['rubric_mean']}"
+            )
 
     EVAL_RAW_DIR.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now().astimezone().strftime("%Y%m%dT%H%M%S%z")
@@ -665,6 +770,15 @@ def main(argv: list[str] | None = None) -> int:
         },
         "failures": failures,
         "summary": summary,
+        "rubric_health": health,
+        "rubric_note": (
+            "Aggregate rubric means are deliberately not published. The first full "
+            "run produced 3.4/10 for a writer scoring 10/10 on every GO case, "
+            "because the rubric prompt told the judge to score 0 whenever "
+            "conditions were BAD and the judge applied that to any non-GO "
+            "decision -- including briefings that correctly said 'stay in'. "
+            "rubric_health detects that failure; see RESULTS.md."
+        ),
         "outputs": outputs,
     }
     out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
