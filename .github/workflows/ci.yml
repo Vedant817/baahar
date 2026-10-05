@@ -58,10 +58,15 @@ jobs:
           BAAHAR_OFFLINE: "1"
           GEMINI_API_KEY: ""
         run: |
+          set -o pipefail
           uv run baahar check
           uv run baahar brief --city Bengaluru --offline --model template
-          uv run baahar score --offline --json | head -40
           uv run baahar parks --limit 3
+          uv run baahar journal
+          # `| head` used to hide a non-zero exit from these two, which is how
+          # a TypeError in `score --json` shipped green.
+          uv run baahar score --offline --json | head -40
+          uv run baahar score --offline | head -20
 
       - name: Verify no secrets are committed
         run: |

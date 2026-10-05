@@ -15,8 +15,10 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | New public GitHub repo, started inside the challenge window | [github.com/Vedant817/baahar](https://github.com/Vedant817/baahar), first commit 2026-10-06 |
 | **DONE** | MIT licence | [`LICENSE`](../LICENSE) |
 | **DONE** | Green README: quickstart, architecture, why-open, field test | [`README.md`](../README.md) |
+| **DONE** | CLI exercised as a subprocess, exit codes asserted | `tests/test_cli.py`, 15 tests |
+| **DONE** | CI green on all three jobs | lint · format · tests · offline smoke · secret scan · honest-numbers · headless-Chrome UI audit |
 | **DONE** | No secrets in git | `.env` gitignored; `.env.example` complete and empty |
-| **DONE** | Tests pass offline | `uv run pytest` → 158 passed, no network |
+| **DONE** | Tests pass offline | `uv run pytest` → 173 passed, no network |
 | **DONE** | Lint clean | `uv run ruff check .` |
 | **DONE** | Conventional commits with real explanations | `git log` |
 
@@ -32,7 +34,8 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | Gemma briefing path works | `brief.py`; `gemma-4-31b-it` via AI Studio free tier |
 | **DONE** | ≤120-word safety-aware briefing | `MAX_WORDS`, `enforce_safety` |
 | **DONE** | Pocket Mode | `pocket.py` + `static/`, verified headless |
-| **DONE** | CLI | `baahar brief · score · parks · check · serve` |
+| **DONE** | After-walk journal | `journal.py`, `baahar journal --markdown`; produces the field-test block |
+| **DONE** | CLI | `baahar brief · score · parks · journal · check · serve` |
 | **DONE** | Offline / fixture mode | `BAAHAR_OFFLINE=1`, `data/samples/` |
 | **DONE** | Failure modes never return a cheerful empty answer | `tests/test_offline.py`; `UpstreamError` reaches the client as HTTP 503 |
 
@@ -46,8 +49,10 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | `skip_as_go_rate` with a Wilson interval | headline safety metric; n(SKIP) reported because it is small |
 | **DONE** | Briefing eval: machine checks | `scripts/run_briefing_eval.py`, 36 stratified cases |
 | **DONE** | Briefing eval: blind LLM rubric | same script; judge model recorded per run |
-| **DONE** | Latency p50/p95 measured | `eval/RESULTS.md` |
-| **DONE** | At least one documented failure | [`eval/RESULTS.md`](../eval/RESULTS.md) § Failures |
+| **DONE** | Rubric validity check | `rubric_health()` fails the harness if the judge scores by decision label |
+| **DONE** | Published numbers verified against raw artifacts | `scripts/check_results.py`, wired into CI, negative-tested |
+| **DONE** | Latency p50/p95 measured | 3 ms / 6 ms local · 51,730 ms / 115,187 ms Gemma |
+| **DONE** | At least one documented failure | 10 failures in [`eval/RESULTS.md`](../eval/RESULTS.md) § C |
 | **DONE** | Package versions + timestamps in raw output | `eval/raw/*.json` |
 | **NOT DONE** | Fine-tune vs baseline table | Tinker API unverifiable → [`adr/001-tinker-outcome.md`](adr/001-tinker-outcome.md) |
 
@@ -92,16 +97,23 @@ name what a reader can reproduce.**
 
 1. **No field test.** The strongest claim in the project — that the screen is
    the shortest part of the walk — is currently unverified by a human. This is
-   the most important outstanding item.
+   the most important outstanding item. `baahar journal` now makes it a three-tap
+   job rather than a blank form.
 2. **No TabPFN or Tinker numbers.** Both are one human step away. Both are
    documented rather than faked.
-3. **`skip_as_go_rate` is 0.0 on n=24.** That is a real result but a weak one.
-   Skip hours are genuinely rare in Bengaluru's year; the confidence interval is
-   reported so it is not read as a guarantee.
-4. **The tabular eval is trained on reanalysis, served on forecasts.** The
+3. **The tabular holdout contains no Severe or Hazardous hours**, and every SKIP
+   in it was rain (22) or heat (2) — zero air quality. So `skip_as_go_rate = 0.0`
+   measures rain and heat handling, **not** air-quality safety, and this
+   evaluation does not rule out a model that would fail on a polluted day. The
+   harness reports the SKIP-cause breakdown for exactly this reason.
+4. **The blind rubric is saturated** (8.92–10.00 across 72 briefings). It
+   separates a broken briefing from a good one and barely ranks good ones against
+   each other. The 9.83-vs-9.53 gap should be read as "a tie, with the local
+   writer also being 17,000× faster".
+5. **The tabular eval is trained on reanalysis, served on forecasts.** The
    mismatch is documented in `RESULTS.md`. It is small — Open-Meteo's AQ forecast
    and archive come from the same CAMS model — but it is not zero.
-5. **Gemma latency is 40–95 s.** Real, measured, and mitigated with a template
-   fast path and a cache. It is also the main thing a user feels.
-6. **Not deployed.** A local run plus a recorded walk is acceptable to the
-   challenge; a hosted demo would be better.
+6. **Gemma latency is 51.7 s p50 / 115.2 s p95.** Real, measured, and the reason
+   the deterministic writer is the default.
+7. **Not deployed.** A local run plus a recorded walk is acceptable to the
+   challenge; `render.yaml` is ready if a promo is claimed.

@@ -8,7 +8,10 @@ erroring out.
 
 from __future__ import annotations
 
+import contextlib
+import json
 import logging
+import sys
 from typing import Annotated
 
 import typer
@@ -228,7 +231,10 @@ def score(
     plan = score_mod.build_plan(slots, scorer=scorer, weather_source=wsrc, air_source=asrc)
 
     if as_json:
-        console.print_json(plan.model_dump(mode="json"))
+        # `print_json` takes a JSON *string*, not a dict. Passing the dict raises
+        # TypeError, which the CI smoke test did not catch because the command
+        # was piped into `head` and the pipeline reported head's exit code.
+        console.print_json(json.dumps(plan.model_dump(mode="json"), default=str))
         return
 
     table = Table(title=f"Baahar score · {plan.city} · scorer={plan.scorer}", box=None)
@@ -425,8 +431,26 @@ def version_cmd() -> None:
 
 
 def main() -> None:
+    _force_utf8_output()
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
     app()
+
+
+def _force_utf8_output() -> None:
+    """Make stdout/stderr decodable on Windows consoles.
+
+    Baahar prints box-drawing characters and the Hindi name Baahar (बाहर). On a
+    Windows console configured for cp1252 those bytes are not decodable, so
+    redirecting output (`baahar brief > out.txt`, or piping into another process)
+    crashes the reader. Replacing undecodable bytes is far better than a
+    UnicodeDecodeError for a human reading a text file.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        with contextlib.suppress(ValueError, OSError):  # pragma: no cover
+            reconfigure(encoding="utf-8", errors="replace")
 
 
 if __name__ == "__main__":

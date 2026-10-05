@@ -216,3 +216,21 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 | 6 | Render promo | nothing | 10 min | yes |
 | 7 | The walk | credibility | 30 min | **yes, always** |
 | 8 | Publish | everything | 30 min | yes |
+
+---
+
+## What is already done, so you can skip ahead
+
+- Everything that needs no key: the whole product, the web UI, Pocket Mode, the
+  journal, the CLI, and 158 offline tests.
+- **Gemma.** A key was present in the build environment, so the Gemma path was
+  evaluated for real: 36 cases, machine checks plus a blind rubric.
+  [`eval/RESULTS.md`](../eval/RESULTS.md) § B.
+- **The tabular eval.** 8,130 rows from keyless archives, five models, full
+  confusion matrix. `eval/RESULTS.md` § A.
+- **A verification tool for my own numbers.**
+  `uv run python scripts/check_results.py` fails if RESULTS.md stops matching the
+  raw artifacts. It runs in CI.
+
+So the *only* things standing between this repo and a complete submission are
+the five human items above, and three of them are under five minutes each.
