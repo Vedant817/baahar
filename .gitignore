@@ -1,0 +1,58 @@
+# --- secrets -----------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# --- ml / model artifacts (never commit weights) -----------------------------
+models/
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+*.gguf
+tabpfn_cache/
+.torch/
+
+# --- eval raw output ---------------------------------------------------------
+# Raw run logs ARE committed (eval/raw/*.json) because RESULTS.md must be
+# reproducible. Cached API responses under data/cache/ are NOT.
+data/cache/
+.tmp/
+
+# --- tooling -----------------------------------------------------------------
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+uv.lock.bak
+
+# --- editors / os ------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- human-only artefacts ----------------------------------------------------
+# Field-test photos/voice notes are added by the human walk; keep them small
+# and deliberate rather than blindly ignored.
+docs/field-media/*.mov

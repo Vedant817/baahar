@@ -1,0 +1,28 @@
+# Normalise line endings so the working tree on Windows does not churn the diff.
+* text=auto eol=lf
+
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# Fixtures and eval artifacts are data, not source: keep bytes exactly as recorded.
+data/samples/*.json -diff
+eval/raw/*.json -diff
+
+# Never rewrite these.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.mp3 binary
+*.mp4 binary
+*.woff binary
+*.woff2 binary

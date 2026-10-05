@@ -1,0 +1,332 @@
+"""Typer CLI: `baahar brief`, `baahar score`, `baahar parks`, `baahar serve`.
+
+The CLI is the fastest path to the product and the easiest thing for a judge to
+run. It must work with no keys and no network, which is why every command
+degrades to recorded fixtures or the deterministic template writer rather than
+erroring out.
+"""
+
+from __future__ import annotations
+
+import logging
+from typing import Annotated
+
+import typer
+from rich.console import Console
+from rich.table import Table
+
+from . import brief as brief_mod
+from . import forecast as forecast_mod
+from . import parks as parks_mod
+from . import pocket as pocket_mod
+from . import score as score_mod
+from .config import get_settings
+from .models import BriefResponse, Decision
+
+console = Console()
+err = Console(stderr=True)
+
+app = typer.Typer(
+    name="baahar",
+    help="Baahar (बाहर) -- find Bengaluru's next safe outdoor hour, then put the phone away.",
+    no_args_is_help=True,
+    add_completion=False,
+)
+
+DECISION_STYLE = {
+    Decision.GO: "bold green",
+    Decision.WAIT: "bold yellow",
+    Decision.SKIP: "bold red",
+}
+
+
+def _build(
+    *,
+    city: str | None,
+    lat: float | None,
+    lon: float | None,
+    hours: int | None,
+    offline: bool | None,
+    writer: str,
+    voice: bool,
+    walk_minutes: int | None,
+    scorer: str,
+    park_id: str | None,
+) -> BriefResponse:
+    """Shared pipeline for `brief` and `json`."""
+    settings = get_settings()
+    target_lat = lat if lat is not None else settings.lat
+    target_lon = lon if lon is not None else settings.lon
+
+    slots, wsrc, asrc = forecast_mod.fetch_joined(
+        lat=target_lat, lon=target_lon, hours=hours, offline=offline
+    )
+
+    park = None
+    if park_id:
+        park = parks_mod.park_by_id(park_id)
+        if park is None:
+            raise typer.BadParameter(f"unknown park id {park_id!r}; try `baahar parks`")
+    else:
+        park = parks_mod.pick_park(lat=target_lat, lon=target_lon)
+
+    plan = score_mod.build_plan(
+        slots,
+        city=city or settings.city,
+        scorer=scorer,
+        park=park,
+        weather_source=wsrc,
+        air_source=asrc,
+    )
+    pocket = pocket_mod.build_pocket(plan, walk_minutes=pocket_mod.ensure_walk_minutes(walk_minutes))
+    briefing = brief_mod.generate(
+        plan, writer=writer, park=park, voice=voice, notice_this=pocket.notice_this
+    )
+    return BriefResponse(plan=plan, briefing=briefing, pocket=pocket)
+
+
+@app.command()
+def brief(
+    city: Annotated[str | None, typer.Option(help="City name used in output.")] = None,
+    lat: Annotated[float | None, typer.Option(help="Latitude.")] = None,
+    lon: Annotated[float | None, typer.Option(help="Longitude.")] = None,
+    hours: Annotated[int | None, typer.Option(help="Hours of forecast to score.")] = None,
+    offline: Annotated[bool, typer.Option(help="Force recorded fixtures.")] = False,
+    model: Annotated[
+        str, typer.Option(help="Briefing writer: auto | gemma | tinker | template.")
+    ] = "auto",
+    voice: Annotated[bool, typer.Option(help="Also speak the briefing (ElevenLabs).")] = False,
+    walk_minutes: Annotated[int | None, typer.Option(help="Pocket Mode walk length.")] = None,
+    scorer: Annotated[str, typer.Option(help="Scorer: auto | heuristic | tabpfn.")] = "auto",
+    park: Annotated[str | None, typer.Option(help="Force a park by id.")] = None,
+) -> None:
+    """Print the full brief: decision, hour table, park, and briefing."""
+    resp = _build(
+        city=city,
+        lat=lat,
+        lon=lon,
+        hours=hours,
+        offline=offline or None,
+        writer=model,
+        voice=voice,
+        walk_minutes=walk_minutes,
+        scorer=scorer,
+        park_id=park,
+    )
+    render_brief(resp)
+
+
+def render_brief(resp: BriefResponse) -> None:
+    plan, briefing, pocket = resp.plan, resp.briefing, resp.pocket
+
+    console.print()
+    console.rule(f"Baahar · {plan.city}", style="cyan")
+    console.print()
+
+    style = DECISION_STYLE[plan.overall]
+    console.print(f"  {plan.overall.value}", style=style, end="")
+    console.print(f"  {plan.headline}", style="bold")
+    console.print()
+
+    if plan.degraded:
+        for item in plan.degraded:
+            console.print(f"  ! {item}", style="yellow")
+
+    slots = plan.slots[: plan.window_hours]
+    if slots:
+        table = Table(box=None, pad_edge=False, show_header=True, header_style="dim")
+        table.add_column("time", style="bold", no_wrap=True)
+        table.add_column("call", no_wrap=True)
+        table.add_column("comfort", justify="right", no_wrap=True)
+        table.add_column("NAQI", justify="right", no_wrap=True)
+        table.add_column("feels", justify="right", no_wrap=True)
+        table.add_column("why", style="dim")
+        for slot in slots:
+            sig = slot.signals
+            feels = sig.get("apparent_c")
+            temp = sig.get("temp_c")
+            feels_txt = (
+                f"{temp:.0f}/{feels:.0f}°"
+                if temp is not None and feels is not None
+                else (f"{temp:.0f}°" if temp is not None else "-")
+            )
+            naqi = sig.get("naqi")
+            table.add_row(
+                slot.time.strftime("%H:%M"),
+                f"[{DECISION_STYLE[slot.decision]}]{slot.decision.value}[/]",
+                f"{slot.comfort:.0f}",
+                f"{naqi:.0f}" if naqi is not None else "-",
+                feels_txt,
+                slot.reasons[0] if slot.reasons else "",
+            )
+        console.print(table)
+        console.print()
+
+    if plan.park:
+        console.print(f"  Park: [bold]{plan.park.name}[/] ({plan.park.area})")
+        console.print(f"        {plan.park.vibe} [dim]{plan.park.crowding_hint}[/]")
+        console.print(f"        [dim]{plan.park.gate_note}[/]")
+        console.print()
+
+    console.print("  Briefing", style="bold")
+    for line in _wrap(briefing.text, 74):
+        console.print(f"  {line}")
+    console.print()
+    console.print(
+        f"  [dim]writer={briefing.writer} model={briefing.model} "
+        f"words={briefing.word_count} latency={briefing.latency_ms}ms[/]"
+    )
+    if briefing.note:
+        console.print(f"  [dim]{briefing.note}[/]")
+
+    console.print()
+    console.print("  Pocket Mode", style="bold")
+    console.print(f"    {pocket.headline}", style="bold white")
+    console.print(f"    [dim]{pocket.subline}[/]")
+    console.print(f"    notice this: {pocket.notice_this}")
+    console.print(f"    walk: {pocket.walk_minutes} min")
+    console.print(f"    [dim]{pocket.safety_note}[/]")
+    console.print()
+    console.print(f"  [dim]{resp.disclaimer}[/]")
+    console.print()
+
+
+def _wrap(text: str, width: int) -> list[str]:
+    words, lines, current = text.split(), [], ""
+    for word in words:
+        if len(current) + len(word) + 1 > width:
+            lines.append(current)
+            current = word
+        else:
+            current = f"{current} {word}".strip()
+    if current:
+        lines.append(current)
+    return lines
+
+
+@app.command()
+def score(
+    lat: Annotated[float | None, typer.Option()] = None,
+    lon: Annotated[float | None, typer.Option()] = None,
+    hours: Annotated[int | None, typer.Option()] = None,
+    offline: Annotated[bool, typer.Option()] = False,
+    scorer: Annotated[str, typer.Option(help="auto | heuristic | tabpfn")] = "auto",
+    as_json: Annotated[bool, typer.Option("--json")] = False,
+) -> None:
+    """Print only the GO/WAIT/SKIP table."""
+    settings = get_settings()
+    slots, wsrc, asrc = forecast_mod.fetch_joined(
+        lat=lat if lat is not None else settings.lat,
+        lon=lon if lon is not None else settings.lon,
+        hours=hours,
+        offline=offline or None,
+    )
+    plan = score_mod.build_plan(slots, scorer=scorer, weather_source=wsrc, air_source=asrc)
+
+    if as_json:
+        console.print_json(plan.model_dump(mode="json"))
+        return
+
+    table = Table(title=f"Baahar score · {plan.city} · scorer={plan.scorer}", box=None)
+    table.add_column("time", style="bold")
+    table.add_column("call")
+    table.add_column("comfort", justify="right")
+    table.add_column("NAQI", justify="right")
+    table.add_column("band")
+    table.add_column("why", style="dim")
+    for slot in plan.slots:
+        sig = slot.signals
+        table.add_row(
+            slot.time.strftime("%H:%M"),
+            f"[{DECISION_STYLE[slot.decision]}]{slot.decision.value}[/]",
+            f"{slot.comfort:.0f}",
+            f"{sig['naqi']:.0f}" if sig.get("naqi") is not None else "-",
+            str(sig.get("naqi_band") or "-"),
+            slot.reasons[0] if slot.reasons else "",
+        )
+    console.print()
+    console.print(table)
+    console.print()
+    console.print(f"  {plan.overall.value}: {plan.headline}")
+    if plan.scorer_note:
+        console.print(f"  [dim]{plan.scorer_note}[/]")
+    console.print()
+
+
+@app.command("parks")
+def parks_cmd(
+    lat: Annotated[float | None, typer.Option()] = None,
+    lon: Annotated[float | None, typer.Option()] = None,
+    limit: Annotated[int, typer.Option()] = 6,
+) -> None:
+    """List curated parks, nearest first."""
+    settings = get_settings()
+    target_lat = lat if lat is not None else settings.lat
+    target_lon = lon if lon is not None else settings.lon
+    table = Table(title="Baahar parks · Bengaluru", box=None)
+    table.add_column("id", style="bold")
+    table.add_column("name")
+    table.add_column("km", justify="right")
+    table.add_column("shade")
+    table.add_column("vibe", style="dim")
+    for park in parks_mod.nearest_parks(target_lat, target_lon, limit=limit):
+        table.add_row(
+            park.id,
+            park.name,
+            f"{parks_mod.distance_to(target_lat, target_lon, park):.1f}",
+            park.shade,
+            park.vibe[:70],
+        )
+    console.print()
+    console.print(table)
+    console.print()
+
+
+@app.command()
+def serve(
+    host: Annotated[str, typer.Option()] = "127.0.0.1",
+    port: Annotated[int, typer.Option()] = 8000,
+    reload: Annotated[bool, typer.Option()] = False,
+) -> None:
+    """Start the web app (API + Pocket Mode UI)."""
+    import uvicorn
+
+    console.print(f"[cyan]Baahar[/] serving on http://{host}:{port}")
+    uvicorn.run("baahar.app:app", host=host, port=port, reload=reload, log_level="info")
+
+
+@app.command()
+def check() -> None:
+    """Show which keys and data sources are available. Never prints secrets."""
+    settings = get_settings()
+    console.print()
+    console.print("Baahar environment", style="bold")
+    console.print(f"  city              {settings.city} ({settings.lat}, {settings.lon})")
+    console.print(f"  offline mode      {'on' if settings.offline else 'off'}")
+    console.print("  keys present:")
+    for name, present in settings.which_keys().items():
+        mark = "[green]yes[/]" if present else "[dim]no[/]"
+        console.print(f"    {name:<14} {mark}")
+    console.print()
+    console.print("  data sources:")
+    for module_name in ("open-meteo forecast", "open-meteo air quality", "WAQI stations"):
+        console.print(f"    {module_name:<24} keyless / optional")
+    console.print()
+    console.print("  [dim]keys are never printed, only presence.[/]")
+    console.print()
+
+
+@app.command("version")
+def version_cmd() -> None:
+    from . import __version__
+
+    console.print(f"baahar {__version__}")
+
+
+def main() -> None:
+    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    app()
+
+
+if __name__ == "__main__":
+    main()
