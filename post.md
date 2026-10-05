@@ -254,7 +254,36 @@ judged by an LLM:
   its own homework. One briefing per judge call, anonymised and shuffled, so the
   judge cannot compare two outputs in the same context.
 
-<!-- FILL: paste the briefing comparison table from eval/RESULTS.md -->
+### The result I did not expect
+
+| | local writer | Gemma 4 (open weight) |
+|---|---|---|
+| length ≤ 120 words | 1.000 | 1.000 |
+| hallucinated park | 0.000 | 0.000 |
+| safety caveat present | 1.000 | 1.000 |
+| cites the NAQI figure | 1.000 | 1.000 |
+| names the given park (GO cases) | **1.000** | 0.833 |
+| blind rubric, mean /10 | **9.83** | 9.53 |
+| latency p50 | **3 ms** | 51,730 ms |
+| latency p95 | **6 ms** | 115,187 ms |
+
+**The deterministic writer won.** Better rubric score, more consistent about
+naming the park it was given, and roughly 17,000× faster. That is why Baahar
+ships the local writer as the default and treats the model as an optional
+upgrade — **the eval changed the product.**
+
+Both writers scored **zero** hallucinated parks and **zero** forbidden terms
+across 72 briefings, and every safety requirement passed on every case. That is
+the post-generation safety pass earning its keep, not the model complying.
+
+Two caveats, so this is not over-read. The rubric is **saturated** — scores run
+8.92–10.00, so it separates a broken briefing from a good one and does almost
+nothing to rank good ones against each other. And the p95 is the real cost:
+Open-Meteo answers in 3 ms and the open model takes two minutes, so the fast
+default is not a cop-out, it is the product.
+
+Full tables, per-decision breakdown, and the raw JSON:
+[`eval/RESULTS.md`](eval/RESULTS.md).
 
 ---
 
@@ -274,8 +303,27 @@ run: added, then deleted. Reordered the passes.
 whose JSON example used a placeholder `id` on the line immediately above a
 paragraph starting with the word `BANNED`. It copied the id from the wrong line
 and returned a confident **0** for every dimension. A benchmark that scores zero
-looks like a result. I only noticed because the template writer — which passes
+looks like a result. I only noticed because the local writer — which passes
 every machine check — was scoring 0.
+
+**Then I fixed that, and the rubric was still measuring nothing.** The next full
+run reported 3.43/10 for a writer that scores 10/10 on every GO case, because my
+rubric prompt said *"score 0 if conditions are BAD"* and the judge applied that
+to any non-GO decision — including briefings that correctly said "stay in". Every
+GO case scored exactly 10. Every non-GO case scored exactly 0.
+
+That one was worse, because the aggregate number looked like a plausible
+finding about both writers. The tell was in the confusion: a perfect step
+function from the decision label. The fix was to tell the judge to grade the
+*writing*, and that a briefing saying "stay in" is well written. Re-judging the
+same 72 briefings took the local writer from **3.43 to 9.83** and introduced
+real variation within each decision.
+
+I also added a check that fails the harness when every decision receives a single
+identical score, because that is the exact signature of this bug.
+
+Three times the eval caught itself rather than the product. Two of them looked
+like findings.
 
 **A park name duplicated itself.** Grounding "Lalbagh" in a briefing for
 *"Lalbagh Botanical Garden"* produced *"Lalbagh Botanical Garden Botanical

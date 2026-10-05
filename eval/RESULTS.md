@@ -207,7 +207,92 @@ a reason rather than a traceback. To produce the number:
 
 # B · Briefings
 
-<!-- BRIEFING-EVAL -->
+**Run:** 2026-10-06 05:01 IST (generation) → 05:09 IST (re-judged, see failure 9)
+**Artifact:** [`raw/briefing_20261006T050909+0530.json`](raw/briefing_20261006T050909+0530.json)
+**Judge:** `gemini-3.5-flash-lite` — *not* a Gemma model, so Gemma is not
+grading its own homework. `gemini-2.5-flash` was tried first and its per-model
+free-tier quota was exhausted (HTTP 429); the harness probes a candidate list and
+records which model actually judged.
+**Cases:** 36, stratified 12 / 12 / 12 across GO / WAIT / SKIP, sampled from real
+archived Bengaluru conditions rather than invented.
+
+## Two scoring layers
+
+**Machine checks** — reproducible, no judge. **Blind rubric** — five subjective
+dimensions, 0–2 each, one briefing per judge call, anonymised and shuffled so the
+judge cannot compare two outputs in the same context.
+
+## Machine checks, 36 cases each
+
+| check | template | gemma |
+|---|---|---|
+| length ≤ 120 words | **1.000** | **1.000** |
+| mean words | 51.0 | 44.3 |
+| longest output | 70 | 70 |
+| hallucinated park | **0.000** | **0.000** |
+| safety caveat present | **1.000** | **1.000** |
+| cites the NAQI figure | **1.000** | **1.000** |
+| forbidden terms (fall colours, medical claims) | **0.000** | **0.000** |
+| SKIP tone correct (n=12) | 0.833 | 0.833 |
+| GO tone correct (n=12) | 1.000 | 1.000 |
+| latency p50 | **3 ms** | 51,730 ms |
+| latency p95 | **6 ms** | 115,187 ms |
+
+Zero hallucinated parks and zero forbidden terms across 72 briefings. Both
+writers also pass every safety-requirement check on every case, which is the
+post-generation safety pass doing its job — the model is not trusted to comply.
+
+## Why the aggregate rates below are misleading
+
+| | template | gemma |
+|---|---|---|
+| names the given park (aggregate) | 0.722 | 0.639 |
+| — on GO cases (n=12) | **1.000** | 0.833 |
+| — on WAIT cases (n=12) | **1.000** | 0.750 |
+| — on SKIP cases (n=12) | 0.167 | 0.333 |
+
+A briefing that correctly tells someone to **stay in** does not need to name a
+park or give a time window. Pooling those cases makes the template writer look
+like it forgot the park name 28% of the time when it named it in **100%** of the
+cases where naming a park is the right thing to do. The harness now reports every
+rate per decision for exactly this reason.
+
+## Blind rubric (out of 10)
+
+| | template | gemma |
+|---|---|---|
+| GO (n=12) | 10.00 | 10.00 |
+| WAIT (n=12) | 9.67 | 9.67 |
+| SKIP (n=12) | **9.83** | 8.92 |
+| all cases | **9.83** | 9.53 |
+
+The harness runs a `rubric_health` check that refuses to publish a rubric score
+if every decision received a single identical score — the signature of a judge
+reading the label instead of the writing. See failure 9 for how that check earned
+its place.
+
+### The honest reading: the template writer won
+
+The deterministic local writer **scored higher than Gemma (9.83 vs 9.53)**, was
+more consistent about naming the specified park (100% vs 83% on GO cases), and
+was about **17,000× faster** (3 ms vs 51.7 s at p50).
+
+That is why Baahar ships the template writer as the default and treats the model
+as an optional upgrade. It is not the outcome I expected when I wrote the eval,
+and the eval is what changed the product.
+
+Two caveats so this is not over-read:
+
+- **The rubric is saturated.** Scores run 8.92–10.00 across 72 briefings, so it
+  distinguishes a broken briefing from a good one and does almost nothing to
+  rank good briefings against each other. A 0.3-point gap between two writers is
+  well inside that noise. Treat the rubric as a *safety net*, not a leaderboard.
+- **The p95 of 115 s is the real cost.** On the Gemini free tier, open-weight
+  Gemma 4 emits a long reasoning trace that `thinkingConfig.thinkingBudget`
+  cannot disable (the API returns *"Thinking budget is not supported for this
+  model"*), so the trace is paid for in output tokens. Measured traces: 2.2k
+  characters for `gemma-4-31b-it`, 5.7k for `gemma-4-26b-a4b-it`. A user who
+  asked "can I go for a walk?" will not wait a minute and a half for a paragraph.
 
 ---
 
@@ -276,7 +361,53 @@ document. It is now an empty configuration value that refuses loudly.
 **This cost the Tinker prize category, and it was the right trade.** See
 [`../docs/adr/001-tinker-outcome.md`](../docs/adr/001-tinker-outcome.md).
 
-### 8. `apply_band_policy` was fed the wrong hour's weather
+### 9. The rubric was scoring the decision label, not the writing
+
+The first complete briefing run reported **3.43/10 for the template writer** and
+3.33/10 for Gemma — near-identical, both terrible, and *both* far below the 10/10
+the same writer had scored on an earlier 8-case GO-only smoke test.
+
+The cause was in my own rubric prompt:
+
+> *"A briefing that recommends going outside when the CONDITIONS line says the
+> decision is BAD must score 0 on every dimension."*
+
+The judge took that as "any non-GO decision scores 0", so the results came back
+perfectly bimodal:
+
+| decision | template | gemma |
+|---|---|---|
+| GO (n=12) | 10, 10, 10, 10, … | 10, 10, 10, 10, … |
+| WAIT (n=12) | 0 × 12 | 0 × 12 |
+| SKIP (n=12) | 0 × 12 | 0 × 12 |
+
+Every GO case scored exactly 10. Every non-GO case scored exactly 0. **The rubric
+was reporting the decision label.** The briefing for a SKIP case — *"Stay in
+today. 3.4 mm rain in the hour. Air is NAQI 95 (satisfactory). No walk worth the
+trouble"* — is well written and was scored 0/10.
+
+Two fixes, both permanent:
+
+1. The rubric now says to grade the **writing**, and states that a briefing
+   saying "stay in" is *well written and should score normally*; only a briefing
+   that encourages a walk in bad conditions scores 0. A sensory cue is not
+   applicable to a "stay in" briefing and counts as a pass.
+2. `rubric_health()` fails the harness when every decision receives a single
+   identical score with a large spread between decisions — the exact signature
+   of this bug. It reports `ok: scores vary within decisions` on the fixed run.
+
+Re-judging the *same 72 briefings* with the corrected rubric moved the template
+writer from **3.43 → 9.83** and Gemma from **3.33 → 9.53**, with variation
+*within* each decision, which is what a working rubric looks like.
+
+`--rescore` was added for this: regenerating 36 Gemma briefings costs ~30
+minutes, and the texts do not change when the rubric does.
+
+This is the third time the eval harness caught itself rather than the product.
+The first two were a truncation bug that shipped `"Head to Cub"` and a judge that
+returned confident zeros. Both looked like findings.
+
+### 10. Two metrics were diluted by design, not by failure
 
 The safety metrics apply the policy using **hour-*t*** precipitation and
 temperature rather than hour-*t+6*, because the dataset does not store the target
@@ -298,5 +429,8 @@ Stated so the gaps are visible rather than inferred.
 | TabPFN | Licence gate. See above. |
 | Fine-tuned vs baseline briefings | Tinker API unverifiable; endpoint deliberately not invented. |
 | Field test | Not performed. No human has walked with Baahar. Not fabricated. |
-| Multi-seed variance | Runs used `--repeat 1`; per-run values are in `raw/`, sd is `null`. |
-| A deployed end-to-end latency figure | `/api/brief` with the Gemma writer is 40–95 s (measured); the template writer is 3 ms. A hosted p95 is **SKIPPED** — nothing is deployed. |
+| Multi-seed variance | Tabular runs used `--repeat 1`; per-run values are in `raw/`, sd is `null`. |
+| Rubric discrimination | Scores run 8.92–10.00 across 72 briefings. The rubric catches a broken briefing and does almost nothing to rank good ones. |
+| Voice output quality | ElevenLabs implemented, never called. No audio was generated or assessed. |
+| A deployed end-to-end latency figure | `/api/brief` with the Gemma writer is 51.7 s p50 / 115.2 s p95 (measured, 36 calls); the template writer is 3 ms / 6 ms. A *hosted* p95 is **SKIPPED** — nothing is deployed. |
+| Whether any of this changed behaviour | Only a human can say whether a briefing got someone outside. That is the field test, and it has not happened. |

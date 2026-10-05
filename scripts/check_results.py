@@ -64,6 +64,21 @@ def newest(pattern: str) -> Path | None:
     return candidates[-1] if candidates else None
 
 
+def newest_excluding(pattern: str, skip_fragments: set[str]) -> Path | None:
+    """Newest match, ignoring runs that were known not to be publishable.
+
+    A `--no-judge` run produces an artifact with the right texts but no rubric
+    scores. It is the newest file on disk but it is not the run being published,
+    so picking it blindly would make the briefing check pass vacuously.
+    """
+    candidates = [
+        p
+        for p in sorted(RAW.glob(pattern), key=lambda p: p.stat().st_mtime)
+        if not any(frag in p.name for frag in skip_fragments)
+    ]
+    return candidates[-1] if candidates else None
+
+
 def parse_tables(text: str) -> list[list[list[str]]]:
     """Every markdown table in the document, as lists of cell lists."""
     tables: list[list[list[str]]] = []
@@ -241,9 +256,74 @@ def check_skip_causes(md: str, raw_path: Path, out: Problem) -> None:
             )
 
 
+def check_briefings(md: str, raw_path: Path | None, out: Problem) -> None:
+    """Cross-check the briefing tables against the briefing artifact."""
+    if raw_path is None:
+        return
+    payload = json.loads(raw_path.read_text(encoding="utf-8"))
+    summary = payload.get("summary")
+    if not summary:
+        out.add("briefings: artifact has no summary block")
+        return
+
+    # RESULTS.md compares "template" against "gemma".
+    wanted = [w for w in ("template", "gemma") if w in summary]
+    if not wanted:
+        out.add("briefings: artifact has neither a template nor a gemma summary")
+        return
+
+    checked = 0
+    for writer in wanted:
+        stats = summary[writer]
+
+        # The briefing figures are quoted as bare numbers in both documents, so
+        # this check is "does this exact figure appear in RESULTS.md" rather than
+        # a cell-by-cell table comparison. That is deliberately weaker than the
+        # tabular check: it catches transcription slips, not missing rows.
+        p50 = stats.get("latency_ms_p50")
+        p95 = stats.get("latency_ms_p95")
+        if p50 is not None:
+            token = f"{p50:,}"
+            if token in md:
+                checked += 1
+            else:
+                out.add(f"briefings {writer}: latency p50 {token} does not appear in RESULTS.md")
+        if p95 is not None:
+            token = f"{p95:,}"
+            if token in md:
+                checked += 1
+            else:
+                out.add(f"briefings {writer}: latency p95 {token} does not appear in RESULTS.md")
+
+        rubric = stats.get("rubric_mean_all")
+        if rubric is not None:
+            token = f"{rubric:.2f}"
+            if token in md:
+                checked += 1
+            else:
+                out.add(f"briefings {writer}: rubric mean {token} does not appear in RESULTS.md")
+
+        if stats.get("hallucinated_park_rate") not in (0.0, None):
+            out.add(
+                f"briefings {writer}: hallucinated_park_rate is "
+                f"{stats['hallucinated_park_rate']}, which RESULTS.md must not call zero"
+            )
+
+    health = payload.get("rubric_health") or {}
+    for writer, h in health.items():
+        if h.get("verdict", "ok").startswith("SUSPECT"):
+            out.add(f"briefings {writer}: rubric_health says {h['verdict']}")
+    if health:
+        out.add("briefings: rubric_health reports no degenerate rubric", ok=True)
+
+    if checked:
+        out.add(f"briefings: verified {checked} figures against {raw_path.name}", ok=True)
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--tabular", default=None, help="explicit gono_*.json file name")
+    ap.add_argument("--briefings", default=None, help="explicit briefing_*.json file name")
     ap.add_argument("--md", default=str(RESULTS))
     args = ap.parse_args(argv)
 
@@ -253,6 +333,11 @@ def main(argv: list[str] | None = None) -> int:
     md = md_path.read_text(encoding="utf-8")
 
     raw_path = RAW / Path(args.tabular).name if args.tabular else newest("gono_*.json")
+    brief_path = (
+        RAW / Path(args.briefings).name
+        if args.briefings
+        else newest_excluding("briefing_*.json", {"050410"})
+    )
     out = Problem()
     if raw_path is None:
         out.add("no eval/raw/gono_*.json artifact found; run scripts/run_eval.py")
@@ -260,6 +345,13 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     for check in (check_dataset, check_tabular, check_skip_causes):
+        check(md, raw_path, out)
+    try:
+        check_briefings(md, brief_path, out)
+    except Exception as exc:  # noqa: BLE001
+        out.add(f"check_briefings raised {type(exc).__name__}: {exc}")
+
+    for _ in ():
         try:
             check(md, raw_path, out)
         except Exception as exc:  # noqa: BLE001
