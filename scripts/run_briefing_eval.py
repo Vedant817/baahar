@@ -61,7 +61,9 @@ from build_briefing_cases import FORBIDDEN, OTHER_PARKS  # noqa: E402
 IST = timezone(timedelta(hours=5, minutes=30))
 BASE_HOUR = 6
 
-WINDOW_RE = re.compile(r"\b([01]?\d|2[0-3]):([0-5]\d)\s*(?:-|–|—|to)\s*([01]?\d|2[0-3]):([0-5]\d)\b")
+WINDOW_RE = re.compile(
+    r"\b([01]?\d|2[0-3]):([0-5]\d)\s*(?:-|–|—|to)\s*([01]?\d|2[0-3]):([0-5]\d)\b"
+)
 NUMBER_RE = re.compile(r"\b\d{1,3}\b")
 
 CAVEAT_MARKERS = (
@@ -81,7 +83,16 @@ CAVEAT_MARKERS = (
     "air right now",
 )
 
-SKIP_MARKERS = ("stay in", "don't go", "do not go", "skip", "wait", "indoors", "not going", "stay inside")
+SKIP_MARKERS = (
+    "stay in",
+    "don't go",
+    "do not go",
+    "skip",
+    "wait",
+    "indoors",
+    "not going",
+    "stay inside",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -106,7 +117,8 @@ def plan_from_case(case: dict) -> tuple[OutdoorPlan, object]:
         pm25=pm25,
         pm10=round(pm25 * 1.9, 1),
         naqi=round(float(ctx["naqi"]), 1),
-        naqi_band=ctx["band"] or (band_for_index(ctx["naqi"]).value if band_for_index(ctx["naqi"]) else None),
+        naqi_band=ctx["band"]
+        or (band_for_index(ctx["naqi"]).value if band_for_index(ctx["naqi"]) else None),
         naqi_band_label=(ctx["band"] or "").capitalize() or None,
         dominant_pollutant="pm25",
         dominant_label="PM2.5",
@@ -178,9 +190,13 @@ def machine_checks(case: dict, text: str, decision: str) -> dict:
     forbidden_hits = [f for f in FORBIDDEN if f in lowered]
     other_parks = [p for p in OTHER_PARKS if p != case["context"]["park"] and p.lower() in lowered]
     has_caveat = any(m in lowered for m in CAVEAT_MARKERS)
-    cites_number = bool(re.search(rf"\b(?:naqi|aqi)\b[^.]{{0,20}}\b{NUMBER_RE.pattern[2:-2]}", lowered))
+    cites_number = bool(
+        re.search(rf"\b(?:naqi|aqi)\b[^.]{{0,20}}\b{NUMBER_RE.pattern[2:-2]}", lowered)
+    )
     if not cites_number:
-        cites_number = bool(re.search(rf"\b{NUMBER_RE.pattern[2:-2]}\b[^.]{{0,20}}\b(?:naqi|aqi)\b", lowered))
+        cites_number = bool(
+            re.search(rf"\b{NUMBER_RE.pattern[2:-2]}\b[^.]{{0,20}}\b(?:naqi|aqi)\b", lowered)
+        )
     mentions_naqi_value = str(int(round(case["context"]["naqi"]))) in lowered
 
     checks = {
@@ -200,7 +216,9 @@ def machine_checks(case: dict, text: str, decision: str) -> dict:
         checks["skip_tone_correct"] = any(m in lowered for m in SKIP_MARKERS)
     elif decision == "GO":
         # A GO brief must not be discouraging.
-        checks["go_tone_correct"] = not any(m in lowered for m in ("stay in", "do not go", "don't go"))
+        checks["go_tone_correct"] = not any(
+            m in lowered for m in ("stay in", "do not go", "don't go")
+        )
     return checks
 
 
@@ -238,7 +256,9 @@ def aggregate(runs: list[dict]) -> dict:
         "skip_tone_correct_rate": rate_filtered("skip_tone_correct", "SKIP"),
         "go_tone_correct_rate": rate_filtered("go_tone_correct", "GO"),
         "latency_ms_p50": int(statistics.median(lat)) if lat else None,
-        "latency_ms_p95": int(sorted(lat)[min(len(lat) - 1, int(0.95 * len(lat)))]) if lat else None,
+        "latency_ms_p95": int(sorted(lat)[min(len(lat) - 1, int(0.95 * len(lat)))])
+        if lat
+        else None,
     }
 
 
@@ -292,6 +312,7 @@ def resolve_judge_model(force: str | None = None) -> str | None:
             print(f"  judge: {name} -> {type(exc).__name__}", file=sys.stderr)
         time.sleep(1.5)
     return None
+
 
 RUBRIC = """You are grading ONE short outdoor park briefing for a Bengaluru app.
 
@@ -393,12 +414,12 @@ def _judge_one(item: dict) -> dict | None:
 
     ctx = item["context"]
     block = (
-        f'CONDITIONS: {ctx["decision"]} decision, {ctx["band"]} air '
-        f'(Indian NAQI {ctx["naqi"]:.0f}), {ctx["temp_c"]:.0f}C feeling like '
-        f'{ctx["apparent_c"]:.0f}C, '
-        f'{ctx["precip_prob"] if ctx["precip_prob"] is not None else "?"}% rain chance, '
-        f'park = {ctx["park"]}.\n'
-        f'BRIEFING: {item["text"]}'
+        f"CONDITIONS: {ctx['decision']} decision, {ctx['band']} air "
+        f"(Indian NAQI {ctx['naqi']:.0f}), {ctx['temp_c']:.0f}C feeling like "
+        f"{ctx['apparent_c']:.0f}C, "
+        f"{ctx['precip_prob'] if ctx['precip_prob'] is not None else '?'}% rain chance, "
+        f"park = {ctx['park']}.\n"
+        f"BRIEFING: {item['text']}"
     )
 
     payload = {
@@ -546,7 +567,9 @@ def main(argv: list[str] | None = None) -> int:
                 flag += " FORBIDDEN"
             if checks["skip_tone_correct"] is False:
                 flag += " SKIP-TONE"
-            print(f"  [{i:2}/{len(cases)}] {case['id']:<14} {checks['word_count']:>3}w {latency:>6}ms{flag}")
+            print(
+                f"  [{i:2}/{len(cases)}] {case['id']:<14} {checks['word_count']:>3}w {latency:>6}ms{flag}"
+            )
         print()
 
     # Blind judging: flatten, anonymise, shuffle.
@@ -580,7 +603,6 @@ def main(argv: list[str] | None = None) -> int:
             got = sum(1 for s in results if s is not None)
             print(f"   {start + len(batch):>3}/{len(flat)} judged ({got}/{len(batch)} ok)")
 
-
     # Attach and summarise.
     for w in writers:
         for rec in outputs[w]:
@@ -599,8 +621,18 @@ def main(argv: list[str] | None = None) -> int:
             agg["rubric_n"] = len(rubric_scores)
             agg["rubric_max"] = 10
             per_dim = {}
-            for dim in ("actionable_time", "place_specificity", "safety_caveat", "length", "sensory_cue"):
-                vals = [r["rubric"][dim] for r in rows if r.get("rubric") and r["rubric"].get(dim) is not None]
+            for dim in (
+                "actionable_time",
+                "place_specificity",
+                "safety_caveat",
+                "length",
+                "sensory_cue",
+            ):
+                vals = [
+                    r["rubric"][dim]
+                    for r in rows
+                    if r.get("rubric") and r["rubric"].get(dim) is not None
+                ]
                 per_dim[dim] = round(statistics.mean(vals), 2) if vals else None
             agg["rubric_per_dimension"] = per_dim
         summary[w] = agg

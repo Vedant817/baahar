@@ -227,7 +227,9 @@ def write_template(plan: OutdoorPlan, **kwargs: Any) -> str:
     if ctx["decision"] == Decision.SKIP.value:
         reason = (ctx.get("safety_reasons") or ["conditions are poor"])[0]
         air_txt = (
-            f" Air is NAQI {air['naqi']:.0f} ({air['band']})." if air.get("naqi") is not None else ""
+            f" Air is NAQI {air['naqi']:.0f} ({air['band']})."
+            if air.get("naqi") is not None
+            else ""
         )
         return (
             f"Stay in today. {reason}.{air_txt} No walk worth the trouble -- "
@@ -236,11 +238,7 @@ def write_template(plan: OutdoorPlan, **kwargs: Any) -> str:
         )
 
     window = _fmt_window(ctx)
-    lead = (
-        f"Hold off until {window}."
-        if ctx["decision"] == Decision.WAIT
-        else f"Go at {window}."
-    )
+    lead = f"Hold off until {window}." if ctx["decision"] == Decision.WAIT else f"Go at {window}."
 
     air_bits = ""
     if air.get("naqi") is not None:
@@ -349,8 +347,7 @@ def _extract_gemini_text(data: Any) -> tuple[str, str]:
     if not answer:
         if any(isinstance(p, dict) and p.get("thought") for p in parts):
             raise UpstreamError(
-                "Gemini returned only a reasoning part and no answer "
-                "(raise maxOutputTokens)"
+                "Gemini returned only a reasoning part and no answer (raise maxOutputTokens)"
             )
         block = data.get("promptFeedback", {}).get("blockReason")
         raise UpstreamError(f"Gemini returned an empty answer (blockReason={block})")
@@ -568,11 +565,7 @@ def enforce_safety(text: str, plan: OutdoorPlan, park: Park | None = None) -> st
 
     if not _has_caveat(text):
         slot = plan.best_slot
-        if (
-            slot is not None
-            and slot.air.naqi is not None
-            and not _has_numeric_caveat(text)
-        ):
+        if slot is not None and slot.air.naqi is not None and not _has_numeric_caveat(text):
             band = (slot.air.naqi_band or "").lower()
             text = (
                 f"{text.rstrip()} Air right now is Indian NAQI "
@@ -819,7 +812,9 @@ def generate(
         chosen = writer
         if chosen == "gemma" and not settings.has_gemini:
             note_parts.append("No GEMINI_API_KEY; used the local template writer.")
-            return finish(write_template(plan, park=park, notice_this=notice_this), "template", note_parts[0])
+            return finish(
+                write_template(plan, park=park, notice_this=notice_this), "template", note_parts[0]
+            )
         if chosen == "tinker":
             if not settings.has_tinker:
                 note_parts.append(

@@ -107,10 +107,7 @@ def tabpfn_available() -> tuple[bool, str]:
     except ImportError as exc:
         return False, f"not installed ({exc.name or exc})"
     if not get_settings().has_tabpfn_license:
-        return False, (
-            "Prior Labs licence not accepted. Set TABPFN_TOKEN in .env -- see "
-            "docs/NEEDS_HUMAN.md"
-        )
+        return False, "Prior Labs licence not accepted (TABPFN_TOKEN unset)"
     return True, "installed and licensed"
 
 
@@ -170,9 +167,7 @@ def _to_decision(label: str) -> Decision:
         return Decision.WAIT
 
 
-def score_tabpfn(
-    slots: Sequence[HourSlot], model: Any | None = None
-) -> list[SlotScore]:
+def score_tabpfn(slots: Sequence[HourSlot], model: Any | None = None) -> list[SlotScore]:
     """Score hours with TabPFN, falling back per-hour to the heuristic.
 
     If the model is not fitted and no cached artifact exists, every hour falls
@@ -269,7 +264,9 @@ def save_tabpfn_model(model: Any, path: Any | None = None) -> str:
 # ---------------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------------
-def choose_scorer(requested: str = "auto", *, fit_on: Sequence[Any] | None = None) -> tuple[str, str]:
+def choose_scorer(
+    requested: str = "auto", *, fit_on: Sequence[Any] | None = None
+) -> tuple[str, str]:
     """Resolve a scorer request into ``(scorer_name, note)``.
 
     ``auto`` prefers tabpfn when it is importable *and* we have rows to fit on,
@@ -278,28 +275,34 @@ def choose_scorer(requested: str = "auto", *, fit_on: Sequence[Any] | None = Non
     requested = (requested or "auto").lower()
     available, reason = tabpfn_available()
 
+    # `tabpfn_available` reports *what* is wrong. The *fix* is only worth showing
+    # when the user actually asked for TabPFN, so it lives here and not in the
+    # reason -- otherwise the auto-mode notice on every run reads like a build
+    # error in a product that is working fine.
+    fix = (
+        "Register at https://ux.priorlabs.ai, accept the licence, then set "
+        "TABPFN_TOKEN in .env. See docs/NEEDS_HUMAN.md."
+        if "licence" in reason
+        else "Run `uv sync --group dev --group ml` to add it."
+    )
+
     if requested == "heuristic":
         return "heuristic", "Heuristic policy requested explicitly."
     if requested == "tabpfn":
         if not available:
-            return (
-                "heuristic",
-                f"TabPFN requested but {reason}. Run `uv sync --group dev --group ml` to add it.",
-            )
+            return "heuristic", f"TabPFN requested but {reason}. {fix}"
         return "tabpfn", "TabPFN requested and available."
     # auto
     if available and fit_on:
         return "tabpfn", "TabPFN available and fitted on recorded data."
     if not available:
-        return (
-            "heuristic",
-            f"TabPFN {reason}; using the documented policy instead. "
-            "Add it with `uv sync --group dev --group ml`.",
-        )
+        return "heuristic", f"TabPFN {reason}; using the documented policy."
     return "heuristic", "TabPFN available but no training rows yet; using the policy."
 
 
-def score_slots(slots: Sequence[HourSlot], scorer: str = "auto") -> tuple[list[SlotScore], str, str]:
+def score_slots(
+    slots: Sequence[HourSlot], scorer: str = "auto"
+) -> tuple[list[SlotScore], str, str]:
     """Score slots with the chosen scorer. Returns ``(scores, scorer, note)``."""
     name, note = choose_scorer(scorer)
     if name == "tabpfn":

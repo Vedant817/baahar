@@ -274,8 +274,8 @@ def comfort_from_features(features: dict[str, float]) -> float:
         heat_component = max(0.0, min(100.0, 100.0 - max(0.0, apparent - 24.0) * 6.0))
 
     precip = features.get("precip_mm")
-    precip_component = 100.0 if precip is None or math.isnan(precip) else max(
-        0.0, 100.0 - precip * 25.0
+    precip_component = (
+        100.0 if precip is None or math.isnan(precip) else max(0.0, 100.0 - precip * 25.0)
     )
 
     return round(0.55 * air_component + 0.3 * heat_component + 0.15 * precip_component, 1)

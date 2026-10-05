@@ -80,7 +80,11 @@ def build_cases(per_decision: int, seed: int) -> list[dict]:
     if not rows_path.exists():
         raise SystemExit(f"{rows_path} missing; run scripts/build_dataset.py first")
 
-    rows = [json.loads(line) for line in rows_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    rows = [
+        json.loads(line)
+        for line in rows_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
     rng = random.Random(seed)
 
     buckets: dict[str, list[dict]] = defaultdict(list)
@@ -112,9 +116,7 @@ def build_cases(per_decision: int, seed: int) -> list[dict]:
         for r in picked[:per_decision]:
             park = choose_park(rng, decision)
             must_include = [park]
-            must_not = [
-                p for p in OTHER_PARKS if p != park
-            ] + FORBIDDEN
+            must_not = [p for p in OTHER_PARKS if p != park] + FORBIDDEN
             dt = datetime.fromisoformat(r["time"])
             cases.append(
                 {

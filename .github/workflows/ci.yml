@@ -1,0 +1,168 @@
+name: ci
+
+# Two jobs on purpose. `verify` is the gate a PR has to pass and it must run on
+# the smallest possible dependency set, because that is what a judge will
+# install. `ml` is allowed to be slow and to pull PyTorch, so it can check the
+# TabPFN path without holding anything else up.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Fail fast on the first failing step rather than accumulating minutes of red.
+  UV_NO_PROGRESS: "1"
+
+jobs:
+  verify:
+    name: tests + lint (no PyTorch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      # No `--group ml` on purpose: this job proves the default install is fast
+      # and that Baahar works without PyTorch, which is the promise in the README.
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Format check
+        run: uv run ruff format --check .
+
+      - name: Tests (offline)
+        run: uv run pytest --cov=baahar --cov-report=term-missing
+
+      - name: CLI smoke test, no keys, no network
+        env:
+          # Belt and braces: these make a leaked key or a live call impossible.
+          BAAHAR_OFFLINE: "1"
+          GEMINI_API_KEY: ""
+        run: |
+          uv run baahar check
+          uv run baahar brief --city Bengaluru --offline --model template
+          uv run baahar score --offline --json | head -40
+          uv run baahar parks --limit 3
+
+      - name: Verify no secrets are committed
+        run: |
+          if git ls-files | grep -qE '^\.env$'; then
+            echo "::error::.env is tracked in git"
+            exit 1
+          fi
+          # Look for anything shaped like a credential in tracked files.
+          if git grep -nIE '(gho_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{30,}|sk-[A-Za-z0-9]{32,})' -- \
+               ':!*.lock' ':!.github/*' ; then
+            echo "::error::possible secret found in tracked files"
+            exit 1
+          fi
+          echo "no secrets detected"
+
+  ml:
+    name: TabPFN path (PyTorch, slow)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install with the heavy ML group
+        run: uv sync --group dev --group ml
+
+      - name: Confirm the TabPFN adapter degrades honestly
+        # Without a licence token this must return a *reason*, not a traceback,
+        # and must not claim a scorer it did not use.
+        run: |
+          uv run python - <<'PY'
+          from baahar.score import tabpfn_available, choose_scorer
+
+          available, reason = tabpfn_available()
+          name, note = choose_scorer("tabpfn")
+          print(f"tabpfn available={available} reason={reason}")
+          print(f"choose_scorer('tabpfn') -> {name}: {note}")
+
+          assert name in {"heuristic", "tabpfn"}, name
+          if not available:
+              assert note, "an unavailable TabPFN must explain itself"
+              assert name == "heuristic"
+          print("OK")
+          PY
+
+      - name: Tests with numpy available
+        run: uv run pytest -m "not ml"
+
+  ui:
+    name: Pocket Mode layout audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install Python dependencies
+        run: |
+          uv python install 3.12
+          uv sync --group dev
+
+      - name: Serve Baahar with recorded fixtures
+        env:
+          BAAHAR_OFFLINE: "1"
+          GEMINI_API_KEY: ""
+        run: |
+          nohup uv run baahar serve --port 8000 > server.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8000/api/health > /dev/null; then
+              echo "server up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::server never came up"
+          cat server.log
+          exit 1
+
+      # Headless Chrome is preinstalled on ubuntu-latest, so scripts/ui_check.mjs
+      # needs no npm install. It fails the build on console errors, horizontal
+      # overflow, or a screen that should have been dismissed.
+      - name: Screenshot every screen and audit the layout
+        run: node scripts/ui_check.mjs --out artifacts
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pocket-mode-screenshots
+          path: artifacts/*.png
+          if-no-files-found: ignore

@@ -158,7 +158,9 @@ class TestHallucination:
         assert "Lalbagh Botanical Garden" in out
 
     def test_snow_is_stripped_from_an_october_plan(self, go_plan) -> None:
-        out = _ground_park_names("Go at 06:00. Watch the snow fall on the trees. NAQI 18.", go_plan.park)
+        out = _ground_park_names(
+            "Go at 06:00. Watch the snow fall on the trees. NAQI 18.", go_plan.park
+        )
         assert "snow" not in out.lower()
 
 
@@ -299,7 +301,10 @@ class TestGeminiResponseParsing:
         """Previously this silently shipped the model's notes as the briefing."""
         payload = {
             "candidates": [
-                {"content": {"parts": [{"text": "thinking...", "thought": True}]}, "finishReason": "MAX_TOKENS"}
+                {
+                    "content": {"parts": [{"text": "thinking...", "thought": True}]},
+                    "finishReason": "MAX_TOKENS",
+                }
             ]
         }
         with pytest.raises(Exception, match="reasoning part"):
@@ -311,7 +316,9 @@ class TestGeminiResponseParsing:
 
     def test_truncation_is_reported(self) -> None:
         payload = {
-            "candidates": [{"content": {"parts": [{"text": "partial"}]}, "finishReason": "MAX_TOKENS"}]
+            "candidates": [
+                {"content": {"parts": [{"text": "partial"}]}, "finishReason": "MAX_TOKENS"}
+            ]
         }
         _, finish = _extract_gemini_text(payload)
         assert finish == "MAX_TOKENS"

@@ -248,6 +248,7 @@ def slice_from_now[T: _HasTime](
         return future[:hours]
     return list(items[:hours])
 
+
 SKIP_COPY = {
     Decision.SKIP: "Stay in. Baahar is not sending you out in this.",
     Decision.WAIT: "Not yet -- but there is a window coming.",

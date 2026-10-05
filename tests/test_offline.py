@@ -120,7 +120,14 @@ class TestParsing:
         hours = parse_air(payload)
         scored = [h for h in hours if h.naqi is not None]
         assert scored
-        assert scored[0].naqi_band in {"good", "satisfactory", "moderate", "poor", "severe", "hazardous"}
+        assert scored[0].naqi_band in {
+            "good",
+            "satisfactory",
+            "moderate",
+            "poor",
+            "severe",
+            "hazardous",
+        }
 
     def test_nulls_parse_to_none_not_zero(self) -> None:
         payload = {
@@ -170,9 +177,7 @@ class TestJoin:
         assert not notes
         assert all(s.air.naqi is not None for s in slots)
 
-    def test_slot_time_mirrors_weather_time(
-        self, make_weather_fixture, make_air_fixture
-    ) -> None:
+    def test_slot_time_mirrors_weather_time(self, make_weather_fixture, make_air_fixture) -> None:
         w, a = make_weather_fixture(5), make_air_fixture(5)
         slot = join_slots([w], [a])[0][0]
         assert slot.time == w.time == a.time

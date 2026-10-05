@@ -53,9 +53,7 @@ def nearest_parks(
 ) -> list[Park]:
     """Parks closest to a point, optionally capped at ``max_km``."""
     parks = load_parks()
-    ranked = sorted(
-        parks, key=lambda p: haversine_km(lat, lon, p.lat, p.lon)
-    )
+    ranked = sorted(parks, key=lambda p: haversine_km(lat, lon, p.lat, p.lon))
     if max_km is not None:
         ranked = [p for p in ranked if haversine_km(lat, lon, p.lat, p.lon) <= max_km]
     return ranked[:limit]
@@ -99,9 +97,7 @@ def pick_park(
     if not shade_preferred:
         return candidates[0]
 
-    by_distance = sorted(
-        candidates, key=lambda p: (p.shade != "high", distance_to(lat, lon, p))
-    )
+    by_distance = sorted(candidates, key=lambda p: (p.shade != "high", distance_to(lat, lon, p)))
     # Only prefer shade if it is not a wild detour.
     best_any = by_distance[0]
     for park in by_distance:

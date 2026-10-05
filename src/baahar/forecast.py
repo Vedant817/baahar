@@ -26,9 +26,7 @@ from .weather import fetch_weather
 log = logging.getLogger(__name__)
 
 
-def join_slots(
-    weather: Sequence, air: Sequence
-) -> tuple[list[HourSlot], list[str]]:
+def join_slots(weather: Sequence, air: Sequence) -> tuple[list[HourSlot], list[str]]:
     """Join weather and air hours on timestamp.
 
     Returns the joined slots plus a list of human-readable notes about anything

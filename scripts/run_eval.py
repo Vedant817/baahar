@@ -198,12 +198,16 @@ def safety_metrics(y_true_band: list[int], y_pred_band: list[int], rows: list[di
         pred_dec.append(p_dec)
 
     n_true_skip = sum(1 for d in true_dec if d == "SKIP")
-    skip_as_go = sum(1 for t, p in zip(true_dec, pred_dec, strict=True) if t == "SKIP" and p == "GO")
+    skip_as_go = sum(
+        1 for t, p in zip(true_dec, pred_dec, strict=True) if t == "SKIP" and p == "GO"
+    )
     skip_as_skip = sum(
         1 for t, p in zip(true_dec, pred_dec, strict=True) if t == "SKIP" and p == "SKIP"
     )
     n_true_go = sum(1 for d in true_dec if d == "GO")
-    go_as_skip = sum(1 for t, p in zip(true_dec, pred_dec, strict=True) if t == "GO" and p == "SKIP")
+    go_as_skip = sum(
+        1 for t, p in zip(true_dec, pred_dec, strict=True) if t == "GO" and p == "SKIP"
+    )
 
     lo, hi = wilson(skip_as_go, n_true_skip)
     return {
@@ -221,12 +225,7 @@ def safety_metrics(y_true_band: list[int], y_pred_band: list[int], rows: list[di
             k=3,
         ),
         "decision_accuracy": round(
-            sum(
-                1
-                for t, p in zip(true_dec, pred_dec, strict=True)
-                if t == p
-            )
-            / len(true_dec),
+            sum(1 for t, p in zip(true_dec, pred_dec, strict=True) if t == p) / len(true_dec),
             4,
         )
         if true_dec
@@ -241,7 +240,9 @@ def safety_metrics(y_true_band: list[int], y_pred_band: list[int], rows: list[di
 # ---------------------------------------------------------------------------
 # models
 # ---------------------------------------------------------------------------
-def fit_predict(name: str, x_train, y_train, x_test, medians, seed: int = 0) -> tuple[list[int], float, str]:
+def fit_predict(
+    name: str, x_train, y_train, x_test, medians, seed: int = 0
+) -> tuple[list[int], float, str]:
     """Return ``(predictions, fit_seconds, note)``. Raises to signal SKIPPED."""
     t0 = time.perf_counter()
 
@@ -250,7 +251,11 @@ def fit_predict(name: str, x_train, y_train, x_test, medians, seed: int = 0) -> 
 
         counts = np.bincount(y_train, minlength=6)
         majority = int(counts.argmax())
-        return [majority] * len(x_test), time.perf_counter() - t0, "always predicts the training majority"
+        return (
+            [majority] * len(x_test),
+            time.perf_counter() - t0,
+            "always predicts the training majority",
+        )
 
     if name == "persistence":
         # Band(t) -> band(t+6) is literally "predict the current band".
@@ -395,7 +400,9 @@ def main(argv: list[str] | None = None) -> int:
                     elapsed = time.perf_counter() - t0
                     note = "predict band(t) as band(t+6)"
                 else:
-                    preds, elapsed, note = fit_predict(name, x_train, y_train, x_test, medians, seed)
+                    preds, elapsed, note = fit_predict(
+                        name, x_train, y_train, x_test, medians, seed
+                    )
             except RuntimeError as exc:
                 skipped_reason = str(exc)
                 break

@@ -134,7 +134,9 @@ class TestScoring:
         assert plan.headline
 
     def test_fixture_sources_are_surfaced_as_degraded(self, go_slot: HourSlot) -> None:
-        plan = build_plan([go_slot], weather_source=DataSource.FIXTURE, air_source=DataSource.FIXTURE)
+        plan = build_plan(
+            [go_slot], weather_source=DataSource.FIXTURE, air_source=DataSource.FIXTURE
+        )
         assert any("fixture" in d for d in plan.degraded)
 
     def test_empty_window_does_not_crash(self) -> None:
@@ -172,6 +174,14 @@ class TestScorerSelection:
         available, reason = tabpfn_available()
         if not available:
             assert ("not installed" in reason) or ("licence" in reason.lower())
+
+    def test_auto_mode_note_stays_short_and_user_facing(self, go_slot) -> None:
+        """`auto` did not ask for TabPFN, so no install command in the UI."""
+        name, note = choose_scorer("auto")
+        if name == "heuristic":
+            assert "uv sync" not in note, note
+            assert "NEEDS_HUMAN" not in note, "auto mode must not read like a build error"
+            assert len(note) < 110, note
 
     def test_score_slots_never_raises(self, go_slot: HourSlot) -> None:
         scores, name, note = score_slots([go_slot], "tabpfn")
@@ -234,12 +244,15 @@ class TestFeatures:
         import math
 
         late = features_from_slot(slot(0))
-        late["hour_sin"], late["hour_cos"] = math.sin(2 * math.pi * 23 / 24), math.cos(
-            2 * math.pi * 23 / 24
+        late["hour_sin"], late["hour_cos"] = (
+            math.sin(2 * math.pi * 23 / 24),
+            math.cos(2 * math.pi * 23 / 24),
         )
         midnight = features_from_slot(slot(0))
         midnight["hour_sin"], midnight["hour_cos"] = 0.0, 1.0
-        distance = math.hypot(late["hour_sin"] - midnight["hour_sin"], late["hour_cos"] - midnight["hour_cos"])
+        distance = math.hypot(
+            late["hour_sin"] - midnight["hour_sin"], late["hour_cos"] - midnight["hour_cos"]
+        )
         assert distance < 0.3, "23:00 and 00:00 should be close in feature space"
 
     def test_missing_values_are_nan_not_zero(self, missing_air_slot: HourSlot) -> None:

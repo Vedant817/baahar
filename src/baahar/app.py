@@ -89,10 +89,7 @@ def api_brief(
         log.warning("/api/brief could not load a forecast: %s", exc)
         raise HTTPException(
             status_code=503,
-            detail=(
-                "Could not reach Open-Meteo and no recorded fixture is available. "
-                f"({exc})"
-            ),
+            detail=(f"Could not reach Open-Meteo and no recorded fixture is available. ({exc})"),
         ) from exc
 
     chosen = parks_mod.park_by_id(park) if park else None
@@ -146,9 +143,7 @@ def api_score(
         hours=hours,
         offline=None,
     )
-    plan = score_mod.build_plan(
-        slots, scorer=scorer, weather_source=wsrc, air_source=asrc
-    )
+    plan = score_mod.build_plan(slots, scorer=scorer, weather_source=wsrc, air_source=asrc)
     return plan.model_dump(mode="json")
 
 
@@ -167,7 +162,9 @@ def api_parks(
                 **p.model_dump(mode="json"),
                 "distance_km": round(parks_mod.distance_to(target_lat, target_lon, p), 2),
             }
-            for p in parks_mod.nearest_parks(target_lat, target_lon, limit=len(parks_mod.load_parks()))
+            for p in parks_mod.nearest_parks(
+                target_lat, target_lon, limit=len(parks_mod.load_parks())
+            )
         ],
     }
 

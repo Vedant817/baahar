@@ -172,7 +172,11 @@ def main(argv: list[str] | None = None) -> int:
     if not rows_path.exists():
         raise SystemExit(f"{rows_path} missing; run scripts/build_dataset.py first")
 
-    rows = [json.loads(line) for line in rows_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    rows = [
+        json.loads(line)
+        for line in rows_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
     cutoff = holdout_start()
     if cutoff:
         rows = [r for r in rows if r["time"][:10] <= cutoff]
@@ -181,9 +185,7 @@ def main(argv: list[str] | None = None) -> int:
     rng = random.Random(args.seed)
     buckets: dict[str, list[dict]] = defaultdict(list)
     for r in rows:
-        decision = apply_band_policy(
-            r["band"], r["precip_mm"], r["precip_prob"], r["apparent_c"]
-        )
+        decision = apply_band_policy(r["band"], r["precip_mm"], r["precip_prob"], r["apparent_c"])
         r = dict(r)
         r["decision"] = decision
         buckets[decision].append(r)
@@ -245,8 +247,10 @@ def main(argv: list[str] | None = None) -> int:
     for decision, count in sorted(counts.items()):
         print(f"  {decision:<6} {count}")
     print(f"  mean target words {sum(words) / max(1, len(words)):.1f}")
-    print(f"  NAQI range {min(e['meta']['naqi'] for e in examples):.0f}.."
-          f"{max(e['meta']['naqi'] for e in examples):.0f}")
+    print(
+        f"  NAQI range {min(e['meta']['naqi'] for e in examples):.0f}.."
+        f"{max(e['meta']['naqi'] for e in examples):.0f}"
+    )
 
     # A train/val split so a held-out sample is visible without an extra run.
     val_n = max(1, len(examples) // 10)

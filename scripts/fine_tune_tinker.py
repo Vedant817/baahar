@@ -51,9 +51,7 @@ def load_jsonl(path: Path) -> list[dict]:
     if not path.exists():
         return []
     return [
-        json.loads(line)
-        for line in path.read_text(encoding="utf-8").splitlines()
-        if line.strip()
+        json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
     ]
 
 
@@ -88,9 +86,7 @@ def post_json(url: str, payload: dict, api_key: str, timeout: float = 120) -> di
     import httpx
 
     with httpx.Client(timeout=timeout) as client:
-        resp = client.post(
-            url, json=payload, headers={"Authorization": f"Bearer {api_key}"}
-        )
+        resp = client.post(url, json=payload, headers={"Authorization": f"Bearer {api_key}"})
     if resp.status_code >= 400:
         raise UpstreamError(f"HTTP {resp.status_code}: {resp.text[:300]}")
     return resp.json()
@@ -122,7 +118,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  dataset            {all_ex and len(all_ex) or 0} examples")
     print(f"  train / val        {len(train)} / {len(val)}")
     print(f"  TINKER_API_KEY     {'present' if settings.has_tinker else 'MISSING'}")
-    print(f"  TINKER_SAMPLE_URL  {'configured' if os.getenv('TINKER_SAMPLE_URL') else 'not configured'}")
+    print(
+        f"  TINKER_SAMPLE_URL  {'configured' if os.getenv('TINKER_SAMPLE_URL') else 'not configured'}"
+    )
 
     from collections import Counter
 
@@ -174,7 +172,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.status:
         if not args.status_url_template:
-            print("\n--status requires --status-url-template from the Tinker docs.", file=sys.stderr)
+            print(
+                "\n--status requires --status-url-template from the Tinker docs.", file=sys.stderr
+            )
             return 2
         for attempt in range(args.poll_max):
             url = args.status_url_template.format(job_id=args.status)

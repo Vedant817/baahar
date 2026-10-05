@@ -78,7 +78,9 @@ def _build(
         weather_source=wsrc,
         air_source=asrc,
     )
-    pocket = pocket_mod.build_pocket(plan, walk_minutes=pocket_mod.ensure_walk_minutes(walk_minutes))
+    pocket = pocket_mod.build_pocket(
+        plan, walk_minutes=pocket_mod.ensure_walk_minutes(walk_minutes)
+    )
     briefing = brief_mod.generate(
         plan, writer=writer, park=park, voice=voice, notice_this=pocket.notice_this
     )

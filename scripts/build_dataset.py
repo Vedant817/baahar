@@ -136,7 +136,9 @@ def fetch_series(url: str, params: dict, cache_name: str, *, force: bool) -> dic
     return payload
 
 
-def apply_band_policy(band: str | None, precip_mm: float, precip_prob: float, apparent_c: float) -> str:
+def apply_band_policy(
+    band: str | None, precip_mm: float, precip_prob: float, apparent_c: float
+) -> str:
     """Map a predicted NAQI band plus weather to GO / WAIT / SKIP.
 
     This is the same policy the product uses, expressed on the *predicted* band

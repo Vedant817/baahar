@@ -136,9 +136,7 @@ def thunder_slot() -> HourSlot:
 
 @pytest.fixture
 def night_slot() -> HourSlot:
-    return make_slot(
-        0, temp_c=20.0, apparent_c=20.0, pm25=15.0, pm10=25.0, is_day=0
-    )
+    return make_slot(0, temp_c=20.0, apparent_c=20.0, pm25=15.0, pm10=25.0, is_day=0)
 
 
 @pytest.fixture
