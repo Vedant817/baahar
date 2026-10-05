@@ -8,6 +8,8 @@ rain — speaks a ~30-second park briefing written by an open model — and then
 
 Built for the [DEV Hacktoberfest Open-Source AI Challenge, Week 1: Touch Grass](https://dev.to/challenges/hacktoberfest-week1-2026-10-05).
 
+![The decision, the briefing, and the park](docs/media/02-brief.png)
+
 ---
 
 ## Why this exists
@@ -81,6 +83,16 @@ Open the web UI (this is the part that matters — Pocket Mode):
 
 ```bash
 uv run baahar serve         # http://127.0.0.1:8000
+```
+
+![Pocket Mode: one instruction, a timer, no scroll](docs/media/03-pocket.png)
+
+Regenerate those screenshots yourself, with a layout audit that fails on console
+errors or horizontal overflow:
+
+```bash
+uv run baahar serve &
+node scripts/ui_check.mjs --out docs/media
 ```
 
 ### Add the TabPFN tabular model (optional)

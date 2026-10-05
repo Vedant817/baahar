@@ -54,7 +54,7 @@ from datetime import datetime
 from pathlib import Path
 
 from baahar.config import EVAL_DATA_DIR, EVAL_RAW_DIR, get_settings
-from baahar.features import BAND_ORDINALS
+from baahar.features import BAND_ORDINALS, NAQI_SKIP, PRECIP_SKIP_MM
 
 sys.path.insert(0, str(Path(__file__).parent))
 from build_dataset import apply_band_policy  # noqa: E402
@@ -184,18 +184,42 @@ def safety_metrics(y_true_band: list[int], y_pred_band: list[int], rows: list[di
 
     skip_as_go_rate is the headline: of the hours a human should have been told to
     stay in, how often did Baahar tell them to go for a walk?
+
+    Also breaks down *why* an hour was a SKIP. This turned out to matter a lot:
+    the holdout window contains no Severe or Hazardous air hours at all, so
+    every SKIP in the test set is caused by heat or rain, not by pollution.
+    Reporting skip_as_go_rate without that breakdown would imply the metric was
+    testing air-quality safety when it was not.
     """
     true_dec, pred_dec = [], []
+    causes = Counter()
     for tb, pb, row in zip(y_true_band, y_pred_band, rows, strict=True):
         t_band = BANDS[tb] if 0 <= tb < len(BANDS) else None
         p_band = BANDS[pb] if 0 <= pb < len(BANDS) else None
-        # Use the target hour's own weather so the policy sees what a real plan
-        # would have. We do not store it per-row, so approximate with hour t's
-        # weather and note the approximation in the results file.
+        # Use the hour-t weather the row carries. That is an approximation for
+        # the +6h target hour and is recorded as such in the output.
         t_dec = apply_band_policy(t_band, row["precip_mm"], row["precip_prob"], row["apparent_c"])
         p_dec = apply_band_policy(p_band, row["precip_mm"], row["precip_prob"], row["apparent_c"])
         true_dec.append(t_dec)
         pred_dec.append(p_dec)
+
+        if t_dec == "SKIP":
+            from baahar.naqi import band_index_range
+
+            low, _ = band_index_range(t_band)
+            air_bad = low >= NAQI_SKIP
+            heat_bad = row["apparent_c"] is not None and row["apparent_c"] >= 35
+            rain_bad = (row["precip_mm"] or 0) >= PRECIP_SKIP_MM or (row["precip_prob"] or 0) >= 70
+            reasons = [
+                name
+                for name, active in (
+                    ("air", air_bad),
+                    ("heat", heat_bad),
+                    ("rain", rain_bad),
+                )
+                if active
+            ]
+            causes["+".join(reasons) if reasons else "unknown"] += 1
 
     n_true_skip = sum(1 for d in true_dec if d == "SKIP")
     skip_as_go = sum(
@@ -230,6 +254,12 @@ def safety_metrics(y_true_band: list[int], y_pred_band: list[int], rows: list[di
         )
         if true_dec
         else None,
+        "skip_cause_breakdown": dict(causes),
+        "skip_cause_note": (
+            "Which signal put each true-SKIP hour into SKIP. Read this before "
+            "interpreting skip_as_go_rate: if 'air' is absent, the metric is "
+            "measuring heat and rain handling, not air-quality safety."
+        ),
         "_policy_approximation": (
             "apply_band_policy was fed hour-t weather rather than hour-t+6 weather; "
             "the dataset does not store the target hour's weather separately."
@@ -346,6 +376,17 @@ def package_versions() -> dict:
     return out
 
 
+def holdout_support(rows: list[dict]) -> dict:
+    """Per-class support in the holdout, including classes with zero rows.
+
+    Explicitly reporting the zero-support classes matters: a macro-F1 that
+    silently averages over only the classes that happen to be present reads as
+    broader coverage than it is.
+    """
+    counts = Counter(r["target_band"] for r in rows)
+    return {band: {"n": counts.get(band, 0), "present": counts.get(band, 0) > 0} for band in BANDS}
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--rows", default=str(EVAL_DATA_DIR / "gono_rows.jsonl"))
@@ -459,6 +500,8 @@ def main(argv: list[str] | None = None) -> int:
                     "go_as_skip_rate",
                     "decision_confusion",
                     "decision_accuracy",
+                    "skip_cause_breakdown",
+                    "skip_cause_note",
                     "_policy_approximation",
                 )
             },
@@ -473,6 +516,16 @@ def main(argv: list[str] | None = None) -> int:
             f"skip_as_go={s['skip_as_go_rate']} (n={s['n_true_skip']}, "
             f"95% CI {s['skip_as_go_wilson95']})  decision_acc={s['decision_accuracy']}"
         )
+
+    absent = [b for b, v in holdout_support(test_rows).items() if not v["present"]]
+    if absent:
+        print(f"\n! no holdout rows for: {', '.join(absent)}")
+        print("  macro-F1 therefore averages over fewer than 6 classes, and those")
+        print("  bands are not validated by this run at all.")
+    print("\nwhy each true-SKIP hour was a SKIP:")
+    for model, r in results.items():
+        if r.get("status") == "OK" and r["safety"].get("skip_cause_breakdown"):
+            print(f"  {model:<12} {r['safety']['skip_cause_breakdown']}")
 
     EVAL_RAW_DIR.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now().astimezone().strftime("%Y%m%dT%H%M%S%z")
@@ -492,6 +545,10 @@ def main(argv: list[str] | None = None) -> int:
             "split": f"chronological, last {args.holdout:.0%} held out",
             "feature_columns": FEATURE_COLUMNS,
             "classes": BANDS,
+            "test_band_support": holdout_support(test_rows),
+            "absent_from_holdout": [
+                b for b, v in holdout_support(test_rows).items() if not v["present"]
+            ],
         },
         "keys_present": get_settings().which_keys(),
         "versions": package_versions(),

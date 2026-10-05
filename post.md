@@ -1,0 +1,407 @@
+<!--
+┌──────────────────────────────────────────────────────────────────────────┐
+│  DEV POST DRAFT — Baahar · Hacktoberfest Week 1: Touch Grass              │
+│                                                                          │
+│  This file is a draft written to be EDITED, not defended.                │
+│                                                                          │
+│  Before publishing:                                                      │
+│    1. Fill every  ⟨FILL: …⟩  marker. Nothing ships with one in it.        │
+│    2. Run the field test (docs/FIELD_TEST.md) and replace section 7.      │
+│    3. Re-check the prize categories in section 8 against what ACTUALLY ran.│
+│    4. Rewrite the opening in your own voice. It is the weakest part of    │
+│       this file because it is the most generic.                          │
+│                                                                          │
+│  Numbers come from eval/RESULTS.md and eval/raw/. Do not retype a figure  │
+│  that is not in there.                                                   │
+└──────────────────────────────────────────────────────────────────────────┘
+-->
+
+# Baahar (बाहर): I built an agent whose success metric is me leaving the house
+
+**Touch Grass · Week 1 · Open-source AI that gets you off the screen**
+
+![Baahar: the decision, the briefing, the park](docs/media/02-brief.png)
+
+It is 2am. I am building something. I open a weather app: 38°C. I open a map app:
+the air is fine here. I open another: stay inside. Fifteen minutes later I have
+resolved a question that should have taken twenty seconds, and I have not left
+the desk.
+
+Fifteen minutes is the problem. Not the weather app.
+
+So I built **Baahar** (बाहर — *outside*). It finds Bengaluru's **next safe outdoor
+hour** from air quality, heat and rain, speaks a **~30-second park briefing**,
+and then **turns the screen off** so you actually go outside.
+
+There is no feed. No streak. No badge. Nothing to come back to. The success
+metric is that you leave.
+
+<!-- TODO: replace with your own opener. -->
+
+---
+
+## What it actually does
+
+```bash
+uv run baahar brief
+```
+
+```
+  GO  Go at 06:00.
+
+  time   call  comfort  NAQI   feels  why
+  06:00  GO         88    63  20/23°  NAQI 63, feels like 23 C.
+  07:00  GO         86    70  22/25°  NAQI 70, feels like 25 C.
+  08:00  GO         79    86  24/27°  NAQI 86, feels like 27 C.
+  09:00  GO         70   120  25/28°  NAQI 120, feels like 28 C.
+  10:00  WAIT       57   166  26/31°  Feels like 31 C.
+  ...
+  14:00  SKIP       54   148  24/29°  2.9 mm rain in the hour.
+```
+
+Then the briefing:
+
+> Go at 06:00-07:00. Air is clean enough (NAQI 74). It is 20C but feels like
+> 23C. Head to Cubbon Park. Canopy first. Once you are out: Listen for the first
+> two birds, then ignore the traffic. Pocket the phone and let it be boring for
+> twenty minutes.
+
+And then this:
+
+![Pocket Mode](docs/media/03-pocket.png)
+
+Near-black. One instruction. A timer. **You cannot scroll.** If you did nothing
+else, Baahar drops you in here after 45 seconds with a countdown you can cancel —
+because a UI that hijacks the screen instantly feels hostile rather than helpful.
+
+The whole product is three screens and one API call. I have added more screens to
+more projects than I can count, and this is the first one where the goal was to
+*remove* surface area.
+
+---
+
+## The part I did not expect to care about: which air quality index
+
+Open-Meteo gives you `us_aqi` — the **US EPA** scale. India has its own index:
+different breakpoints, different averaging periods, different band names.
+
+Most projects would print that number and call it AQI. Baahar recomputes the
+**Indian NAQI** from raw pollutant concentrations using the CPCB 2014
+sub-index breakpoints — eight pollutants, and the overall index is the **worst**
+sub-index, not an average.
+
+There is a catch I want to be upfront about, because it is the kind of thing that
+makes a number quietly wrong:
+
+> CPCB's breakpoints are defined on **24-hour mean** concentrations. Open-Meteo
+> publishes **hourly** values. So Baahar's number is an *approximation of*
+> official NAQI, not official NAQI.
+
+Rather than hide that, every single result carries its provenance as data:
+
+```
+naqi_basis = "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+```
+
+It shows up in the API, in the UI, and in the source of every eval artifact. A
+clearly-labelled approximation is honest. A mislabelled number is not, and I would
+rather ship a caveat that looks clumsy than a confident wrong number.
+
+A related bug I only caught by writing tests: **CPCB expresses CO in mg/m³ and
+Open-Meteo reports µg/m³.** Without a ÷1000, a perfectly plausible 2,000 µg/m³
+reading becomes 2,000 mg/m³ and saturates the index at 500. Both the conversion
+and the regression it would have caused are pinned in `test_naqi.py`.
+
+---
+
+## Why open matters for *this* problem
+
+**1. The decision is a classification over six public numbers.** "Is it safe to
+walk?" is not a vibe. It is a tabular question with a published standard behind
+it. That is exactly the shape of problem where you want an inspectable model and
+a published confusion matrix — not a black-box "wellness score" that cannot show
+you its mistakes.
+
+**2. The safety number is the one that counts.** Not accuracy. Look at this:
+
+> `skip_as_go_rate` — of the hours a human should have been told to stay in, how
+> often did Baahar tell them to go for a walk?
+
+A go/no-go classifier that is 94% accurate but walks you out on the three worst
+air days of the quarter is worse than useless. Baahar's safety argument is that
+number, and it publishes it *with a confidence interval*, because the honest
+sample size is small.
+
+**3. Fine-tune and swap.** The briefing model is a swappable component. A hosted
+Tinker LoRA on Indian outdoor language, plain Gemma, or a local open weight — the
+product does not change.
+
+**4. Cost, which turns out to be the real enabler.** Open-Meteo is keyless. Gemma's
+free tier needs no card. There is no paid account anywhere in this stack. That is
+the only reason a solo first-time builder could ship this in five days.
+
+**5. Privacy by default.** Location stays at city granularity. There is no GPS
+history and no account, because a tool whose job is to get you away from the
+screen should not be building a record of where you went.
+
+**6. Open used to reduce screen time.** The interesting engineering problem was
+never "how do we add another surface". It was "how little screen can this survive
+on".
+
+---
+
+## How it works
+
+```
+   weather.py ──┐
+                ├─→ forecast.py ─→ features.py ─→ score.py ─→ brief.py ─→ Pocket Mode
+   air.py ──────┘   (join on        (tabular      (TabPFN or   (Gemma /      (near-black,
+   naqi.py            timestamp)      features +    heuristic)    template)     timer, one
+   (CPCB NAQI)                       documented                   + safety     instruction)
+                                     policy)                       repair)
+```
+
+Three decisions in here that I would defend:
+
+**The safety rule is code, not a model output.** `features.py` owns the policy
+that turns conditions into GO/WAIT/SKIP, with every threshold stated in one place
+and anchored to CPCB's own category edges. The model only has to predict
+something *physical* — the future NAQI band. The boring, auditable part stays
+code.
+
+**Safety asymmetry.** When the learned model is active, a prediction that is
+*less* strict than the policy is discarded in favour of the policy. The model may
+talk you *out* of a walk. It may never talk you *into* bad air. One comparison in
+`score.py`, covered by a test with a deliberately adversarial stub model.
+
+**Safety is repaired after generation, not requested in a prompt.** The prompt
+*asks* for an air-quality caveat. A prompt is a suggestion. `enforce_safety()`
+runs on whatever comes back and fixes what is actually missing — appends a real
+NAQI figure, strips "guaranteed safe"-style hedging, and if the plan says SKIP
+but the text sounds encouraging, **throws the text away**.
+
+---
+
+## Evals
+
+I deliberately avoided the standard trap here. The easy version of this task is:
+define labels with a rule, train a model to reproduce that rule, report the
+accuracy, and act surprised. So instead the task is a real **next-step
+prediction**:
+
+> Given what was known at hour *t*, predict the CPCB NAQI **band six hours
+> ahead** — where the target comes from an independent reading of that future
+> hour.
+
+Features are hour-*t* only. The split is **chronological**, never shuffled,
+because air quality is strongly autocorrelated and a shuffle leaks neighbouring
+hours across the boundary and inflates everything.
+
+Data: **8,130 hourly rows**, Bengaluru, 2025-11-01 → 2026-10-05, from Open-Meteo's
+CAMS air-quality and ERA5 weather archives. Both keyless. Both free.
+
+I extended the window into winter deliberately. A June–October window gave only
+**33 SKIP hours**, which makes the safety metric meaningless. Winter adds the
+genuinely bad-air days.
+
+### Go / no-go, predicting band +6h
+
+Holdout: last 20% chronologically — 1,626 rows, 2026-07-30 → 2026-10-05.
+
+| model | accuracy | macro-F1 | skip_as_go | n(SKIP) |
+|---|---|---|---|---|
+| majority class | 0.4047 | 0.1441 | 0.0 | 24 |
+| persistence (band at *t*) | 0.4760 | 0.3106 | 0.0 | 24 |
+| logistic regression | 0.7306 | 0.4845 | 0.0 | 24 |
+| random forest | 0.8272 | 0.5685 | 0.0 | 24 |
+| **gradient boosting** | **0.8395** | **0.5897** | **0.0** | **24** |
+| TabPFN | *SKIPPED — see below* | | | |
+
+**Read that table honestly: gradient boosting won.** TabPFN did not run, so I am
+not going to pretend it did — see the next section. And notice the safety column
+is `0.0` for everything, including the majority-class baseline that predicts a
+single band. That is not a triumph of modelling; it is a consequence of the
+decision rule being *hard* — if the predicted band is not Severe and the heat and
+rain are fine, the answer is GO or WAIT regardless. The band classification is
+where the real work is, and that is where the accuracy numbers live.
+
+I included the `n(SKIP)` column because 24 is a small number, and a bare rate on
+24 cases would be misleading. Wilson 95% interval: **[0.000, 0.138]**. In plain
+English: no model ever talked a user into a hazardous hour in this sample, but
+"never" here means "not in 24 tries".
+
+Full per-class precision/recall, the confusion matrices, package versions and
+timestamps are in [`eval/RESULTS.md`](eval/RESULTS.md) and
+[`eval/raw/`](eval/raw/).
+
+### Briefings
+
+36 cases, stratified 12/12/12 across GO/WAIT/SKIP, sampled from **real archived
+Bengaluru conditions** rather than invented. Two scoring layers, because "is this
+a good outdoor cue" cannot be regexed and "is this under 120 words" should not be
+judged by an LLM:
+
+- **Machine checks**: length compliance, concrete time window, correct park named,
+  hallucinated park, safety caveat, NAQI figure present, forbidden terms,
+  SKIP/GO tone consistency.
+- **Blind rubric**: five subjective dimensions, 0–2 each, judged by
+  `gemini-2.5-flash` — deliberately *not* a Gemma model, so Gemma is not grading
+  its own homework. One briefing per judge call, anonymised and shuffled, so the
+  judge cannot compare two outputs in the same context.
+
+<!-- FILL: paste the briefing comparison table from eval/RESULTS.md -->
+
+---
+
+## What I got wrong (the useful part)
+
+**A model shipped its own instructions as the briefing.** Gemma 4 returns a
+reasoning part marked `"thought": true` *before* the answer. I read `parts[0]`.
+So the first version of the product greeted users with a verbatim restatement of
+my system prompt. Found it because I read the output. Fixed by skipping thought
+parts; pinned by a test.
+
+**The safety caveat deleted itself.** `enforce_safety` stripped medical hedging
+and then appended a disclaimer containing the phrase *"not medical advice"*. Same
+run: added, then deleted. Reordered the passes.
+
+**My eval was silently measuring nothing.** The blind judge was handed a rubric
+whose JSON example used a placeholder `id` on the line immediately above a
+paragraph starting with the word `BANNED`. It copied the id from the wrong line
+and returned a confident **0** for every dimension. A benchmark that scores zero
+looks like a result. I only noticed because the template writer — which passes
+every machine check — was scoring 0.
+
+**A park name duplicated itself.** Grounding "Lalbagh" in a briefing for
+*"Lalbagh Botanical Garden"* produced *"Lalbagh Botanical Garden Botanical
+Garden"*.
+
+**The loading spinner never went away.** An author `display: grid` rule outranks
+the browser's `[hidden] { display: none }`, so the spinner stayed painted
+underneath the finished brief. Found by screenshotting the UI rather than
+trusting that it worked.
+
+**I invented an API.** I could not reach Tinker's documentation, and
+`brief.py` contained a plausible-looking endpoint I had guessed. I deleted it.
+Shipping a fabricated integration would have 404'd in front of a judge, made the
+repo *look* like it had a Tinker integration that had never run, and contradicted
+the honesty rule governing every other number here. It is now an empty
+configuration value that refuses loudly. See
+[`docs/adr/001-tinker-outcome.md`](docs/adr/001-tinker-outcome.md).
+
+That last one cost me the Tinker prize category. I would rather lose a category
+than win it with code I know is fake.
+
+### Things I did not finish, plainly
+
+- **No field test.** ⟨FILL: section 7, or state honestly that the walk has not
+  happened. `docs/FIELD_TEST.md` says NOT YET DONE. Do not imply otherwise.⟩
+- **TabPFN never ran.** `tabpfn==9.1.0` refuses to download weights until a Prior
+  Labs licence acceptance is recorded, *even though the weights are public on
+  Hugging Face* — I verified `gated=False`. That is a licence gate, not a
+  technical one, so I did not route around it. The code path is implemented and
+  tested; `uv run python scripts/run_eval.py` reports it as `SKIPPED` with the
+  three steps to unblock.
+- **Gemma is slow.** Measured **40–95 seconds** per briefing, because the Gemma 4
+  reasoning trace cannot be disabled on these models — the API returns
+  *"Thinking budget is not supported for this model."* That is why Baahar ships a
+  deterministic template writer as the default fast path (**3 ms**) and caches
+  model output. I would rather have a fast boring answer than a good slow one.
+- **Not deployed.** Local run plus a recorded walk, which the brief accepts.
+
+---
+
+## The field test
+
+<!-- FILL: from docs/FIELD_TEST.md, or delete this section and say the walk has not happened. -->
+
+---
+
+## Prize categories
+
+Listing only what actually ran, because that is the rule and because the
+alternative would undermine every number above.
+
+| Category | Entering? | Why |
+|---|---|---|
+| **Best Use of Gemma** | ✅ | `gemma-4-31b-it` generated and evaluated every model briefing. Open-weight model at the core of the product. |
+| **Best Use of TabPFN** | ❌ | Code complete, **never executed** — blocked by a licence acceptance. Not claiming it. |
+| **Best Use of Tinker** | ❌ | Fine-tuning dataset built (219 balanced examples), **run not performed** — API unverifiable. Not claiming it. |
+| **Best Use of Render** | ❌ | Not deployed. |
+| **Best Use of ElevenLabs** | ❌ | Client implemented, never called. |
+| **Overall / completion** | ✅ | New, working, open-source project with published evals. |
+
+---
+
+## Try it
+
+```bash
+git clone https://github.com/Vedant817/baahar.git
+cd baahar
+uv sync --group dev
+uv run baahar brief          # live data, no API key, no card
+uv run baahar serve          # then tap "Pocket the phone"
+```
+
+Works with **zero keys and no network** — recorded fixtures ship in the repo.
+Add the TabPFN tabular model only if you want it:
+
+```bash
+uv sync --group dev --group ml
+```
+
+That separation is deliberate: PyTorch is ~2.5 GB, and a judge who just wants to
+read a briefing should not pay for a model they did not ask for. The heuristic
+scorer is a real fallback with a real test suite, not a stub.
+
+- **MIT licensed.** [`LICENSE`](https://github.com/Vedant817/baahar/blob/main/LICENSE)
+- **140 tests pass offline.** `uv run pytest`
+- **CI** runs lint, format, tests, an offline CLI smoke test, a secret scan, and a
+  headless-Chrome layout audit of all three screens.
+- **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- **Sources and verification dates:** [`docs/SOURCES.md`](docs/SOURCES.md)
+- **Every number above:** [`eval/RESULTS.md`](eval/RESULTS.md), raw JSON in `eval/raw/`
+
+---
+
+## What's next
+
+A lot, and none of it is "add a feed".
+
+1. **Run the field test** and find out whether I actually pocket the phone.
+2. **Get the TabPFN licence accepted** and run the number for real. The
+   conventional baselines are strong enough that TabPFN has to earn its place.
+3. **Finish the Tinker fine-tune** — the 219-example dataset exists; the reason is
+   a missing API URL, not a missing idea. The fine-tune's target is stylistic:
+   prose instead of a restated plan, Indian outdoor vocabulary, a firmer SKIP
+   register.
+4. **Make the SKIP decision feel better.** Right now Baahar tells you not to go
+   and leaves it there. The honest, non-preachy version of "go outside *later*,
+   here is the hour" is the unsolved design problem.
+5. **More cities**, but only ones with a published national air quality index I
+   can compute honestly. I do not want to ship a US AQI number wearing an Indian
+   label, and that principle should generalise.
+
+---
+
+## What Baahar is not
+
+- **Not a medical device.** Informational outdoor planning only.
+- **Not a replacement for the official CPCB advisory.** It reads public forecast
+  data, not the official monitoring network, and it tells you when it is working
+  from a fallback.
+- **Not a wellness score.** It will refuse to give you a green light in
+  conditions that do not warrant one.
+- **Not deployed, not benchmarked against a proprietary model, and not
+  field-tested yet.** All three are stated above rather than implied away.
+
+---
+
+**Data and attribution**
+
+Weather and air quality by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0).
+Indian NAQI computed with CPCB 2014 sub-index breakpoints. Park data curated by
+hand from [OpenStreetMap](https://www.openstreetmap.org) (ODbL). Built by
+[Vedant Mahajan](https://github.com/Vedant817) as a first open-source project.
+
+`#devchallenge` `#hf26challenge`

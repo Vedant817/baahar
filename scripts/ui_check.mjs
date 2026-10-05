@@ -38,10 +38,35 @@ const OUT = arg('out', 'docs/media');
 const BASE = arg('url', 'http://127.0.0.1:8000/');
 
 const SHOTS = [
-  { name: '01-ask', url: BASE, settle: 1200 },
-  { name: '02-brief', url: `${BASE}?auto=1&model=template`, settle: 9000 },
-  { name: '03-pocket', url: `${BASE}?model=template#pocket`, settle: 9000 },
+  { name: '01-ask', url: BASE, ready: 'screen-ask', wait: 1200 },
+  { name: '02-brief', url: `${BASE}?auto=1&model=template`, ready: 'brief-body', wait: 30000 },
+  { name: '03-pocket', url: `${BASE}?model=template#pocket`, ready: 'screen-pocket', wait: 30000 },
 ];
+
+/* Poll for a screen to actually render instead of sleeping a fixed amount.
+ * A fixed delay is a race: it passed on a quiet machine and failed while an
+ * eval was running in parallel, which is exactly the kind of flake that makes a
+ * CI check worthless. */
+async function waitForRender(send, id, budgetMs) {
+  const deadline = Date.now() + budgetMs;
+  let last = null;
+  while (Date.now() < deadline) {
+    const probe = await send('Runtime.evaluate', {
+      returnByValue: true,
+      expression: `(() => {
+        const el = document.getElementById(${JSON.stringify(id)});
+        if (!el) return 'absent';
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden') return 'not-rendered';
+        return el.getBoundingClientRect().height > 0 ? 'VISIBLE' : 'zero-height';
+      })()`,
+    });
+    last = probe.result.value;
+    if (last === 'VISIBLE') return { ok: true, waited: true, state: last };
+    await sleep(250);
+  }
+  return { ok: false, waited: true, state: last };
+}
 
 function findChrome() {
   const override = arg('chrome', '');
@@ -123,7 +148,8 @@ async function main() {
 
   for (const shot of SHOTS) {
     await send('Page.navigate', { url: shot.url });
-    await sleep(shot.settle);
+    const ready = await waitForRender(send, shot.ready, shot.wait);
+    await sleep(400); // let fonts/layout settle before capture
 
     // Layout audit: overflow, hidden-attribute violations, missing text.
     const audit = await send('Runtime.evaluate', {
@@ -174,9 +200,16 @@ async function main() {
     const path = `${OUT}/${shot.name}.png`;
     writeFileSync(path, Buffer.from(png.data, 'base64'));
 
-    results.push({ shot: shot.name, ...audit.result.value, file: path });
+    results.push({
+      shot: shot.name,
+      ...audit.result.value,
+      waitedFor: shot.ready,
+      readyState: ready.state,
+      file: path,
+    });
     console.log(`\n▸ ${shot.name}`);
     console.log(`  file            ${path}`);
+    console.log(`  waited for      ${shot.ready} -> ${ready.state}`);
     console.log(`  scrollWidth     ${audit.result.value.scrollWidth} (viewport ${audit.result.value.clientWidth})`);
     console.log(`  overflow        ${audit.result.value.overflow}px`);
     if (audit.result.value.offenders.length) {
