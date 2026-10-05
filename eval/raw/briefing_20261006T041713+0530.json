@@ -1,0 +1,101 @@
+{
+  "run_at": "2026-10-06T04:17:13.287726+05:30",
+  "n_cases": 2,
+  "writers_requested": [
+    "template"
+  ],
+  "keys_present": {
+    "gemini": true,
+    "tinker": false,
+    "tabpfn_license": false,
+    "tabpfn_api": false,
+    "elevenlabs": false,
+    "waqi": false
+  },
+  "judge_model": "gemini-3.5-flash-lite",
+  "judge_candidates": [
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-3.5-flash-lite",
+    "gemini-flash-latest"
+  ],
+  "judge_is_blind": true,
+  "judge_is_same_family_as_subject": false,
+  "rubric": {
+    "dimensions": [
+      "actionable_time",
+      "place_specificity",
+      "safety_caveat",
+      "length",
+      "sensory_cue"
+    ],
+    "scale": "0-2 each, 10 total"
+  },
+  "failures": [],
+  "summary": {
+    "template": {
+      "n": 2,
+      "length_compliant_rate": 1.0,
+      "mean_words": 57,
+      "max_words": 58,
+      "has_time_window_rate": 1.0,
+      "names_right_park_rate": 1.0,
+      "hallucinated_park_rate": 0.0,
+      "safety_caveat_rate": 1.0,
+      "cites_naqi_number_rate": 1.0,
+      "forbidden_term_rate": 0.0,
+      "skip_tone_correct_rate": null,
+      "go_tone_correct_rate": 1.0,
+      "latency_ms_p50": 5,
+      "latency_ms_p95": 6
+    }
+  },
+  "outputs": {
+    "template": [
+      {
+        "case_id": "go-1101-00",
+        "decision": "GO",
+        "text": "Go at 06:00-07:00. Air is clean enough (NAQI 51). It is 19C but feels like 21C. Head to Hesaraghatta Lake. A real wild patch of north Bengaluru - migratory birds in season. Once you are out: Find one thing in the park you have never noticed before. Pocket the phone and let it be boring for twenty minutes.",
+        "writer_used": "template",
+        "note": "",
+        "latency_ms": 6,
+        "checks": {
+          "length_compliant": true,
+          "word_count": 58,
+          "has_time_window": true,
+          "names_right_park": true,
+          "hallucinated_park": [],
+          "safety_caveat": true,
+          "cites_naqi_number": true,
+          "mentions_naqi_value": true,
+          "forbidden_terms": [],
+          "skip_tone_correct": null,
+          "go_tone_correct": true
+        },
+        "rubric": null
+      },
+      {
+        "case_id": "go-1101-01",
+        "decision": "GO",
+        "text": "Go at 07:00-08:00. Air is clean enough (NAQI 39). It is 19C but feels like 21C. Head to Lalbagh Botanical Garden. Glasshouse, lake, and an absurd density of labelled trees. Once you are out: Find one thing in the park you have never noticed before. Pocket the phone and let it be boring for twenty minutes.",
+        "writer_used": "template",
+        "note": "",
+        "latency_ms": 4,
+        "checks": {
+          "length_compliant": true,
+          "word_count": 56,
+          "has_time_window": true,
+          "names_right_park": true,
+          "hallucinated_park": [],
+          "safety_caveat": true,
+          "cites_naqi_number": true,
+          "mentions_naqi_value": true,
+          "forbidden_terms": [],
+          "skip_tone_correct": null,
+          "go_tone_correct": true
+        },
+        "rubric": null
+      }
+    ]
+  }
+}

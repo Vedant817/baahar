@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import random
 import re
 import statistics
@@ -470,9 +471,27 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--writers", default="template,gemma")
     ap.add_argument("--limit", type=int, default=0, help="0 = all cases")
     ap.add_argument("--no-judge", action="store_true")
-    ap.add_argument("--judge-batch", type=int, default=4)
-    ap.add_argument("--cache/--no-cache", dest="cache", action="store_true", default=False)
+    ap.add_argument(
+        "--progress-every",
+        type=int,
+        default=4,
+        help="How many items per progress line while judging.",
+    )
+    ap.add_argument(
+        "--no-cache",
+        dest="cache",
+        action="store_false",
+        default=True,
+        help="Disable the briefing cache so latency is a genuine cold measurement.",
+    )
     args = ap.parse_args(argv)
+
+    if not args.cache:
+        # The cache would otherwise serve a hit for repeat conditions and the
+        # reported p50/p95 would be a fiction.
+        os.environ["BAAHAR_CACHE"] = "0"
+        brief_mod.clear_cache()
+        get_settings.cache_clear()
 
     cases = [
         json.loads(line)
@@ -552,8 +571,8 @@ def main(argv: list[str] | None = None) -> int:
         rng.shuffle(flat)
         print(f"   {len(flat)} items, one call each")
 
-        for start in range(0, len(flat), args.judge_batch):
-            batch = flat[start : start + args.judge_batch]
+        for start in range(0, len(flat), args.progress_every):
+            batch = flat[start : start + args.progress_every]
             results = judge_batch(batch, key="blind")
             for item, score in zip(batch, results, strict=True):
                 if score is not None:
