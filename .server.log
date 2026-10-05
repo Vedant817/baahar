@@ -1,0 +1,57 @@
+Baahar serving on http://127.0.0.1:8000
+INFO:     127.0.0.1:59129 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51211 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51212 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51213 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51214 - "GET /api/brief?model=template&hours=12 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59524 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59555 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58449 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54323 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54323 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49670 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54323 - "GET /api/parks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56746 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56787 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59028 - "GET /?auto=1&model=template HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61463 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59028 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61463 - "GET /api/parks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59028 - "GET /api/brief?model=template&scorer=auto&walk_minutes=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60641 - "GET /?model=template HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60641 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57622 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57622 - "GET /api/parks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60641 - "GET /api/brief?model=template&scorer=auto&walk_minutes=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61461 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54105 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63036 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55508 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55508 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59266 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59266 - "GET /api/parks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62145 - "GET /?auto=1&model=template HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62145 - "GET /api/parks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53708 - "GET /api/brief?model=template&scorer=auto&walk_minutes=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60568 - "GET /?model=template HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60568 - "GET /static/app.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60568 - "GET /api/parks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50296 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50293 - "GET /api/brief?model=template&scorer=auto&walk_minutes=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51297 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63076 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61593 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61593 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62150 - "GET /static/app.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61593 - "GET /api/parks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56578 - "GET /?auto=1&model=template HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56578 - "GET /static/style.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56578 - "GET /api/parks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62139 - "GET /api/brief?model=template&scorer=auto&walk_minutes=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57092 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55637 - "GET /?model=template HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55637 - "GET /static/style.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:55637 - "GET /api/parks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56703 - "GET /api/brief?model=template&scorer=auto&walk_minutes=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49908 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59617 - "GET /health HTTP/1.1" 404 Not Found

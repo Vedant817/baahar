@@ -94,11 +94,8 @@ def tabpfn_available() -> tuple[bool, str]:
         import tabpfn  # noqa: F401
         from tabpfn import TabPFNClassifier  # noqa: F401
     except ImportError as exc:
-        return False, (
-            f"TabPFN not installed ({exc}). "
-            "Install with: uv sync --extra dev --extra ml"
-        )
-    return True, "tabpfn installed"
+        return False, f"not installed ({exc.name or exc})"
+    return True, "installed"
 
 
 def _resolve_labels(preds: Sequence[Any], slots: Sequence[HourSlot]) -> list[Decision]:
@@ -269,13 +266,20 @@ def choose_scorer(requested: str = "auto", *, fit_on: Sequence[Any] | None = Non
         return "heuristic", "Heuristic policy requested explicitly."
     if requested == "tabpfn":
         if not available:
-            return "heuristic", f"Requested TabPFN but {reason}"
+            return (
+                "heuristic",
+                f"TabPFN requested but {reason}. Run `uv sync --group dev --group ml` to add it.",
+            )
         return "tabpfn", "TabPFN requested and available."
     # auto
     if available and fit_on:
         return "tabpfn", "TabPFN available and fitted on recorded data."
     if not available:
-        return "heuristic", f"TabPFN unavailable ({reason}); using the policy."
+        return (
+            "heuristic",
+            f"TabPFN {reason}; using the documented policy instead. "
+            "Add it with `uv sync --group dev --group ml`.",
+        )
     return "heuristic", "TabPFN available but no training rows yet; using the policy."
 
 

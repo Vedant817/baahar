@@ -1,0 +1,428 @@
+/* Baahar — Pocket Mode UI
+ *
+ * Two deliberate constraints:
+ *  - No web fonts and no CDN. A judge on a plane must get the real product, and
+ *    a phone in a park should not be fetching assets over a weak connection.
+ *  - Pocket Mode is near-black at large type. At 6am the screen should not be
+ *    the brightest thing in your field of view.
+ */
+
+:root {
+  --bg:        #05060a;
+  --bg-raise:  #0d1017;
+  --ink:       #e8eaf0;
+  --ink-dim:   #8b93a7;
+  --line:      #1c2130;
+
+  --go:   #3ddc84;
+  --wait: #ffc857;
+  --skip: #ff6b6b;
+
+  --radius: 14px;
+  --pad: clamp(1.1rem, 4vw, 2.5rem);
+  --max: 46rem;
+
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+          Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+body { min-height: 100dvh; }
+
+.screen { min-height: 100dvh; }
+.screen[hidden] { display: none !important; }
+
+.wrap {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: var(--pad) var(--pad) calc(var(--pad) * 2);
+}
+
+/* ── screen 1 ─────────────────────────────────────────────────────────── */
+
+.eyebrow {
+  margin: 0 0 .35rem;
+  font-size: .8rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.title {
+  margin: 0 0 .8rem;
+  font-size: clamp(2.6rem, 11vw, 4.2rem);
+  line-height: .95;
+  letter-spacing: -.03em;
+  font-weight: 800;
+}
+
+.lede {
+  margin: 0 0 2rem;
+  font-size: clamp(1.05rem, 3.6vw, 1.25rem);
+  line-height: 1.55;
+  color: #c3c9d8;
+  max-width: 34ch;
+}
+
+.ask-row { margin-bottom: .9rem; }
+
+.hint {
+  margin: .6rem 0 0;
+  font-size: .85rem;
+  color: var(--ink-dim);
+  line-height: 1.5;
+}
+
+/* ── buttons ──────────────────────────────────────────────────────────── */
+
+.btn {
+  font: inherit;
+  font-weight: 650;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-raise);
+  color: var(--ink);
+  padding: .95rem 1.4rem;
+  cursor: pointer;
+  transition: transform .08s ease, background .18s ease, border-color .18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:hover:not(:disabled) { border-color: #2b3244; }
+.btn:active:not(:disabled) { transform: scale(.985); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn:focus-visible { outline: 2px solid var(--go); outline-offset: 3px; }
+
+.btn--primary { background: #f2f4f8; color: #0a0c12; border-color: transparent; }
+.btn--primary:hover:not(:disabled) { background: #ffffff; }
+
+.btn--pocket {
+  width: 100%;
+  background: #0a0c12;
+  border-color: #2b3244;
+  font-size: 1.15rem;
+  padding: 1.25rem;
+}
+
+.btn--ghost { background: transparent; }
+.btn--sm { padding: .55rem .9rem; font-size: .85rem; }
+
+/* ── options ──────────────────────────────────────────────────────────── */
+
+.fineprint { margin-top: 2rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+.fineprint summary {
+  cursor: pointer;
+  font-size: .9rem;
+  color: var(--ink-dim);
+  list-style: none;
+}
+.fineprint summary::-webkit-details-marker { display: none; }
+.fineprint summary::before { content: "▸ "; }
+.fineprint[open] summary::before { content: "▾ "; }
+
+.options {
+  display: grid;
+  gap: .85rem;
+  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+.options label {
+  display: grid;
+  gap: .35rem;
+  font-size: .8rem;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.options select, .options input {
+  font: inherit;
+  font-size: .95rem;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink);
+  background: var(--bg-raise);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: .6rem .7rem;
+  width: 100%;
+}
+
+/* ── loading ──────────────────────────────────────────────────────────── */
+
+.loading {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  padding: 3rem 0;
+}
+/* An author `display` rule outranks the UA stylesheet's `[hidden] {display:none}`,
+   so every element JS toggles via the `hidden` property needs this explicitly.
+   Without it the loading spinner stayed painted underneath the rendered brief. */
+.loading[hidden] { display: none; }
+.loading__spin {
+  width: 26px; height: 26px;
+  border: 2px solid var(--line);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  animation: spin 900ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .loading__spin { animation-duration: 3s; }
+}
+.loading p { margin: 0; }
+.loading__elapsed { color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+
+/* ── verdict ──────────────────────────────────────────────────────────── */
+
+.verdict {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.4rem 0 1.2rem;
+  border-bottom: 1px solid var(--line);
+}
+.verdict__badge {
+  font-size: 1.05rem;
+  font-weight: 850;
+  letter-spacing: .06em;
+  padding: .55rem .8rem;
+  border-radius: 10px;
+  border: 2px solid currentColor;
+  flex: none;
+}
+.verdict__badge[data-d="GO"]   { color: var(--go); }
+.verdict__badge[data-d="WAIT"] { color: var(--wait); }
+.verdict__badge[data-d="SKIP"] { color: var(--skip); }
+
+.verdict__headline { margin: 0; font-size: 1.3rem; font-weight: 700; }
+.verdict__window   { margin: .25rem 0 0; color: var(--ink-dim); font-size: .95rem; }
+
+/* ── degraded notice ──────────────────────────────────────────────────── */
+
+.degraded {
+  margin-top: 1rem;
+  padding: .8rem 1rem;
+  border: 1px solid #4a3a12;
+  background: #191305;
+  border-radius: 10px;
+  font-size: .85rem;
+  color: #ffd479;
+  line-height: 1.5;
+}
+.degraded[hidden] { display: none; }
+
+/* ── briefing ─────────────────────────────────────────────────────────── */
+
+.briefing {
+  margin: 1.6rem 0;
+  font-size: clamp(1.15rem, 4.2vw, 1.4rem);
+  line-height: 1.6;
+  letter-spacing: -.005em;
+  border: 0;
+  padding: 0;
+}
+
+/* ── signals ──────────────────────────────────────────────────────────── */
+
+.facts { margin-bottom: 1.8rem; }
+.signals {
+  list-style: none;
+  margin: 1.2rem 0;
+  padding: 0;
+  display: grid;
+  gap: .1rem;
+}
+.signals li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .5rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: .92rem;
+}
+.signals .k { color: var(--ink-dim); }
+.signals .v { font-variant-numeric: tabular-nums; text-align: right; }
+
+.hours summary {
+  cursor: pointer;
+  font-size: .9rem;
+  color: var(--ink-dim);
+  padding: .6rem 0;
+}
+.hours__scroll { overflow-x: auto; }
+.hours table { border-collapse: collapse; width: 100%; font-size: .85rem; }
+.hours td, .hours th {
+  padding: .45rem .6rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.hours th { color: var(--ink-dim); font-weight: 600; }
+.hours td.d-GO   { color: var(--go);   font-weight: 700; }
+.hours td.d-WAIT { color: var(--wait); font-weight: 700; }
+.hours td.d-SKIP { color: var(--skip); font-weight: 700; }
+
+/* ── park ─────────────────────────────────────────────────────────────── */
+
+.park {
+  margin: 1.8rem 0;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-raise);
+}
+.park h2 { margin: 0 0 .4rem; font-size: 1.15rem; }
+.park p  { margin: 0; color: #c3c9d8; line-height: 1.55; font-size: .95rem; }
+.park__note { margin-top: .5rem !important; color: var(--ink-dim) !important; font-size: .85rem !important; }
+
+.cta { margin-top: 1.6rem; }
+
+.attrib {
+  margin-top: 2.2rem;
+  font-size: .75rem;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+}
+
+/* ══════════════════ SCREEN 3: POCKET MODE ═══════════════════════════════
+ * Near-black, very large type, one instruction, one timer, and no way to
+ * scroll. If you can read this comfortably at arm's length in pre-dawn light,
+ * the job is done.
+ */
+
+.screen--pocket {
+  background: #000;
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--pad);
+  z-index: 20;
+}
+
+.pocket {
+  width: 100%;
+  max-width: 34rem;
+  text-align: center;
+  display: grid;
+  gap: clamp(1.2rem, 4vh, 2.4rem);
+}
+
+.pocket__headline {
+  margin: 0;
+  font-size: clamp(1.8rem, 8vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+  /* A little glow so the text reads on a black phone face without turning up
+     the brightness. */
+  text-shadow: 0 0 22px rgba(160, 190, 255, .18);
+}
+
+.pocket__subline {
+  margin: 0;
+  font-size: clamp(.95rem, 3.4vw, 1.1rem);
+  color: #7c849b;
+  line-height: 1.5;
+}
+
+.pocket__cue {
+  display: grid;
+  gap: .5rem;
+  padding: 1.3rem 1rem;
+  border-top: 1px solid #1b1f2a;
+  border-bottom: 1px solid #1b1f2a;
+}
+.pocket__cuelabel {
+  margin: 0;
+  font-size: .7rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: #5d6478;
+}
+.pocket__cuetext {
+  margin: 0;
+  font-size: clamp(1.15rem, 5.2vw, 1.6rem);
+  line-height: 1.4;
+  font-weight: 600;
+  color: #dfe4f0;
+}
+
+.pocket__timer { display: grid; gap: .2rem; }
+.pocket__timertext {
+  margin: 0;
+  font-size: clamp(2.6rem, 13vw, 4.4rem);
+  font-weight: 250;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+  color: #4d556b;
+}
+.pocket__timerlabel {
+  margin: 0;
+  font-size: .7rem;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: #454c5e;
+}
+
+.pocket__more, .pocket__exit {
+  font: inherit;
+  background: none;
+  border: 1px solid #1b1f2a;
+  color: #6a7286;
+  border-radius: 999px;
+  padding: .6rem 1.1rem;
+  font-size: .8rem;
+  cursor: pointer;
+  justify-self: center;
+}
+.pocket__more:hover, .pocket__exit:hover { color: #98a0b4; border-color: #262c3a; }
+.pocket__safety {
+  margin: 0;
+  font-size: .78rem;
+  color: #454c5e;
+  line-height: 1.5;
+}
+
+/* ── failsafe: the only thing shown after the walk ─────────────────────── */
+
+.failsafe {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: #000;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1rem;
+  text-align: center;
+  padding: var(--pad);
+}
+.failsafe[hidden] { display: none; }
+.failsafe p { margin: 0; color: #6a7286; max-width: 26ch; line-height: 1.6; }
+.failsafe #fs-time {
+  font-size: clamp(3rem, 18vw, 6rem);
+  font-weight: 200;
+  color: #333a4a;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sleep/wake must not reveal a bright screen mid-walk. */
+@media (prefers-reduced-motion: no-preference) {
+  .screen { animation: fade .28s ease both; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+}

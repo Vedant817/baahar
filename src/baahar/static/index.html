@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#05060a">
+<title>Baahar · बाहर</title>
+<meta name="description" content="Finds Bengaluru's next safe outdoor hour, then turns the screen off so you walk.">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🌿</text></svg>">
+</head>
+<body>
+
+<!-- ══════════════════════ SCREEN 1: ask ══════════════════════ -->
+<main id="screen-ask" class="screen screen--ask">
+  <div class="wrap">
+    <p class="eyebrow">बाहर · outside</p>
+    <h1 class="title">Baahar</h1>
+    <p class="lede">
+      Finds your next safe outdoor hour from air quality, heat and rain — then
+      turns this screen off.
+    </p>
+
+    <div class="ask-row">
+      <button id="go" class="btn btn--primary">Find my hour</button>
+    </div>
+    <p class="hint" id="ask-hint">Live data from Open-Meteo. No account, no card.</p>
+
+    <details class="fineprint">
+      <summary>Options</summary>
+      <div class="options">
+        <label>Writer
+          <select id="opt-model">
+            <option value="auto">auto (open model if keyed)</option>
+            <option value="template">fast local writer (instant)</option>
+            <option value="gemma">Gemma via AI Studio</option>
+            <option value="tinker">Tinker fine-tune</option>
+          </select>
+        </label>
+        <label>Scorer
+          <select id="opt-scorer">
+            <option value="auto">auto</option>
+            <option value="heuristic">heuristic policy</option>
+            <option value="tabpfn">TabPFN</option>
+          </select>
+        </label>
+        <label>Walk (min)
+          <input id="opt-walk" type="number" min="5" max="180" value="20">
+        </label>
+        <label>Park
+          <select id="opt-park"><option value="">nearest to me</option></select>
+        </label>
+      </div>
+    </details>
+  </div>
+</main>
+
+<!-- ══════════════════════ SCREEN 2: the brief ══════════════════════ -->
+<main id="screen-brief" class="screen screen--brief" hidden>
+  <div class="wrap">
+    <div id="loading" class="loading" hidden>
+      <div class="loading__spin" aria-hidden="true"></div>
+      <p id="loading-text">Reading the air…</p>
+      <p class="loading__elapsed"><span id="elapsed">0</span>s</p>
+      <button id="use-fast" class="btn btn--ghost btn--sm">Use the fast local writer instead</button>
+    </div>
+
+    <div id="brief-body" hidden>
+      <div id="verdict" class="verdict">
+        <span id="decision" class="verdict__badge">GO</span>
+        <div>
+          <p id="headline" class="verdict__headline"></p>
+          <p id="window" class="verdict__window"></p>
+        </div>
+      </div>
+
+      <div id="degraded" class="degraded" hidden></div>
+
+      <blockquote id="briefing" class="briefing"></blockquote>
+
+      <section class="facts" aria-label="Why">
+        <ul id="signals" class="signals"></ul>
+        <details class="hours">
+          <summary>Next <span id="hours-n">12</span> hours</summary>
+          <div class="hours__scroll"><table id="hours-table"></table></div>
+        </details>
+      </section>
+
+      <section id="park-block" class="park" hidden>
+        <h2 id="park-name"></h2>
+        <p id="park-vibe"></p>
+        <p id="park-note" class="park__note"></p>
+      </section>
+
+      <div class="cta">
+        <button id="pocket" class="btn btn--pocket">Pocket the phone</button>
+        <p class="hint" id="auto-hint" hidden></p>
+      </div>
+
+      <p id="attrib" class="attrib"></p>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════════════════ SCREEN 3: POCKET MODE ══════════════════════ -->
+<main id="screen-pocket" class="screen screen--pocket" hidden>
+  <div class="pocket">
+    <p class="pocket__headline" id="p-headline">Phone in pocket.</p>
+    <p class="pocket__subline" id="p-subline"></p>
+
+    <div class="pocket__cue">
+      <p class="pocket__cuelabel">notice this</p>
+      <p class="pocket__cuetext" id="p-cue"></p>
+    </div>
+
+    <div class="pocket__timer">
+      <p id="p-timer" class="pocket__timertext">20:00</p>
+      <p class="pocket__timerlabel">walk</p>
+    </div>
+
+    <button id="next-cue" class="pocket__more">another thing to notice</button>
+
+    <p id="p-safety" class="pocket__safety"></p>
+    <button id="pocket-exit" class="pocket__exit">back</button>
+  </div>
+</main>
+
+<!-- sleep blocker: shows the clock, never the feed -->
+<div id="failsafe" class="failsafe" hidden>
+  <p id="fs-time"></p>
+  <p>Baahar is done. Your phone has nothing left to show you.</p>
+  <button id="fs-back" class="btn btn--ghost btn--sm">back</button>
+</div>
+
+<noscript>
+  <p style="padding:2rem;color:#e8eaf0;font:16px system-ui">
+    Baahar's Pocket Mode needs JavaScript. The CLI works without it:
+    <code>uv run baahar brief</code>
+  </p>
+</noscript>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

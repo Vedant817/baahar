@@ -155,6 +155,7 @@ class TestScorerSelection:
         if not available:
             assert name == "heuristic"
             assert "not installed" in note.lower()
+            assert "--group ml" in note, "note should tell the user how to add it"
         else:
             assert name == "tabpfn"
 
