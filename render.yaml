@@ -1,0 +1,59 @@
+# Render blueprint for Baahar.
+#
+# Only used if a human claims the Render promo and wants a hosted demo:
+#   https://hacktoberfest.com/my/promos
+# See docs/NEEDS_HUMAN.md section 6.
+#
+# ABORT CLEANLY IF YOU HIT A CREDIT-CARD WALL. That is a hard constraint in
+# AGENTS.md, not a preference. The challenge explicitly accepts "clear local run
+# + recorded demo", so a local quickstart plus the recorded walk is a complete
+# submission without this file ever being used.
+#
+# What is deliberately NOT here:
+#   - no secrets. Every key is optional; Baahar runs fully without all of them.
+#   - no database. The journal is a JSONL file or localStorage by design.
+#   - no background worker. Baahar answers one question at one moment.
+#
+# The free web service is enough. A free Postgres instance would wall on a card,
+# which is why there isn't one.
+
+services:
+  - type: web
+    name: baahar
+    runtime: python
+    plan: free
+    region: singapore # closest to Bengaluru; keeps the round trip short
+    buildCommand: uv sync --group dev
+    startCommand: >
+      uv run baahar serve --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    # No disk: Baahar stores nothing server-side on purpose.
+    num_instances: 1
+    envVars:
+      # --- required: none -------------------------------------------------
+      # --- optional: add any of these and the matching feature switches on ---
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: BAAHAR_CITY
+        value: Bengaluru
+      - key: BAAHAR_LAT
+        value: "12.9716"
+      - key: BAAHAR_LON
+        value: "77.5946"
+      - key: BAAHAR_CACHE
+        value: "1"
+
+      # Sync: false means "set this in the Render dashboard", never in git.
+      # Open-Meteo needs no key at all, which is why this list is empty by default.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: ELEVENLABS_VOICE_ID
+        sync: false
+      - key: WAQI_TOKEN
+        sync: false
+
+      # TabPFN is NOT offered here on purpose. It needs a ~2.5 GB PyTorch layer
+      # and a Prior Labs licence acceptance; a free Render service would restart
+      # thrashing on the download. Run it locally instead: docs/NEEDS_HUMAN.md.
