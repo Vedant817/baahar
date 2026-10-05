@@ -150,14 +150,28 @@ class TestScorerSelection:
         assert note
 
     def test_requesting_tabpfn_without_install_degrades_honestly(self) -> None:
-        available, _ = tabpfn_available()
+        """Two separate gates may block TabPFN; both must degrade, not crash."""
+        from baahar.config import get_settings
+
+        available, reason = tabpfn_available()
         name, note = choose_scorer("tabpfn")
         if not available:
             assert name == "heuristic"
-            assert "not installed" in note.lower()
-            assert "--group ml" in note, "note should tell the user how to add it"
+            assert reason in note or note
+            if "not installed" in reason:
+                assert "--group ml" in note, "note should say how to install it"
+            else:
+                # Licence gate: the fix is a human step, so point at the doc.
+                assert "TABPFN_TOKEN" in note or "NEEDS_HUMAN" in note
         else:
             assert name == "tabpfn"
+        assert get_settings().has_tabpfn_license in (True, False)
+
+    def test_tabpfn_gates_are_reported_distinctly(self) -> None:
+        """Install and licence are different problems with different fixes."""
+        available, reason = tabpfn_available()
+        if not available:
+            assert ("not installed" in reason) or ("licence" in reason.lower())
 
     def test_score_slots_never_raises(self, go_slot: HourSlot) -> None:
         scores, name, note = score_slots([go_slot], "tabpfn")

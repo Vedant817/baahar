@@ -89,13 +89,29 @@ def _signals(slot: HourSlot) -> dict[str, Any]:
 # TabPFN scorer
 # ---------------------------------------------------------------------------
 def tabpfn_available() -> tuple[bool, str]:
-    """Whether the TabPFN path can run, plus a human-readable reason if not."""
+    """Whether the TabPFN path can run, plus a human-readable reason if not.
+
+    Three gates, checked cheapest first:
+
+    1. Is the package importable? (``uv sync --group ml``)
+    2. Is a Prior Labs licence acceptance recorded? ``tabpfn >= 2.x`` refuses to
+       download weights until ``TABPFN_TOKEN`` is set, *even though the weights
+       are public on Hugging Face*. That is a licence gate rather than a
+       technical one, so Baahar does not attempt to route around it.
+    3. Otherwise, assume it will work and let a genuine failure surface at fit
+       time, where `score_tabpfn` degrades to the policy.
+    """
     try:
         import tabpfn  # noqa: F401
         from tabpfn import TabPFNClassifier  # noqa: F401
     except ImportError as exc:
         return False, f"not installed ({exc.name or exc})"
-    return True, "installed"
+    if not get_settings().has_tabpfn_license:
+        return False, (
+            "Prior Labs licence not accepted. Set TABPFN_TOKEN in .env -- see "
+            "docs/NEEDS_HUMAN.md"
+        )
+    return True, "installed and licensed"
 
 
 def _resolve_labels(preds: Sequence[Any], slots: Sequence[HourSlot]) -> list[Decision]:

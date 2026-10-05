@@ -99,6 +99,10 @@ class Settings:
     tinker_lora_path: str | None = None
     tabpfn_api_key: str | None = None
     tabpfn_base_url: str = "https://api.priorlabs.ai"
+    #: Prior Labs API key used by `tabpfn` for its one-time license acceptance.
+    #: Note the env var name: the upstream package reads `TABPFN_TOKEN`, not
+    #: `TABPFN_API_KEY`. Verified 2026-10-06 against tabpfn 9.1.0.
+    tabpfn_token: str | None = None
     #: Optional path to a pickled TabPFN classifier fitted by
     #: `scripts/run_eval.py`. Optional: with no artifact, the scorer uses the
     #: documented policy.
@@ -130,6 +134,17 @@ class Settings:
         return bool(self.tabpfn_api_key)
 
     @property
+    def has_tabpfn_license(self) -> bool:
+        """Whether TabPFN can download its weights.
+
+        The upstream package refuses to fetch weights until a Prior Labs license
+        acceptance is recorded against ``TABPFN_TOKEN`` -- even though the
+        weights are public on Hugging Face. We deliberately do not work around
+        that: it is a licence gate, not a technical one.
+        """
+        return bool(self.tabpfn_token)
+
+    @property
     def has_elevenlabs(self) -> bool:
         return bool(self.elevenlabs_api_key and self.elevenlabs_voice_id)
 
@@ -142,6 +157,7 @@ class Settings:
         return {
             "gemini": self.has_gemini,
             "tinker": self.has_tinker,
+            "tabpfn_license": self.has_tabpfn_license,
             "tabpfn_api": self.has_tabpfn_api,
             "elevenlabs": self.has_elevenlabs,
             "waqi": self.has_waqi,
@@ -169,6 +185,7 @@ def get_settings() -> Settings:
         tinker_lora_path=_secret("TINKER_LORA_PATH"),
         tabpfn_api_key=_secret("TABPFN_API_KEY"),
         tabpfn_base_url=os.getenv("TABPFN_BASE_URL", "https://api.priorlabs.ai"),
+        tabpfn_token=_secret("TABPFN_TOKEN"),
         tabpfn_model_path=_secret("TABPFN_MODEL_PATH"),
         elevenlabs_api_key=_secret("ELEVENLABS_API_KEY"),
         elevenlabs_voice_id=_secret("ELEVENLABS_VOICE_ID"),
