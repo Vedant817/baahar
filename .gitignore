@@ -44,6 +44,12 @@ coverage.xml
 htmlcov/
 uv.lock.bak
 
+# local `baahar serve` logs
+.server.log
+.server.err
+*.log
+!docs/**/*.log
+
 # --- editors / os ------------------------------------------------------------
 .vscode/
 .idea/
