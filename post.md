@@ -22,21 +22,36 @@
 
 ![Baahar: the decision, the briefing, the park](docs/media/02-brief.png)
 
-It is 2am. I am building something. I open a weather app: 38°C. I open a map app:
-the air is fine here. I open another: stay inside. Fifteen minutes later I have
-resolved a question that should have taken twenty seconds, and I have not left
-the desk.
+Every AI tool I use is trying to keep me at my desk. Mine is the first one I've
+built that is explicitly trying to get me out of it.
 
-Fifteen minutes is the problem. Not the weather app.
+It is 2am and I am building something. I open a weather app: 38°C. I open a map
+app: the air is fine here. I open a third: stay inside. Fifteen minutes later I
+have resolved a question that should have taken twenty seconds, and I have not
+left the desk.
+
+**Fifteen minutes is the problem. Not the weather app.**
 
 So I built **Baahar** (बाहर — *outside*). It finds Bengaluru's **next safe outdoor
 hour** from air quality, heat and rain, speaks a **~30-second park briefing**,
 and then **turns the screen off** so you actually go outside.
 
-There is no feed. No streak. No badge. Nothing to come back to. The success
-metric is that you leave.
+There is no feed. No streak. No badge. Nothing to come back to. The only metric
+that matters is whether I stood up — and the product is built to make standing up
+easier than scrolling.
 
-<!-- TODO: replace with your own opener. -->
+![Pocket Mode](docs/media/03-pocket.png)
+
+Near-black. One instruction. A timer. **You cannot scroll.** If you do nothing
+else, Baahar drops you in here after 45 seconds with a countdown you can cancel —
+because a UI that hijacks the screen instantly feels hostile rather than helpful.
+
+The whole product is three screens and one API call. I have added more screens to
+more projects than I can count, and this is the first one where the goal was to
+*remove* surface area.
+
+<!-- TODO: rewrite this opener in your own voice. It is the most generic part
+     of this file and the part a reader decides on. -->
 
 ---
 
@@ -66,17 +81,7 @@ Then the briefing:
 > two birds, then ignore the traffic. Pocket the phone and let it be boring for
 > twenty minutes.
 
-And then this:
-
-![Pocket Mode](docs/media/03-pocket.png)
-
-Near-black. One instruction. A timer. **You cannot scroll.** If you did nothing
-else, Baahar drops you in here after 45 seconds with a countdown you can cancel —
-because a UI that hijacks the screen instantly feels hostile rather than helpful.
-
-The whole product is three screens and one API call. I have added more screens to
-more projects than I can count, and this is the first one where the goal was to
-*remove* surface area.
+Then tap **Pocket the phone**, and the screen above is the entire interface.
 
 ---
 
