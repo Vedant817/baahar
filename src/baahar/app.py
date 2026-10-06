@@ -20,11 +20,13 @@ slow open model degrades into a usable product instead of a spinner.
 
 from __future__ import annotations
 
+import ipaddress
 import logging
 from datetime import datetime
+from pathlib import Path
 from typing import Annotated
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -187,10 +189,80 @@ def api_naqi_scale() -> dict[str, object]:
     return {"bands": band_table(), "pollutants": pollutant_table()}
 
 
+def _is_loopback(host: str | None) -> bool:
+    """Whether a peer address is this machine.
+
+    Used to keep ``/api/cache/clear`` a local dev tool. ``X-Forwarded-For`` is
+    deliberately ignored: a header the caller sets is not evidence of anything,
+    and honouring it would make the check trivially bypassable by anyone who
+    read this file. Behind a proxy the peer address is the proxy's, so the
+    endpoint simply stays refused in a deploy -- which is the correct answer.
+    """
+    if not host:
+        return False
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
+
+
 @app.post("/api/cache/clear")
-def api_cache_clear() -> JSONResponse:
+def api_cache_clear(request: Request) -> JSONResponse:
+    """Wipe cached briefings. Local dev tool, loopback callers only.
+
+    An earlier version was open to anyone. Combined with ``/api/brief?model=gemma
+    &voice=1`` that is a quota-burn loop: every request misses the cache, spends a
+    ~45 s Gemini call and an ElevenLabs call on the maintainer's keys, and
+    renders nothing for a caller who cannot read the JSON anyway. No rate limit
+    or auth middleware exists anywhere in this app, so the cheap correct fix is
+    to refuse the one endpoint that is destructive and non-essential.
+    """
+    if not _is_loopback(request.client.host if request.client else None):
+        log.warning("refused /api/cache/clear from non-loopback host")
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "cache clear is a local dev tool and is only served to loopback "
+                "callers. Run `uv run baahar serve` and use http://127.0.0.1:8000."
+            ),
+        )
     removed = brief_mod.clear_cache()
     return JSONResponse({"removed": removed})
+
+
+def _audio_file(name: str) -> Path | None:
+    """Resolve a requested clip name to a real file inside the audio cache.
+
+    Returns ``None`` for anything that escapes the cache or is not a file. The
+    containment check is the whole point: resolving first and comparing against
+    the resolved root closes ``..`` traversal, absolute paths, and symlinks
+    pointing outside the directory in one comparison.
+
+    Starlette will not route an unescaped ``/`` into a single ``{name}``
+    segment, so the router happens to block the obvious attempts on Linux. That
+    is not a control -- a percent-encoded separator arrives decoded, and on
+    Windows a backslash is a separator everywhere -- so the check lives here and
+    does not depend on how the request was spelled.
+    """
+    root = brief_mod.audio_dir().resolve()
+    target = (root / name).resolve()
+    if not target.is_relative_to(root):
+        log.warning("refused audio path outside the cache: %r", name)
+        return None
+    return target if target.is_file() else None
+
+
+@app.get(brief_mod.AUDIO_ROUTE + "/{name}")
+def api_audio(name: str) -> FileResponse:
+    """Serve one cached briefing clip.
+
+    Replaces handing out a ``file://`` URI, which published the build layout and
+    the maintainer's Windows username in the public JSON.
+    """
+    target = _audio_file(name)
+    if target is None:
+        raise HTTPException(status_code=404, detail="no such audio clip")
+    return FileResponse(target, media_type="audio/mpeg")
 
 
 @app.get("/", include_in_schema=False)

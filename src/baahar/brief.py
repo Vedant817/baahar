@@ -31,6 +31,7 @@ import logging
 import os
 import re
 import time
+from pathlib import Path
 from typing import Any, Protocol
 
 import httpx
@@ -390,8 +391,12 @@ def write_gemma(plan: OutdoorPlan, model: str | None = None, **kwargs: Any) -> s
 
     def _post(model_name: str) -> httpx.Response:
         url = f"{GEMINI_BASE}/{model_name}:generateContent"
+        # The key travels in the `x-goog-api-key` header, never as `?key=`.
+        # A query parameter lands in every proxy log, CDN access log and crash
+        # dump between us and Google. Tinker and ElevenLabs in this file already
+        # use headers; this call was the odd one out.
         with httpx.Client(timeout=GEMINI_TIMEOUT_S) as client:
-            return client.post(url, params={"key": key}, json=payload)
+            return client.post(url, headers={"x-goog-api-key": key}, json=payload)
 
     # Try the pinned model, then the fallback. Both HTTP errors *and* transport
     # failures fall through: a retired model returns 404, a cold 31B endpoint
@@ -663,8 +668,28 @@ def _ground_park_names(text: str, park: Park | None) -> str:
 # ---------------------------------------------------------------------------
 # Voice (optional)
 # ---------------------------------------------------------------------------
+#: Route the generated clips are served from. Relative on purpose: the front end
+#: resolves it against the page origin, so the URL carries no host information.
+AUDIO_ROUTE = "/api/audio"
+
+
+def audio_dir() -> Path:
+    """Where synthesised briefings land. One directory, nothing else."""
+    from .config import DATA_DIR
+
+    return DATA_DIR / "cache" / "audio"
+
+
 def speak(text: str) -> str | None:
-    """Return an audio URL via ElevenLabs, or ``None`` if unavailable."""
+    """Return an audio URL via ElevenLabs, or ``None`` if unavailable.
+
+    The URL is an app-relative path (``/api/audio/<name>.mp3``), not a
+    ``file://`` URI. A file URI reached the public JSON as
+    ``file:///C:/Users/<name>/.../brief_123.mp3``, publishing the build layout
+    and the maintainer's Windows username to every caller. The clip itself is
+    still written to the cache directory; :func:`baahar.app.api_audio` is the
+    only thing that hands it out, and only from inside that directory.
+    """
     settings = get_settings()
     if not settings.has_elevenlabs:
         return None
@@ -686,17 +711,14 @@ def speak(text: str) -> str | None:
         log.warning("ElevenLabs request failed: %s", exc)
         return None
 
-    from .config import DATA_DIR
-
-    out_dir = DATA_DIR / "cache" / "audio"
+    out_dir = audio_dir()
     out_dir.mkdir(parents=True, exist_ok=True)
     digest = abs(hash(text)) % (10**10)
     path = out_dir / f"brief_{digest}.mp3"
     path.write_bytes(resp.content)
-    return path.as_uri()
+    return f"{AUDIO_ROUTE}/{path.name}"
 
 
-# ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 # Cache
 # ---------------------------------------------------------------------------

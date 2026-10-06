@@ -116,6 +116,14 @@ jobs:
           fi
           echo "no secrets detected"
 
+      # The other half of the same rule. The gate above greps for credential
+      # *shapes*; it would not have caught the incident that actually happened
+      # here, because `data/journal.jsonl` holds no key. It held a person's
+      # unreviewed field notes and had to be force-pushed out of history. So
+      # assert that the paths `.gitignore` protects are still untracked.
+      - name: Verify no denylisted path is tracked
+        run: uv run python scripts/check_untracked.py
+
       # The honest-numbers guard. `run_eval.py` reads the committed dataset and
       # needs no network, so CI can reproduce the tabular numbers and then check
       # that eval/RESULTS.md actually reports them.
