@@ -315,6 +315,21 @@ def journal(
     phone: Annotated[
         int | None, typer.Option(help="How many times you reached for the phone.")
     ] = None,
+    species: Annotated[
+        str | None,
+        typer.Option("--species", help="The species Baahar suggested, if a cue was shown."),
+    ] = None,
+    saw: Annotated[
+        str | None,
+        typer.Option(
+            "--saw",
+            help=(
+                "Did you see it? yes | no | unrecognised | not-looked. "
+                "'unrecognised' means the name did not land, which is a different "
+                "failure from not spotting the bird."
+            ),
+        ),
+    ] = None,
     as_markdown: Annotated[
         bool, typer.Option("--markdown", help="Print the field-test block.")
     ] = False,
@@ -335,6 +350,10 @@ def journal(
         raise typer.BadParameter(f"--outcome must be one of {sorted(valid)}")
 
     if outcome is not None:
+        if saw is not None and journal_mod.normalise_species_seen(saw) is None:
+            raise typer.BadParameter(
+                f"--saw must be one of {list(journal_mod.SPECIES_SEEN_VALUES)}"
+            )
         path = journal_mod.record(
             outcome,
             planned_decision=decided,
@@ -346,6 +365,8 @@ def journal(
             minutes_planned=planned_min,
             minutes_walked=walked_min,
             reached_for_phone=phone,
+            species_suggested=species,
+            species_seen=saw,
             note=note,
         )
         err.print(f"[dim]recorded -> {path}[/]")

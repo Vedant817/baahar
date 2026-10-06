@@ -142,6 +142,18 @@
       <span id="j-count">0</span>
       <button class="jcount" data-delta="1">+</button>
     </div>
+    <!-- Only shown if a seasonal species cue was actually reached during the
+         walk. "didn't recognise it" is a separate tap from "didn't see it":
+         a name that does not land failed before the wildlife did. -->
+    <div id="j-species" class="journal__species" hidden>
+      <p class="journal__relabel" id="j-species-q">did you see it?</p>
+      <div class="journal__taps journal__taps--wrap">
+        <button class="jbtn jbtn--sm" data-saw="yes">yes</button>
+        <button class="jbtn jbtn--sm" data-saw="no">no</button>
+        <button class="jbtn jbtn--sm" data-saw="unrecognised">didn&rsquo;t know it</button>
+        <button class="jbtn jbtn--sm" data-saw="not-looked">didn&rsquo;t look</button>
+      </div>
+    </div>
     <div id="j-done" class="journal__done" hidden>
       <p id="j-md" class="journal__md"></p>
       <button id="j-copy" class="btn btn--ghost btn--sm">copy for the write-up</button>

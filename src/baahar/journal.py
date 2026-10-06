@@ -66,6 +66,50 @@ OUTCOME_LABELS: dict[str, str] = {
     Outcome.SKIPPED.value: "skipped",
 }
 
+#: What the walker did about the seasonal species cue.
+#:
+#: `unrecognised` is deliberately a separate answer from `no`. A cue the walker
+#: could not act on failed before the wildlife did, and lumping it in with "did
+#: not see it" would hide the more actionable failure.
+SPECIES_SEEN_VALUES: tuple[str, ...] = ("yes", "no", "unrecognised", "not-looked")
+
+SPECIES_SEEN_LABELS: dict[str, str] = {
+    "yes": "saw it",
+    "no": "did not see it",
+    "unrecognised": "did not recognise the name",
+    "not-looked": "did not look",
+}
+
+
+def normalise_species_seen(value: str | None) -> str | None:
+    """Canonicalise a species sighting answer, or ``None`` if absent.
+
+    Accepts a few spellings because this is typed by a human on a phone after a
+    walk. Anything unrecognised returns ``None`` rather than being stored
+    verbatim, so a typo cannot quietly become a data point.
+    """
+    if value is None:
+        return None
+    cleaned = value.strip().lower().replace("_", "-").replace(" ", "-")
+    if not cleaned:
+        return None
+    if cleaned in SPECIES_SEEN_VALUES:
+        return cleaned
+    aliases = {
+        "y": "yes",
+        "true": "yes",
+        "seen": "yes",
+        "n": "no",
+        "false": "no",
+        "not-seen": "no",
+        "didnt-recognise": "unrecognised",
+        "did-not-recognise": "unrecognised",
+        "unknown-name": "unrecognised",
+        "skipped": "not-looked",
+        "didnt-look": "not-looked",
+    }
+    return aliases.get(cleaned)
+
 
 @dataclass
 class Entry:
@@ -82,6 +126,12 @@ class Entry:
     minutes_planned: int | None = None
     minutes_walked: int | None = None
     reached_for_phone: int | None = None
+    #: The species Baahar suggested, if a seasonal cue was shown.
+    species_suggested: str | None = None
+    #: What the walker actually did about it. This is the one claim in the
+    #: project with a denominator only a human can supply, so it is a first-class
+    #: field rather than something to bury in the free-text note.
+    species_seen: str | None = None
     note: str = ""
     extra: dict[str, Any] = field(default_factory=dict)
 
@@ -127,6 +177,8 @@ def record(
     minutes_planned: int | None = None,
     minutes_walked: int | None = None,
     reached_for_phone: int | None = None,
+    species_suggested: str | None = None,
+    species_seen: str | None = None,
     note: str = "",
     when: datetime | None = None,
     path: Path | str | None = None,
@@ -146,6 +198,8 @@ def record(
         minutes_planned=minutes_planned,
         minutes_walked=minutes_walked,
         reached_for_phone=reached_for_phone,
+        species_suggested=(species_suggested or None),
+        species_seen=normalise_species_seen(species_seen),
         note=note.strip(),
     )
     return append(entry, path)
@@ -169,14 +223,20 @@ def load(path: Path | str | None = None) -> list[Entry]:
 
 
 def summarise(entries: list[Entry]) -> dict[str, Any]:
-    """Counts and the one number worth reporting: phone reach count."""
+    """Counts and the numbers worth reporting."""
     counts: dict[str, int] = {o.value: 0 for o in Outcome}
     reached = 0
     minutes = 0
+    species_asked = 0
+    species: dict[str, int] = {}
     for entry in entries:
         counts[entry.outcome] = counts.get(entry.outcome, 0) + 1
         reached += entry.reached_for_phone or 0
         minutes += entry.minutes_walked or 0
+        if entry.species_suggested:
+            species_asked += 1
+            key = entry.species_seen or "unrecorded"
+            species[key] = species.get(key, 0) + 1
     walked = counts.get(Outcome.WENT.value, 0) + counts.get(Outcome.SHORTENED.value, 0)
     return {
         "n_entries": len(entries),
@@ -184,6 +244,8 @@ def summarise(entries: list[Entry]) -> dict[str, Any]:
         "walks_recorded": walked,
         "total_minutes_walked": minutes,
         "times_reached_for_phone": reached,
+        "species_asked": species_asked,
+        "species_sightings": species,
         "honesty_note": (
             "A 'skipped' entry recorded on a day Baahar said GO is the most "
             "interesting entry in this journal."
@@ -237,6 +299,9 @@ def render_markdown(entries: list[Entry], *, include_all: bool = False) -> str:
             times = entry.reached_for_phone
             plural = "time" if times == 1 else "times"
             lines.append(f"- **Reached for the phone:** {times} {plural}")
+        if entry.species_suggested:
+            outcome_label = SPECIES_SEEN_LABELS.get(entry.species_seen or "", "no answer recorded")
+            lines.append(f"- **Species cue:** {entry.species_suggested} — {outcome_label}")
         lines.append(f"- **Outcome:** {OUTCOME_LABELS.get(entry.outcome, entry.outcome)}")
         if entry.note:
             lines.append(f"- **Note:** {entry.note}")
@@ -247,5 +312,24 @@ def render_markdown(entries: list[Entry], *, include_all: bool = False) -> str:
         lines.append(
             f"_{stats['n_entries']} entries · {stats['walks_recorded']} walks recorded · "
             f"{stats['times_reached_for_phone']} phone reaches._"
+        )
+
+    # Aggregate the species cues when there are enough of them to mean anything.
+    # One walk is an anecdote; three is a rate. Never a percentage from n=1 --
+    # that is the exact "rate" fabrication eval/RESULTS.md refuses elsewhere.
+    if stats["species_asked"] >= 3:
+        seen = stats["species_sightings"].get("yes", 0)
+        asked = stats["species_asked"]
+        breakdown = ", ".join(
+            f"{SPECIES_SEEN_LABELS.get(k, k)}: {v}"
+            for k, v in sorted(stats["species_sightings"].items())
+        )
+        lines.append(
+            f"_{asked} walks were shown a species cue. Seen on {seen} of them "
+            f"({seen / asked:.0%}). Breakdown: {breakdown}._"
+        )
+        lines.append(
+            "_A small denominator. Treat this as a first reading of whether the "
+            "radius and the phrasing are calibrated, not as a benchmark._"
         )
     return "\n".join(lines).strip() + "\n"

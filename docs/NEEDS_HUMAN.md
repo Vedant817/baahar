@@ -211,6 +211,26 @@ Short version: check `uv run baahar brief`, read or hear it once, tap
 **Pocket the phone**, walk 15–25 minutes in a Bengaluru park, and write down
 what matched and what did not. Five bullets and up to three photos is enough.
 
+Two things to do during the walk that are easy to forget:
+
+1. **Tap "another thing to notice" three or four times** until a species cue
+   appears. That is what unlocks the journal's "did you see it?" question.
+2. **Count the phone reaches honestly.** That number is the design claim's only
+   test.
+
+Then:
+
+```bash
+uv run baahar journal --outcome went --phone 3 \
+  --species "a Chocolate Pansy" --saw no \
+  --note "kept reaching for the phone around minute six"
+
+uv run baahar journal --markdown --all   # paste into post.md section 7
+```
+
+Repeat that at least three times if you can — the species sighting rate only
+appears at n=3, and one walk is an anecdote rather than a measurement.
+
 When it is done, fill in the "Results" section of `FIELD_TEST.md` and move the
 notes into `post.md`. Until then both documents say the walk has not happened.
 
@@ -232,24 +252,27 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 
 ## Summary
 
-| # | Item | Unblocks | Effort | Agent blocked? |
-|---|---|---|---|---|
-| 1 | TabPFN licence | TabPFN category | 3 min | yes |
-| 2 | Tinker key + FT run | Tinker category | 20 min + job | partly |
-| 3 | Gemini key | Gemma category | done | no |
-| 4 | ElevenLabs key | ElevenLabs category | 5 min | yes |
-| 5 | WAQI token | nothing | 2 min | no |
-| 6 | Render promo | nothing | 10 min | yes |
-| 7 | The walk | credibility | 30 min | **yes, always** |
-| 8 | Publish | everything | 30 min | yes |
-| 4b | Monthly seasonal refresh | nothing (goes stale) | 20 s | no |
+| # | Item | Unblocks | Effort | Agent blocked? | Status |
+|---|---|---|---|---|---|
+| 1 | TabPFN licence | TabPFN category | 3 min | yes | **done** — 0.8512 acc |
+| 2 | Tinker key + FT run | Tinker category | 20 min + job | partly | blocked: `tinker.ai` does not resolve |
+| 3 | Gemini key | Gemma category | done | no | **done** — 36 cases judged |
+| 4 | ElevenLabs key | ElevenLabs category | 5 min | yes | key present, never called |
+| 5 | WAQI token | nothing | 2 min | no | **done** — found a 1,727 km bug |
+| 6 | Render promo | nothing | 10 min | yes | optional |
+| 7 | **The walk** | credibility + the species rate | 30 min × 3 | **yes, always** | **not done** |
+| 8 | Publish | everything | 30 min | yes | ready, one optional marker |
+| 4b | Monthly seasonal refresh | nothing (goes stale) | 20 s | no | October snapshot committed |
 
 ---
 
 ## What is already done, so you can skip ahead
 
 - Everything that needs no key: the whole product, the web UI, Pocket Mode, the
-  journal, the CLI, the seasonal species cues, and 267 offline tests.
+  journal (including the species sighting question), the CLI, the seasonal species
+  cues, and 291 offline tests.
+- **TabPFN, for real.** Licence accepted, `0.8512` acc / `0.6040` macro-F1 on the
+  chronological holdout. `eval/RESULTS.md` § A.
 - **Gemma.** A key was present in the build environment, so the Gemma path was
   evaluated for real: 36 cases, machine checks plus a blind rubric.
   [`eval/RESULTS.md`](../eval/RESULTS.md) § B.

@@ -12,7 +12,8 @@
  */
 
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 const CHROME_CANDIDATES = [
@@ -82,6 +83,31 @@ const SHOTS = [
       await sleep(300);
     },
   },
+  {
+    // Reach a seasonal cue, then open the journal. The species question only
+    // appears if one was actually shown, so this is the only path where it can
+    // be screenshotted -- or asserted.
+    name: '05-journal-species',
+    url: `${BASE}?model=template&journal=1`,
+    ready: 'screen-pocket',
+    wait: 30000,
+    afterReady: async (send) => {
+      await send('Runtime.evaluate', {
+        expression: `(() => {
+          const btn = document.getElementById('next-cue');
+          for (let i = 0; i < 8 && btn && btn.style.display !== 'none'; i++) btn.click();
+          // openJournal() already ran for ?journal=1, before any cue was shown,
+          // so the species block is still hidden. Reveal it the way a real walk
+          // would, then answer it.
+          if (typeof syncSpeciesQuestion === 'function') syncSpeciesQuestion();
+          document.getElementById('j-count').textContent = '1';
+          document.querySelector('.jbtn[data-saw="yes"]').click();
+          document.querySelector('.jbtn[data-outcome="went"]').click();
+        })()`,
+      });
+      await sleep(400);
+    },
+  },
 ];
 
 /* Poll for a screen to actually render instead of sleeping a fixed amount.
@@ -125,6 +151,16 @@ function findChrome() {
 async function main() {
   mkdirSync(OUT, { recursive: true });
 
+  // A fresh profile per run. A reused one lets Chrome serve a cached index.html
+  // or app.js from a previous run, which means the audit can quietly verify
+  // stale markup and pass while the live page is broken. That is the worst kind
+  // of green.
+  const profile = join(
+    process.env.TEMP || '.',
+    `baahar-cdp-profile-${process.pid}`,
+  );
+  rmSync(profile, { recursive: true, force: true });
+
   const bin = findChrome();
   const child = spawn(bin, [
     '--headless=new',
@@ -133,7 +169,10 @@ async function main() {
     '--no-default-browser-check',
     '--disable-gpu',
     '--hide-scrollbars',
-    '--user-data-dir=' + (process.env.TEMP || '.') + '/baahar-cdp-profile',
+    // Belt and braces on top of the fresh profile.
+    '--disable-application-cache',
+    '--disk-cache-size=1',
+    '--user-data-dir=' + profile,
     'about:blank',
   ], { stdio: 'ignore' });
 
@@ -231,6 +270,7 @@ async function main() {
               pocket: rendered('screen-pocket'),
               journal: rendered('journal'),
               journalDone: rendered('j-done'),
+              speciesQ: rendered('j-species'),
             },
             // The data-source credit line must appear only while a seasonal cue
             // is actually on screen. Shown under a hand-written cue it would
@@ -238,6 +278,7 @@ async function main() {
             seasonalNote: rendered('p-seasonal'),
             cue: (document.getElementById('p-cue') || {}).textContent || '',
             evidence: (document.getElementById('p-seasonal') || {}).textContent || '',
+            markdown: (document.getElementById('j-md') || {}).textContent || '',
             decision: (document.getElementById('decision') || {}).textContent || null,
           };
       })()`,
@@ -270,11 +311,22 @@ async function main() {
     if (audit.result.value.evidence) {
       console.log(`  evidence        ${audit.result.value.evidence}`);
     }
+    if (audit.result.value.markdown) {
+      const first = audit.result.value.markdown.split('\n').find((l) => l.includes('Species cue'));
+      if (first) console.log(`  journal         ${first.trim()}`);
+    }
     console.log(`  decision        ${audit.result.value.decision}`);
   }
 
   ws.close();
   child.kill();
+  // Best effort. Chrome has not necessarily released the profile directory by
+  // the time `kill` returns, and a locked profile on Windows would otherwise
+  // fail the whole audit after every check has already passed.
+  await sleep(300);
+  try {
+    rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+  } catch { /* a stale temp profile is harmless */ }
 
   console.log('\n── console errors ──');
   console.log(consoleErrors.length ? consoleErrors.join('\n') : '(none)');
@@ -327,6 +379,23 @@ async function main() {
   }
   if (shot['04-journal'].screens.journalDone !== 'VISIBLE') {
     problems.push('04-journal: journal markdown did not appear after tapping an outcome');
+  }
+  // The species question must stay hidden unless a seasonal cue was actually
+  // shown during the walk. This journal screen is reached without walking, so
+  // asking would collect an answer about a suggestion nobody was given.
+  if (shot['04-journal'].screens.speciesQ === 'VISIBLE') {
+    problems.push('04-journal: species question shown without a seasonal cue');
+  }
+
+  // And the converse: after a seasonal cue was reached, the question must appear.
+  const speciesShot = shot['05-journal-species'];
+  if (speciesShot.screens.speciesQ !== 'VISIBLE') {
+    problems.push('05-journal-species: species question missing after a seasonal cue');
+  }
+  if (!/Chocolate Pansy|Gecko|mulberry|Brahminy|Toad|Squirrel|Spider/.test(speciesShot.markdown || '')) {
+    problems.push(
+      `05-journal-species: journal markdown does not name the suggested species (showed "${(speciesShot.markdown || '').slice(0, 80)}")`,
+    );
   }
 
   console.log('');

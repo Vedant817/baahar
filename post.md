@@ -5,8 +5,10 @@
 │  This file is a draft written to be EDITED, not defended.                │
 │                                                                          │
 │  Before publishing:                                                      │
-│    1. Fill every  ⟨FILL: …⟩  marker. Nothing ships with one in it.        │
-│    2. Run the field test (docs/FIELD_TEST.md) and replace section 7.      │
+│    1. Section 7 has one optional marker: replace it with the walk         │
+│       results, or delete the comment. The paragraph under it already says  │
+│       the walk has not happened, so it ships honestly as-is.              │
+│    2. Run the field test (docs/FIELD_TEST.md) to fill section 7.         │
 │    3. Re-check the prize categories in section 8 against what ACTUALLY ran.│
 │    4. Rewrite the opening in your own voice. It is the weakest part of    │
 │       this file because it is the most generic.                          │
@@ -83,6 +85,12 @@ Then the briefing:
 
 Then tap **Pocket the phone**, and the screen above is the entire interface.
 
+Afterwards the app asks three things and prints the answers as markdown I can
+paste here: did you go, how many times you reached for the phone, and — if
+Pocket Mode showed you a species — whether you saw it.
+
+![The after-walk journal, with the species question](docs/media/05-journal-species.png)
+
 There is one more button, **"another thing to notice"**. Three taps in, past the
 hand-written cues, it starts suggesting species — and this is where I spent more
 time on wording than on the model.
@@ -111,7 +119,23 @@ with a footnote stranded in the middle of it. That is a readout, not an
 instruction. A screen whose entire premise is that you should be looking at a tree
 should not be asking you to read a query string.
 
-Three rules fell out of that, and they are tests now rather than good intentions:
+Then the second half of the feature, which is the part I did not plan. If Pocket
+Mode showed you a butterfly, the after-walk screen now asks **did you see it?**
+— with four answers, because "I didn't recognise the name" is a completely
+different finding from "I didn't see it". One means the wildlife failed, the
+other means *the cue failed first*, and lumping them together would hide the more
+actionable bug.
+
+That question is the only number in this project that a human supplies and no eval
+harness can fake. It is the counterweight to every benchmark above: I graded all
+of those myself, against a rubric I wrote. "Baahar suggested a species on N walks
+and I saw one on M" is real-world evidence with a real denominator, and right now
+that denominator is **zero**, because I have not gone for the walk yet. The journal
+starts reporting a rate at three walks, and refuses to print a percentage before
+that — a 100% success rate off one walk where I happened to see a butterfly is
+exactly the fabricated metric this whole project is built not to produce.
+
+Three rules fell out of this, and they are tests now rather than good intentions:
 
 * **The wording is guarded.** `tests/test_seasonal.py` fails the build if a cue
   ever says "you will see", "guaranteed", or "there is a". The disclaimer itself
@@ -422,8 +446,11 @@ than win it with code I know is fake.
 
 ### Things I did not finish, plainly
 
-- **No field test.** ⟨FILL: section 7, or state honestly that the walk has not
-  happened. `docs/FIELD_TEST.md` says NOT YET DONE. Do not imply otherwise.⟩
+- **No field test.** The walk has not happened. `docs/FIELD_TEST.md` says NOT YET
+  DONE and that banner is accurate. Everything above is measured against my own
+  harness by me, and the single strongest claim in the project — that the screen
+  is the shortest part of the walk — is untested by a human. I left the blank form
+  in the repo rather than writing a plausible paragraph.
 - **TabPFN took a licence and a CPU override to run.** Two separate gates, and
   they behave completely differently:
 
@@ -457,7 +484,21 @@ than win it with code I know is fake.
 
 ## The field test
 
-<!-- FILL: from docs/FIELD_TEST.md, or delete this section and say the walk has not happened. -->
+<!-- FILL (optional, only after the walk): replace the paragraph below with the
+     block from `uv run baahar journal --markdown`. If the walk has not happened,
+     delete this comment and keep the paragraph. Do not imply it did. -->
+
+The walk has not happened yet, and I would rather say that here than imply
+otherwise with a photograph I did not take. `docs/FIELD_TEST.md` is a blank form
+with the method written out, and `uv run baahar journal --markdown` turns the
+answers into this section for me when there are answers to put in.
+
+What it will be able to measure that nothing in this post can: whether I actually
+pocket the phone, and whether "Go at 07:00, NAQI 74" felt like the clean morning
+the number promised. Every number above is me grading my own work against my own
+harness. **A field test that found a real problem is worth more than one that
+confirmed me**, and I have written the form to make that the easy outcome to
+report.
 
 ---
 
@@ -499,7 +540,7 @@ read a briefing should not pay for a model they did not ask for. The heuristic
 scorer is a real fallback with a real test suite, not a stub.
 
 - **MIT licensed.** [`LICENSE`](https://github.com/Vedant817/baahar/blob/main/LICENSE)
-- **267 tests pass offline.** `uv run pytest`
+- **291 tests pass offline.** `uv run pytest`
 - **CI** runs lint, format, tests, an offline CLI smoke test, a secret scan, and a
   headless-Chrome layout audit of all three screens.
 - **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)

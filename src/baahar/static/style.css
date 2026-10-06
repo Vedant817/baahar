@@ -463,6 +463,18 @@ body { min-height: 100dvh; }
   font-size: .9rem;
 }
 .journal__relabel { letter-spacing: .04em; }
+
+/* The species sighting question. Four short answers rather than three long
+ * ones, because "didn't recognise it" has to be as easy to tap as "no" -- if the
+ * name did not land, that is the finding, and burying it behind a text field
+ * would mean nobody reports it. */
+.journal__species { display: grid; gap: .6rem; justify-items: center; }
+.journal__taps--wrap { max-width: 26rem; }
+.jbtn--sm {
+  font-size: .92rem;
+  padding: .55rem 1rem;
+  color: #b8c0d2;
+}
 .jcount {
   font: inherit;
   font-size: 1.1rem;

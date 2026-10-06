@@ -56,6 +56,10 @@ Baahar collects the notes for you. When the walk timer ends, the web app asks
 and takes one line of text. It then prints markdown you can copy straight into
 your write-up.
 
+If you reached a species cue during the walk, it adds one more question — **did
+you see it?** — with four answers, because "didn't recognise the name" is a
+different finding from "didn't see it". See the species section below.
+
 Or from the terminal:
 
 ```bash
@@ -67,6 +71,17 @@ uv run baahar journal --outcome went \
 uv run baahar journal --markdown      # paste this into the post
 ```
 
+With a species cue, add two flags:
+
+```bash
+uv run baahar journal --outcome went --phone 1 \
+  --species "a Chocolate Pansy" --saw yes
+```
+
+`--saw` takes `yes`, `no`, `unrecognised`, or `not-looked`. After three walks with
+a cue, `--markdown` starts reporting a rate with an explicit small-denominator
+caveat. Before three it reports nothing percentage-shaped at all, on purpose.
+
 **"How many times did you reach for the phone?" is the most valuable field in
 this project.** The design claim — that the screen is the shortest part of the
 walk — is falsifiable, and this is how it gets falsified instead of asserted.
@@ -74,6 +89,35 @@ Count it honestly. Zero is a great result and so is four.
 
 A day where Baahar said GO and you **skipped** anyway is the single most
 interesting entry you can make. Record it.
+
+### Second question, and it tests the newest feature
+
+Pocket Mode's **"another thing to notice"** button cycles past the hand-written
+cues to species people have logged nearby this month, from research-grade
+iNaturalist records. Tap through until one appears. It will say something like:
+
+> **Look for a Chocolate Pansy.**
+> *iNaturalist research grade: around a dozen recorded within 5 km of Bengaluru
+> this month. A record means someone logged it nearby, not that you will see it.*
+
+**Did you see it? yes / no / didn't look.**
+
+This is the one claim in the project with a denominator a human can supply. Every
+other number here comes from an eval I ran against myself. "Of the species
+Baahar suggested on N walks, I saw M" is real-world data, and it is the honest
+counterweight to every benchmark in `eval/RESULTS.md`.
+
+Record it even if it is a miss. A suggested species you did not see is the data
+point that tells us whether the 5 km radius and the phrasing are calibrated — and
+right now we genuinely do not know. If you did not recognise a species name at
+all, write that down too; it means the cue failed before the wildlife did.
+
+### Third question: did the number and the hour match?
+
+Baahar says "Go at 07:00". If you went at 07:00 and the air felt fine, that is a
+point for it. If you went at 07:00 because the app said so and your throat
+noticed something, write that instead — an agent can be wrong about Bengaluru's
+air in a way no offline test catches, and this is the only place that would show up.
 
 ---
 
@@ -84,6 +128,10 @@ Tap **Pocket the phone**. Note whether you reached for it.
 Baahar auto-enters Pocket Mode after 45 seconds if you do nothing, with a
 countdown you can cancel. If you tapped the button yourself, say so — the
 interaction count is real data about the design.
+
+Tap **"another thing to notice"** to reach the seasonal species cue. Doing so
+before you leave is fine and worth saying, because it is the difference between
+a prompt you pre-loaded and one you had to go looking for.
 
 ---
 
@@ -103,6 +151,7 @@ block from your entries. If you are writing it by hand, use this:
 - **Reached for the phone?** yes / no — how many times, roughly
 - **Pocket Mode entered:** by tapping / automatically / never
 - **Walked the full timer?** yes / no — stopped after __ minutes because __
+- **Species cue:** suggested __ — saw it? yes / no / didn't look / didn't recognise the name
 
 **Five bullets, honest:**
 
@@ -111,6 +160,11 @@ block from your entries. If you are writing it by hand, use this:
 3. Anything Baahar told you that was wrong or misleading.
 4. Did the number match your body? (throat, eyes, smell)
 5. Would you check it again tomorrow? yes / no — why.
+
+If you were shown a species cue, add a sixth: **what you actually saw versus what
+was suggested.** "Suggested a pansy, saw a Brahminy kite and three crows" is a
+better field-test result than "the suggestion was fine", because it is specific
+enough to act on.
 
 **Photos (up to 3, optional):** the park, the Pocket Mode screen, something you
 were told to notice.

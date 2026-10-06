@@ -16,6 +16,8 @@ const API = '/api/brief';
 const state = {
   data: null,
   cues: [],
+  cueTags: [],
+  evidence: {},
   cueIndex: 0,
   walkSeconds: 20 * 60,
   remaining: 0,
@@ -24,6 +26,11 @@ const state = {
   walkTimer: null,
   countdown: null,
   autoPocketAt: 0,
+  // Species name from the last seasonal cue that was actually shown, and what
+  // the walker said about it. Both feed the after-walk journal, which is the only
+  // place in this product where a human supplies the missing evidence.
+  shownSpecies: null,
+  speciesSeen: null,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -235,6 +242,14 @@ function renderPlan(data) {
   paintCue();
 
   $('use-fast').hidden = briefing.writer !== 'template';
+  // Reset per-walk state. `shownSpecies` in particular must not survive a new
+  // brief: the journal asks "did you see the X?" about *this* walk's cue, and a
+  // leftover name from the previous session would be a question about a
+  // suggestion nobody was given this time.
+  state.shownSpecies = null;
+  state.speciesSeen = null;
+  state.walkStartedAt = null;
+
   $('use-fast').textContent = 'Rewrite it locally instead (instant)';
 }
 
@@ -254,6 +269,12 @@ function paintCue() {
     const isData = cue && cue.tag === 'seasonal';
     note.hidden = !isData;
     if (isData) note.textContent = state.evidence[cue.text] || '';
+    // Remember which species was actually put in front of the reader. If one was,
+    // the after-walk journal asks whether they saw it -- the only question in
+    // this product that no eval harness can answer.
+    if (isData) {
+      state.shownSpecies = cue.text.replace(/^Look for an? /, '').replace(/\.$/, '');
+    }
   }
 }
 
@@ -328,6 +349,20 @@ function journalMarkdown(entry, all) {
     const n = entry.reached_for_phone;
     lines.push(`- **Reached for the phone:** ${n} ${n === 1 ? 'time' : 'times'}`);
   }
+  // Mirrors `SPECIES_SEEN_LABELS` in journal.py. "no answer recorded" is
+  // deliberate: a suggestion the reader never acted on is not a sighting.
+  if (entry.species_suggested) {
+    const labels = {
+      yes: 'saw it',
+      no: 'did not see it',
+      unrecognised: 'did not recognise the name',
+      'not-looked': 'did not look',
+    };
+    lines.push(
+      `- **Species cue:** ${entry.species_suggested} - ` +
+        `${labels[entry.species_seen] || 'no answer recorded'}`,
+    );
+  }
   lines.push(`- **Outcome:** ${entry.outcome}`);
   if (entry.note) lines.push(`- **Note:** ${entry.note}`);
   let md = lines.join('\n') + '\n';
@@ -337,6 +372,17 @@ function journalMarkdown(entry, all) {
     md += `\n_${all.length} entries - ${walks} walks recorded - ${reaches} phone reaches._\n`;
   }
   return md;
+}
+
+/* The species question only appears if a seasonal cue was actually seen during
+ * the walk. Asking unconditionally would collect answers about a suggestion the
+ * reader never got. */
+function syncSpeciesQuestion() {
+  const box = $('j-species');
+  if (!box) return;
+  const species = state.shownSpecies;
+  box.hidden = !species;
+  if (species) $('j-species-q').textContent = `did you see the ${species}?`;
 }
 
 function openJournal() {
@@ -356,6 +402,7 @@ function openJournal() {
   $('journal').hidden = false;
   const skipped = state.data && state.data.plan.overall === 'SKIP';
   $('j-title').textContent = skipped ? 'No walk logged.' : 'Walk done.';
+  syncSpeciesQuestion();
 }
 
 function closeJournal() {
@@ -394,6 +441,8 @@ function saveJournal(outcome) {
     minutes_planned: pocket.walk_minutes || null,
     minutes_walked: outcome === 'skipped' ? 0 : elapsedMin,
     reached_for_phone: reached,
+    species_suggested: state.shownSpecies || null,
+    species_seen: state.speciesSeen || null,
     note: ($('j-note').value || '').trim(),
   };
 
@@ -401,7 +450,7 @@ function saveJournal(outcome) {
   all.push(entry);
   writeJournal(all);
 
-  document.querySelectorAll('.jbtn').forEach((b) => {
+  document.querySelectorAll('.jbtn[data-outcome]').forEach((b) => {
     b.setAttribute('aria-pressed', String(b.dataset.outcome === outcome));
   });
   $('j-md').textContent = journalMarkdown(entry, all);
@@ -502,8 +551,23 @@ function boot() {
   $('use-fast').addEventListener('click', () => load('template'));
 
   // journal
-  document.querySelectorAll('.jbtn').forEach((btn) => {
+  document.querySelectorAll('.jbtn[data-outcome]').forEach((btn) => {
     btn.addEventListener('click', () => saveJournal(btn.dataset.outcome));
+  });
+  // The sighting answer, if a seasonal cue was shown. Kept separate from the
+  // outcome buttons because it is a different kind of claim: not "did you go"
+  // but "did the suggestion hold".
+  document.querySelectorAll('.jbtn[data-saw]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.speciesSeen = btn.dataset.saw;
+      document.querySelectorAll('.jbtn[data-saw]').forEach((b) => {
+        b.setAttribute('aria-pressed', String(b.dataset.saw === state.speciesSeen));
+      });
+      // Save immediately with whatever outcome is already chosen, so the answer
+      // cannot be lost by tapping an outcome button afterwards.
+      const chosen = document.querySelector('.jbtn[data-outcome][aria-pressed="true"]');
+      if (chosen) saveJournal(chosen.dataset.outcome);
+    });
   });
   document.querySelectorAll('.jcount').forEach((btn) => {
     btn.addEventListener('click', () => {
