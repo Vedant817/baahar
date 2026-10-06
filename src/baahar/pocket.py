@@ -146,16 +146,44 @@ def _cue_pool(plan: OutdoorPlan) -> list[Cue]:
     return conditions + _seasonal_for(plan)
 
 
-def _headline_for(decision: Decision, park_name: str | None) -> tuple[str, str]:
-    if decision is Decision.GO:
+def _headline_for(plan: OutdoorPlan, park_name: str | None) -> tuple[str, str]:
+    if plan.overall is Decision.GO:
         return ("Phone in pocket.", f"Look up. Walk {park_name or 'the park'}")
-    if decision is Decision.WAIT:
-        return ("Not yet.", f"Rest until {_next_hint()}. Then outside.")
+    if plan.overall is Decision.WAIT:
+        when = _next_hint(plan)
+        if when:
+            return ("Not yet.", f"Rest until {when}. Then outside.")
+        # No hour to promise, so promise none. The old wording here was "Rest
+        # until the window opens", which names no time and so is a promise the
+        # product cannot keep -- and for a WAIT plan it usually cannot keep it
+        # at all, because `pick_best` ranks GO above WAIT, so a WAIT verdict
+        # means no hour in the scored window was a GO. Saying so is more useful
+        # than a vague promise, and it is the only honest option left.
+        return ("Not yet.", "No clean hour left in this window.")
     return ("Stay in.", "Baahar is not sending you out today.")
 
 
-def _next_hint() -> str:
-    return "the window opens"
+def _next_hint(plan: OutdoorPlan) -> str:
+    """The hour to come back out at, or ``""`` when the plan has no such hour.
+
+    Read from the plan's own per-hour verdicts (`OutdoorPlan.slots`), never
+    invented: only an hour the scorer actually called GO is named, and only if
+    it falls *after* the hour the plan is already resting through -- otherwise
+    the copy would send someone back out earlier than the advice it is quoting.
+
+    ``%H:%M`` is deliberate and matches every other hour in the product
+    (`score._headline`, `brief.build_context`, `pocket.format_window`, the CLI
+    and `journal.py`). The pocket screen sits directly under a brief that shows
+    the same hours in the same format, so a second format here would be a
+    contradiction, not a nicety. Slot timestamps are whole hours, so there are no
+    minutes to render either way.
+    """
+    candidates = [s.time for s in plan.slots if s.decision is Decision.GO]
+    if plan.best_time is not None:
+        candidates = [t for t in candidates if t > plan.best_time]
+    if not candidates:
+        return ""
+    return min(candidates).strftime("%H:%M")
 
 
 def _subline_for(plan: OutdoorPlan) -> str:
@@ -199,14 +227,18 @@ def build_pocket(plan: OutdoorPlan, walk_minutes: int | None = None) -> PocketMo
     settings = get_settings()
     minutes = walk_minutes or settings.walk_minutes
     park_name = plan.park.name if plan.park else None
-    headline, subline = _headline_for(plan.overall, park_name)
+    headline, subline = _headline_for(plan, park_name)
     pool = _cue_pool(plan)
     notice = pool[0].text if pool else _CUES_DEFAULT[0]
 
     return PocketMode(
         active=plan.overall is not Decision.SKIP,
         headline=headline,
-        subline=subline or (_next_hint() if plan.overall is Decision.WAIT else ""),
+        # No fallback needed: every branch of `_headline_for` returns a subline,
+        # including the WAIT one that has no hour to name. The old `or _next_hint()`
+        # here was the other half of the vague promise, and it could only have
+        # fired if `_headline_for` had returned an empty string.
+        subline=subline,
         walk_minutes=minutes,
         notice_this=notice,
         park_name=park_name,

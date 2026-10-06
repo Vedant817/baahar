@@ -95,6 +95,10 @@
       <div class="cta">
         <button id="pocket" class="btn btn--pocket">Pocket the phone</button>
         <p class="hint" id="auto-hint" hidden></p>
+        <!-- Why Pocket Mode is unavailable, in the payload's own words. Shown
+             only when `pocket.active` is false; a disabled control with no
+             reason is worse than no control at all. -->
+        <p class="hint" id="pocket-blocked" hidden></p>
       </div>
 
       <p id="attrib" class="attrib"></p>
