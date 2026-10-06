@@ -30,7 +30,7 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | Indian NAQI, not US AQI | `naqi.py`; CPCB breakpoints; `naqi_basis` provenance on every result |
 | **DONE** | GO / WAIT / SKIP scorer with documented policy | `features.py`, `score.py` |
 | **DONE** | Heuristic fallback always available | `score_heuristic`, exercised by 12 tests |
-| **DONE** | TabPFN path implemented + evaluated | `tabpfn==9.1.0` on cpu, real holdout: **0.8512 acc / 0.6040 macro-F1**, best in table. `eval/RESULTS.md` § A |
+| **DONE** | TabPFN path implemented + evaluated | `tabpfn==9.1.0` on cpu, real holdout: **0.8512 acc / 0.6040 macro-F1**, best in table. `eval/RESULTS.md` § A. Used live at request time after the feature-alignment fix (§ C.14). |
 | **DONE** | Gemma briefing path works | `brief.py`; `gemma-4-31b-it` via AI Studio free tier |
 | **DONE** | ≤120-word safety-aware briefing | `MAX_WORDS`, `enforce_safety` |
 | **DONE** | Pocket Mode | `pocket.py` + `static/`, verified headless |
@@ -126,5 +126,11 @@ name what a reader can reproduce.**
 8. **The fitted TabPFN classifier is 840 MB** and is deliberately not committed
    (`eval/artifacts/` is gitignored). `scripts/run_eval.py` recreates it. This is
    the disk constraint doing its job: the weights stay out of the repo.
-9. **Not deployed.** A local run plus a recorded walk is acceptable to the
-   challenge; `render.yaml` is ready if a promo is claimed.
+9. **The eval measured a pipeline the app did not run**, until the feature lists
+   were unified. 13 archive columns against 15 library features meant a fitted
+   model raised inside `predict_proba` and every hour fell back to the heuristic
+   while the accuracy table was published as a result. Fixed and re-run — no
+   number moved — but the claim "the app scores with this exact model" was false
+   until then. `RESULTS.md` § C.14.
+10. **Not deployed.** A local run plus a recorded walk is acceptable to the
+    challenge; `render.yaml` is ready if a promo is claimed.

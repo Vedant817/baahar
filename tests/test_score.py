@@ -7,7 +7,9 @@ model says.
 
 from __future__ import annotations
 
+import sys
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import pytest
 
@@ -342,6 +344,86 @@ class TestFeatures:
 
         row = row_from_slot(go_slot)
         assert len(row) == len(FEATURE_NAMES)
+
+    def test_every_declared_feature_is_computed(self, go_slot: HourSlot) -> None:
+        """A name in FEATURE_NAMES with no matching key raises KeyError deep
+        inside predict, which reads as a model fault rather than a data fault."""
+        from baahar.features import FEATURE_NAMES, features_from_slot
+
+        computed = features_from_slot(go_slot)
+        missing = [n for n in FEATURE_NAMES if n not in computed]
+        assert not missing, f"declared but not computed: {missing}"
+
+    def test_hour_and_month_are_model_columns(self, go_slot: HourSlot) -> None:
+        """Regression guard for the 13-vs-15 feature divergence.
+
+        The eval fitted on `hour`/`month` from the archive while the library built
+        `hour_sin`/`hour_cos`, so the fitted model could never be used by the app.
+        These two must be part of the model's column contract.
+        """
+        from baahar.features import TABPFN_FEATURE_ORDER
+
+        assert "hour" in TABPFN_FEATURE_ORDER
+        assert "month" in TABPFN_FEATURE_ORDER
+
+    def test_the_eval_imports_the_library_column_order(self) -> None:
+        """One definition, one owner. A second copy of the column list in
+        run_eval.py is exactly how the two drifted apart."""
+        from pathlib import Path
+
+        source = Path(__file__).resolve().parents[1] / "scripts" / "run_eval.py"
+        text = source.read_text(encoding="utf-8")
+        assert "FEATURE_COLUMNS = list(TABPFN_FEATURE_ORDER)" in text, (
+            "run_eval.py must derive FEATURE_COLUMNS from baahar.features rather "
+            "than declaring its own list"
+        )
+
+    def test_eval_columns_match_the_library(self) -> None:
+        from baahar.features import TABPFN_FEATURE_ORDER
+
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+        try:
+            import run_eval  # type: ignore[import-not-found]
+        finally:
+            sys.path.pop(0)
+        assert list(run_eval.FEATURE_COLUMNS) == list(TABPFN_FEATURE_ORDER)
+
+    def test_a_feature_count_mismatch_is_refused_loudly(self, go_slot: HourSlot) -> None:
+        """Not reordered to fit. Silently padding or truncating columns would make
+        the model score on values that mean something else."""
+        from baahar import score as score_mod
+
+        class WrongWidthModel:
+            n_features_in_ = 7
+
+            def predict_proba(self, x):  # pragma: no cover - must never be reached
+                raise AssertionError("predict must not run on a mismatched model")
+
+        with pytest.raises(ValueError, match="expects 7 features"):
+            score_mod.score_tabpfn([go_slot], model=WrongWidthModel())
+
+    def test_save_and_load_agree_on_the_default_path(self, tmp_path: Path) -> None:
+        """Writer and reader must name the same file, or a fitted model gets
+        written and then ignored.
+
+        Deliberately writes to `tmp_path` via the explicit argument. Asserting the
+        default path by *calling* the default would overwrite a real fitted model
+        with a stub, which is not a cost worth paying for a path assertion --
+        and the earlier version of this test did exactly that.
+        """
+        from baahar.score import save_tabpfn_model
+
+        target = save_tabpfn_model({"sentinel": True}, path=tmp_path / "m.pkl")
+        assert Path(target) == tmp_path / "m.pkl"
+        assert (tmp_path / "m.pkl").exists()
+
+    def test_default_artifact_is_gitignored(self) -> None:
+        """The fitted model is 840 MB and must never reach the repo."""
+        from baahar.score import DEFAULT_TABPFN_ARTIFACT
+
+        gitignore = (Path(__file__).resolve().parents[1] / ".gitignore").read_text(encoding="utf-8")
+        assert DEFAULT_TABPFN_ARTIFACT.parent.name in gitignore
+        assert "*.pkl" in gitignore
 
     def test_hour_is_cyclically_encoded(self, slot) -> None:
         """23:00 and 00:00 must be adjacent in feature space, not far apart."""

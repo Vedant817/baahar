@@ -214,6 +214,22 @@ def score_tabpfn(slots: Sequence[HourSlot], model: Any | None = None) -> list[Sl
 
     from .features import TABPFN_FEATURE_ORDER
 
+    # Fail loudly on a feature-count mismatch rather than letting the model raise
+    # deep inside `predict_proba`. This exact mismatch shipped once: the eval
+    # fitted on 13 archive columns while the app built 15 library features, so a
+    # correct install silently fell back to the heuristic.
+    expected = getattr(model, "n_features_in_", None)
+    if expected is not None and int(expected) != len(TABPFN_FEATURE_ORDER):
+        raise ValueError(
+            f"fitted TabPFN model expects {expected} features but "
+            f"baahar.features.FEATURE_NAMES defines {len(TABPFN_FEATURE_ORDER)} "
+            f"({', '.join(TABPFN_FEATURE_ORDER)}). The model was fitted against a "
+            "different feature set -- re-run `uv run python scripts/run_eval.py` "
+            "to refit it against the current definition, or delete the artifact. "
+            "This is not something to paper over by reordering columns: the "
+            "values would silently mean something else."
+        )
+
     x = np.array(
         [[features_from_slot(s)[name] for name in TABPFN_FEATURE_ORDER] for s in slots],
         dtype="float32",
@@ -258,9 +274,11 @@ def load_tabpfn_model(path: Any | None = None):
     from pathlib import Path
 
     raw = path or get_settings().tabpfn_model_path
-    if not raw:
-        return None
-    candidate = Path(raw)
+    # Fall back to where `save_tabpfn_model` writes. Without this, a fitted model
+    # from `scripts/run_eval.py` existed but was invisible to the app unless
+    # TABPFN_MODEL_PATH was set by hand -- so `auto` never used TabPFN and said
+    # "no training rows yet" while an 840 MB model sat in eval/artifacts/.
+    candidate = Path(raw) if raw else DEFAULT_TABPFN_ARTIFACT
     if not candidate.exists():
         log.info("no TabPFN artifact at %s; using the policy", candidate)
         return None
@@ -272,12 +290,19 @@ def load_tabpfn_model(path: Any | None = None):
         return None
 
 
+#: Where `save_tabpfn_model` writes, and where `load_tabpfn_model` looks by
+#: default. Gitignored -- 840 MB, and AGENTS.md forbids multi-GB artefacts in
+#: the repo. Both sides must name the same path or the fitted model is written
+#: and then ignored.
+DEFAULT_TABPFN_ARTIFACT = REPO_ROOT / "eval" / "artifacts" / "tabpfn_gono.pkl"
+
+
 def save_tabpfn_model(model: Any, path: Any | None = None) -> str:
     """Persist a fitted classifier so the web app can reuse it."""
     import pickle
     from pathlib import Path
 
-    target = Path(path) if path else (REPO_ROOT / "eval" / "artifacts" / "tabpfn_gono.pkl")
+    target = Path(path) if path else DEFAULT_TABPFN_ARTIFACT
     target.parent.mkdir(parents=True, exist_ok=True)
     with target.open("wb") as fh:
         pickle.dump(model, fh)
@@ -292,8 +317,14 @@ def choose_scorer(
 ) -> tuple[str, str]:
     """Resolve a scorer request into ``(scorer_name, note)``.
 
-    ``auto`` prefers tabpfn when it is importable *and* we have rows to fit on,
-    otherwise uses the policy. The note is surfaced to the user either way.
+    ``auto`` prefers tabpfn when it is importable *and* there is something to
+    score with -- either rows supplied by the caller, or a fitted artifact from a
+    previous ``scripts/run_eval.py``. Otherwise it uses the policy. The note is
+    surfaced to the user either way.
+
+    The artifact check matters: a fitted model on disk is the normal state after
+    running the eval, and reporting "no training rows yet" while ignoring it made
+    a correctly-configured install look broken.
     """
     requested = (requested or "auto").lower()
     available, reason = tabpfn_available()
@@ -316,11 +347,21 @@ def choose_scorer(
             return "heuristic", f"TabPFN requested but {reason}. {fix}"
         return "tabpfn", "TabPFN requested and available."
     # auto
-    if available and fit_on:
-        return "tabpfn", "TabPFN available and fitted on recorded data."
     if not available:
         return "heuristic", f"TabPFN {reason}; using the documented policy."
-    return "heuristic", "TabPFN available but no training rows yet; using the policy."
+    if fit_on:
+        return "tabpfn", "TabPFN available and fitted on recorded data."
+
+    # A fitted artifact from scripts/run_eval.py is the usual case: the eval fits
+    # on the past and persists it precisely so the app scores with the exact model
+    # the published table reports, rather than refitting something else at request
+    # time.
+    if load_tabpfn_model() is not None:
+        return "tabpfn", "TabPFN available; using the model fitted by scripts/run_eval.py."
+    # Kept short on purpose: this notice prints on every single run in auto mode,
+    # and a paragraph of remediation for a condition that is not an error reads as
+    # a broken build. The fix lives in docs/NEEDS_HUMAN.md.
+    return "heuristic", "TabPFN installed but not fitted; using the policy."
 
 
 def score_slots(

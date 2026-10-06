@@ -55,7 +55,12 @@ from datetime import datetime
 from pathlib import Path
 
 from baahar.config import EVAL_DATA_DIR, EVAL_RAW_DIR, get_settings
-from baahar.features import BAND_ORDINALS, NAQI_SKIP, PRECIP_SKIP_MM
+from baahar.features import (
+    BAND_ORDINALS,
+    NAQI_SKIP,
+    PRECIP_SKIP_MM,
+    TABPFN_FEATURE_ORDER,
+)
 from baahar.score import CPU_LARGE_DATASET_ENV, save_tabpfn_model
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -64,21 +69,11 @@ from build_dataset import apply_band_policy  # noqa: E402
 BANDS = ["good", "satisfactory", "moderate", "poor", "severe", "hazardous"]
 DECISIONS = ["GO", "WAIT", "SKIP"]
 
-FEATURE_COLUMNS = [
-    "naqi",
-    "pm25",
-    "pm10",
-    "temp_c",
-    "apparent_c",
-    "precip_mm",
-    "precip_prob",
-    "humidity",
-    "wind_kmh",
-    "uv_index",
-    "is_day",
-    "hour",
-    "month",
-]
+# The model columns. Imported, not redeclared: a second copy of this list is how
+# the eval and the app ended up disagreeing (13 archive-derived columns against 15
+# library features), which made a fitted model unusable at request time while
+# still publishing its accuracy as a headline number. One definition, one owner.
+FEATURE_COLUMNS = list(TABPFN_FEATURE_ORDER)
 
 
 # ---------------------------------------------------------------------------

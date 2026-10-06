@@ -42,6 +42,17 @@ eval/artifacts/
 data/cache/
 .tmp/
 
+# --- the walk journal --------------------------------------------------------
+# `data/journal.jsonl` is *your* observations, not fixtures. It is the one file in
+# this repo that must never be committed by accident: a stray `uv run baahar
+# journal` from testing would otherwise publish half-finished field-test entries
+# alongside the empty form in docs/FIELD_TEST.md, and the two would contradict
+# each other.
+#
+# Fill-in fields from a *completed* walk are pasted into docs/FIELD_TEST.md by
+# hand, deliberately, so the decision to publish an observation stays a human one.
+data/journal.jsonl
+
 # --- tooling -----------------------------------------------------------------
 .pytest_cache/
 .ruff_cache/

@@ -8,6 +8,7 @@ Every fixture here is either recorded from a real upstream response (see
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import pytest
 
@@ -15,6 +16,10 @@ from baahar.models import HourlyAir, HourlyWeather, HourSlot, Park
 
 IST = timezone(timedelta(hours=5, minutes=30))
 BASE = datetime(2026, 10, 6, 5, 0, tzinfo=IST)
+
+#: A path that cannot exist, used to make the TabPFN artifact lookup miss
+#: deterministically. See `_deterministic_scorer`.
+NO_TABPFN_ARTIFACT = Path(__file__).parent / "_no_such_tabpfn_model.pkl"
 
 
 def make_weather(
@@ -81,6 +86,21 @@ def make_slot(offset_hours: int = 0, **kwargs) -> HourSlot:
     return HourSlot(
         weather=make_weather(offset_hours, **kwargs), air=make_air(offset_hours, **air_kwargs)
     )
+
+
+@pytest.fixture(autouse=True)
+def _deterministic_scorer(monkeypatch):
+    """Stop `auto` from picking up a locally-fitted TabPFN model.
+
+    `build_plan` defaults to `scorer="auto"`, which prefers a fitted
+    `eval/artifacts/tabpfn_gono.pkl` when one exists. That file is gitignored, so
+    the suite passed in CI and failed on a developer machine that had run the eval
+    -- same code, different answers.
+
+    Tests assert on decisions, so the scorer must be pinned. The TabPFN path has
+    its own tests that request it explicitly.
+    """
+    monkeypatch.setenv("TABPFN_MODEL_PATH", str(NO_TABPFN_ARTIFACT))
 
 
 @pytest.fixture

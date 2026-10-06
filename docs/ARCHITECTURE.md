@@ -86,7 +86,18 @@ is discarded in favour of the policy. A model may talk someone out of a walk; it
 may never talk them into bad air. This is one comparison in `score.py` and it
 is covered by tests with a deliberately adversarial stub model.
 
-Two practical notes, both learned by hitting them:
+- **The eval and the app share one feature definition.** `FEATURE_NAMES` in
+  `features.py` is the single owner of the column order; `scripts/run_eval.py`
+  does `FEATURE_COLUMNS = list(TABPFN_FEATURE_ORDER)` rather than declaring its
+  own list. They used to diverge (13 archive columns against 15 library features),
+  which meant a model fitted by the eval could never be used at request time: it
+  raised inside `predict_proba`, `score_slots` caught it, and every hour fell back
+  to the policy while the published accuracy table described a pipeline nobody ran.
+  `score_tabpfn` now compares `n_features_in_` against `len(FEATURE_NAMES)` and
+  raises a `ValueError` naming both counts, rather than reordering columns to fit.
+  `eval/RESULTS.md` § C.14 has the full account.
+
+Two further practical notes, all three learned by hitting them:
 
 - **TabPFN's CPU size guard must be lifted before the import.** The guard reads a
   pydantic settings object that snapshots at import time, so
@@ -101,11 +112,17 @@ Two practical notes, both learned by hitting them:
   constraint from `AGENTS.md` enforced at the file level rather than by
   discipline.
 
-Measured on the offline fixture window: TabPFN and the heuristic pick the **same
-best hour and disagree on 0 of 24 hours**. The model is in the product because the
-challenge asked for it and because it is genuinely the highest-scoring model on
-the holdout — not because it currently changes an answer. That is recorded rather
-than smoothed over.
+- **The fitted model lives at `DEFAULT_TABPFN_ARTIFACT`** and both
+  `save_tabpfn_model` and `load_tabpfn_model` name that constant. They used to
+  disagree: the writer saved to `eval/artifacts/tabpfn_gono.pkl` while the reader
+  only looked at `$TABPFN_MODEL_PATH`, so an 840 MB fitted model sat on disk being
+  invisible to the scorer. Writer and reader must agree on the path; that is a test.
+
+Measured on the offline fixture window: TabPFN and the heuristic pick the same best
+hour and disagree on 0 of 24 hours. The model is in the product because the
+challenge asked for it and because it is genuinely the highest-scoring model on the
+holdout — not because it currently changes an answer. That is recorded rather than
+smoothed over.
 
 ### 4. Safety is enforced after generation, not requested in a prompt
 

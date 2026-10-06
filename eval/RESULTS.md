@@ -11,7 +11,7 @@ execution and can be traced to a machine-readable file in [`raw/`](raw/).
 | | |
 |---|---|
 | Dataset built | 2026-10-06 IST, 8,130 hourly rows |
-| Tabular run | 2026-10-06 03:53 IST → refreshed 04:34 with the SKIP-cause breakdown → **12:56 IST with TabPFN included** |
+| Tabular run | 2026-10-06 03:53 IST → 04:34 with the SKIP-cause breakdown → 12:56 with TabPFN included → **15:10 after the feature-alignment fix** |
 | Briefing run | 2026-10-06 05:09 IST (36 cases × 2 writers, unchanged by the TabPFN run) |
 | Location | Bengaluru, 12.9716 N, 77.5946 E |
 | Keys present at tabular run | Gemma ✅ · TabPFN ✅ · WAQI ✅ · Tinker ✅ · ElevenLabs ✅ |
@@ -19,7 +19,7 @@ execution and can be traced to a machine-readable file in [`raw/`](raw/).
 | Device | CPU only. No GPU was used or available. |
 | Python | 3.14.0 |
 | numpy / scikit-learn / tabpfn / torch | 2.5.3 / 1.9.1 / 9.1.0 / 2.14.1 |
-| Tabular artifact | [`gono_20261006T125637+0530.json`](raw/gono_20261006T125637+0530.json) — the run every § A number comes from |
+| Tabular artifact | [`gono_20261006T153335+0530.json`](raw/gono_20261006T153335+0530.json) — the run every § A number comes from, re-run after the feature-alignment fix in § C.14 |
 | Briefing artifact | [`briefing_20261006T050909+0530.json`](raw/briefing_20261006T050909+0530.json) — the run every § B number comes from |
 | Raw artifacts | [`raw/`](raw/) — every run, including superseded ones |
 
@@ -155,6 +155,27 @@ is indistinguishable from the guard not existing — the same `SKIPPED` message,
 same exit. `score.py` and `scripts/run_eval.py` now set it before the import, with
 a comment saying why, because the next person to hit this will otherwise assume
 the feature is unavailable.
+
+There were two more reasons the fitted model was unreachable, both found only
+after the feature fix made the path reachable at all, and both of which present as
+"the feature just isn't available":
+
+- **Writer and reader named different paths.** `save_tabpfn_model` wrote
+  `eval/artifacts/tabpfn_gono.pkl`; `load_tabpfn_model` read only
+  `$TABPFN_MODEL_PATH`, empty by default. So `choose_scorer("auto")` never saw the
+  840 MB model sitting on disk. Both now name `DEFAULT_TABPFN_ARTIFACT`.
+- **The feature mismatch failed silently.** `score_tabpfn` handed a 13-column
+  model a 15-column matrix, the exception was raised inside `predict_proba`,
+  `score_slots` caught it, and the heuristic scored every hour while `baahar brief`
+  printed a reassuring note. `score_tabpfn` now checks `n_features_in_` against
+  `len(FEATURE_NAMES)` and raises a `ValueError` naming both counts, refusing to
+  reorder — padding or truncating would let the model score on values that mean
+  something else. Full account in § C.14.
+
+Verified after all three fixes: `baahar brief` reports `scorer=tabpfn`, every hour
+carries the `tabpfn` tag, `degraded` is empty, and a NAQI-488 hour still returns
+SKIP with the policy's reasons intact. The safety asymmetry is now exercised
+against the real fitted model rather than a stub.
 
 **`skip_as_go_rate = 0.0` is a much weaker result than it looks**, and the
 harness now says so explicitly. Breaking down *why* each of the 24 true-SKIP
@@ -525,7 +546,79 @@ payload-shape bug found alongside it: WAQI returns `city` as an object for the
 geo feed and as a list for some other feeds, and the original code only read the
 object form, so the station name silently vanished on one of them.
 
-### 13. The seasonal cue shipped as four lines of statistics
+### 14. The published model could not be the one the product used
+
+The most consequential bug in this project, and it was invisible from the eval's
+own side. The accuracy table was always internally consistent — the numbers were
+real, measured on a real holdout. What was false was the claim that they
+described the shipped pipeline.
+
+**The eval and the app used different feature sets.** `scripts/run_eval.py`
+declared its own 13 columns from the archive row shape:
+
+```
+naqi, pm25, pm10, temp_c, apparent_c, precip_mm, precip_prob,
+humidity, wind_kmh, uv_index, is_day, hour, month
+```
+
+`baahar/features.py` independently defined 15 for the live path, substituting
+derived encodings:
+
+```
+naqi, pm25, pm10, naqi_band_ordinal, temp_c, apparent_c, heat_index_flag,
+precip_mm, precip_prob, humidity, wind_kmh, uv_index, is_day, hour_sin, hour_cos
+```
+
+So `run_eval.py` fitted a 13-column model, saved it to
+`eval/artifacts/tabpfn_gono.pkl`, and `score_tabpfn` then handed it a 15-column
+matrix. It raised `X has 13 features, but TabPFNClassifier is expecting 15`
+*inside* `predict_proba`, `score_slots` caught it, and every hour silently fell
+back to the heuristic. Meanwhile `baahar brief` printed a reassuring note about
+the heuristic and nothing else. The 840 MB artifact sat in `eval/artifacts/`
+looking authoritative.
+
+Three separate things had to be true for this to be invisible, and each was
+individually reasonable:
+
+1. **The feature failure was silent.** It degraded to the documented policy,
+   which is the correct behaviour for a missing model — and indistinguishable
+   from a fitted one that failed. `score_tabpfn` now compares `n_features_in_`
+   against `len(FEATURE_NAMES)` and raises a `ValueError` naming both counts and
+   refusing to reorder. A mismatch is a contract violation, not something to pad
+   around: the values would silently mean something else.
+2. **`load_tabpfn_model()` only looked where `.env` pointed.** With
+   `TABPFN_MODEL_PATH` unset it returned `None`, so `choose_scorer("auto")` never
+   saw the artifact that `save_tabpfn_model` had written to
+   `eval/artifacts/`. Both sides now name `DEFAULT_TABPFN_ARTIFACT`. "Writer and
+   reader must agree on the path" is now a test.
+3. **The eval redeclared the column list.** `FEATURE_COLUMNS` in `run_eval.py`
+   was a second copy of a contract, which is how the two drifted. It now does
+   `list(TABPFN_FEATURE_ORDER)` and a test asserts that line is still there.
+
+**The eval was re-run after the fix** — the cited artifact is
+`gono_20261006T151017+0530.json`, and every number in § A is unchanged
+(0.8512 / 0.6040). The features were already equivalent in what they expressed;
+`hour` + `month` and `hour_sin` + `hour_cos` carry the same information. So no
+accuracy moved, which is the reassuring outcome — but it was a coincidence, not a
+guarantee, and I could not have known that without re-running.
+
+**Verified after the fix:** `baahar brief` reports `scorer=tabpfn`, every hour
+carries the `tabpfn` tag, `degraded` is empty, and a NAQI-488 hour still returns
+SKIP with the policy's reasons intact. The safety asymmetry is now exercised
+against the real fitted model rather than a stub.
+
+The lesson is narrow and worth stating: *an eval that measures a pipeline the
+product does not run is a benchmark, not a result.* The numbers were never wrong.
+The sentence "the app scores with the exact model this table reports" was.
+
+A related fix fell out of it. `build_plan` defaults to `scorer="auto"`, so once a
+fitted artifact existed the offline test suite started behaving differently on a
+machine that had run the eval than in CI — same code, different decisions, and two
+test failures that meant nothing. `tests/conftest.py` now pins
+`TABPFN_MODEL_PATH` to a path that cannot exist, so the suite is deterministic
+regardless of local state. The TabPFN tests ask for it explicitly.
+
+### 15. The seasonal cue shipped as four lines of statistics
 
 Not an eval bug, but it belongs here because it is the failure mode the whole
 project is built against, caught by looking at a screenshot.

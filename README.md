@@ -157,6 +157,13 @@ table. Two things worth knowing before you trust it:
   eval is ~5.5 minutes.
 - The fitted classifier is **840 MB**, so `eval/artifacts/` is gitignored and
   `run_eval.py` recreates it. No weights in this repo, by design.
+- The eval and the app share **one** feature definition. They didn't for a while:
+  the eval fitted on 13 archive columns while the app built 15 library features, so
+  a fitted model could never actually be used at request time — it failed inside
+  `predict_proba` and every hour silently fell back to the heuristic while the
+  published table described a pipeline nobody ran. `score_tabpfn` now raises on a
+  feature-count mismatch instead of reordering columns to fit. Full account in
+  [`eval/RESULTS.md`](eval/RESULTS.md) § C.14.
 
 ---
 

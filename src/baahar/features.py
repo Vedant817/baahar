@@ -27,25 +27,37 @@ from .weather import weather_category
 
 #: Ordered feature names. Frozen because a trained TabPFN model's column
 #: ordering is part of its contract -- appending is safe, reordering is not.
+#:
+#: **These are the same 13 columns the eval uses**, and that is the whole point.
+#: They used to diverge: the archive dataset stored `hour` and `month` while the
+#: library built `hour_sin`/`hour_cos`, `naqi_band_ordinal` and `heat_index_flag`
+#: -- 13 columns against 15. A model fitted by `scripts/run_eval.py` could then
+#: never be used by the app, because the X matrices did not match. It failed at
+#: predict time with "X has 13 features, but TabPFNClassifier is expecting 15",
+#: `auto` silently fell back to the heuristic, and the published table described a
+#: pipeline the product did not run.
+#:
+#: `scripts/run_eval.py` imports this tuple rather than redeclaring it, so the two
+#: cannot drift apart again.
 FEATURE_NAMES: tuple[str, ...] = (
     "naqi",
     "pm25",
     "pm10",
-    "naqi_band_ordinal",
     "temp_c",
     "apparent_c",
-    "heat_index_flag",
     "precip_mm",
     "precip_prob",
     "humidity",
     "wind_kmh",
     "uv_index",
     "is_day",
-    "hour_sin",
-    "hour_cos",
+    "hour",
+    "month",
 )
 
-#: Column order for the TabPFN X matrix.
+#: Column order for the TabPFN X matrix. Same as :data:`FEATURE_NAMES`; named
+#: separately because "the model's column contract" is a different idea from
+#: "every feature this module can compute".
 TABPFN_FEATURE_ORDER: tuple[str, ...] = FEATURE_NAMES
 
 #: Ordinal encoding of NAQI bands, worst last.
@@ -80,29 +92,37 @@ def _f(value: float | None) -> float:
 
 
 def features_from_slot(slot: HourSlot) -> dict[str, float]:
-    """Build one feature row from a joined hour."""
+    """Build one feature row from a joined hour.
+
+    Keys are exactly :data:`FEATURE_NAMES`, so the dict can be fed to a fitted
+    TabPFN model without reordering. Derived extras that the heuristic and the UI
+    find useful are included too -- a missing key here raises ``KeyError`` at
+    predict time, which is a much better failure than silently misaligned columns.
+    """
     air = slot.air
     weather = slot.weather
     hour = weather.time.hour
-    # radians for sin/cos encoding
-    angle = 2 * math.pi * hour / 24.0
     band = air.naqi_band or ""
     return {
+        # -- model columns, in FEATURE_NAMES order -----------------------------
         "naqi": _f(air.naqi),
         "pm25": _f(air.pm25),
         "pm10": _f(air.pm10),
-        "naqi_band_ordinal": float(BAND_ORDINALS.get(band, -1)),
         "temp_c": _f(weather.temp_c),
         "apparent_c": _f(weather.apparent_c),
-        "heat_index_flag": heat_index_flag(weather.apparent_c),
         "precip_mm": _f(weather.precip_mm),
         "precip_prob": _f(weather.precip_prob),
         "humidity": _f(weather.humidity),
         "wind_kmh": _f(weather.wind_kmh),
         "uv_index": _f(weather.uv_index),
         "is_day": float(weather.is_day or 0),
-        "hour_sin": math.sin(angle),
-        "hour_cos": math.cos(angle),
+        "hour": float(hour),
+        "month": float(weather.time.month),
+        # -- derived, for the policy and the UI, not for the model --------------
+        "naqi_band_ordinal": float(BAND_ORDINALS.get(band, -1)),
+        "heat_index_flag": heat_index_flag(weather.apparent_c),
+        "hour_sin": math.sin(2 * math.pi * hour / 24.0),
+        "hour_cos": math.cos(2 * math.pi * hour / 24.0),
     }
 
 
