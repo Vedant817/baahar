@@ -19,7 +19,7 @@ execution and can be traced to a machine-readable file in [`raw/`](raw/).
 | Device | CPU only. No GPU was used or available. |
 | Python | 3.14.0 |
 | numpy / scikit-learn / tabpfn / torch | 2.5.3 / 1.9.1 / 9.1.0 / 2.14.1 |
-| Tabular artifact | [`gono_20261006T193425+0530.json`](raw/gono_20261006T193425+0530.json) — the run every § A number comes from, re-run after trailing conservative-NAQI feature fix (QA A1–A5) |
+| Tabular artifact | [`gono_20261006T203435+0530.json`](raw/gono_20261006T203435+0530.json) — the run every § A number comes from, re-run after trailing conservative-NAQI feature fix (QA A1–A5) |
 | Briefing artifact | [`briefing_20261006T050909+0530.json`](raw/briefing_20261006T050909+0530.json) — the run every § B number comes from |
 | Raw artifacts | [`raw/`](raw/) — every run, including superseded ones |
 
@@ -110,10 +110,11 @@ Holdout: **1,626 rows**, 2026-07-30T00:00 → 2026-10-05T17:00.
 |---|---|---|---|---|---|---|
 | majority class | 0.4047 | 0.1441 | 0.0 | 24 | 0.9982 | <0.1 s |
 | persistence (band at *t*) | 0.3647 | 0.2492 | 0.0 | 24 | 0.9982 | <0.1 s |
-| logistic regression | 0.7294 | 0.4850 | 0.0 | 24 | 0.9969 | 3.4 s |
-| random forest (300) | 0.8296 | 0.5642 | 0.0 | 24 | 0.9982 | 2.2 s |
-| gradient boosting | 0.8383 | 0.5874 | 0.0 | 24 | 0.9982 | 10.3 s |
-| lightgbm | 0.8432 | 0.5825 | 0.0 | 24 | 0.9975 | 3.0 s |
+| logistic regression | 0.7294 | 0.4850 | 0.0 | 24 | 0.9969 | 1.9 s |
+| random forest (300) | 0.8296 | 0.5642 | 0.0 | 24 | 0.9982 | 1.8 s |
+| gradient boosting | 0.8383 | 0.5874 | 0.0 | 24 | 0.9982 | 5.7 s |
+| lightgbm | 0.8432 | 0.5825 | 0.0 | 24 | 0.9975 | 2.5 s |
+| consensus ensemble | 0.8487 | 0.6089 | 0.0 | 24 | 0.9975 | 6.6 s |
 | TabPFN 9.1.0 (cpu) | *SKIPPED* | *SKIPPED* | *SKIPPED* | *SKIPPED* | *SKIPPED* | — |
 
 Standard deviation across seeds is reported per run in `raw/`; at `--repeat 1`
@@ -125,7 +126,7 @@ it is `null`, which is honest rather than a fabricated ±0.
 
 **Gradient boosting maintains the highest macro-F1 on base features** (0.5874 macro-F1, 0.9982 decision accuracy).
 
-**TabPFN was SKIPPED in this run** (`gono_20261006T193425+0530.json`) because
+**TabPFN was SKIPPED in this run** (`gono_20261006T203435+0530.json`) because
 `TABPFN_TOKEN` was unset in `.env`, triggering the Prior Labs licence gate check in
 `baahar.config`. In the earlier run fitted on instantaneous-only NAQI
 (`gono_20261006T153335+0530.json`), TabPFN reached 0.8512 accuracy and 0.6040
@@ -263,6 +264,17 @@ Two things worth naming:
   were called `satisfactory`. That direction is *lenient*: it under-warns. It is
   the error class worth watching, and it is not caught by `skip_as_go_rate` at all.
 
+## Per-class, consensus ensemble
+
+| band | precision | recall | F1 | support |
+|---|---|---|---|---|
+| good | 0.8778 | 0.9162 | 0.8966 | 823 |
+| satisfactory | 0.8266 | 0.8040 | 0.8151 | 658 |
+| moderate | 0.7698 | 0.6831 | 0.7239 | 142 |
+| poor | 0.0 | 0.0 | 0.0 | **3** |
+| severe | — | — | — | **0** |
+| hazardous | — | — | — | **0** |
+
 ## Per-class, lightgbm
 
 | band | precision | recall | F1 | support |
@@ -276,7 +288,7 @@ Two things worth naming:
 
 ### TabPFN 9.1.0 (cpu) — SKIPPED on licence gate (historical reference from 15:33 run)
 
-In the current run (`gono_20261006T193425+0530.json`), TabPFN was SKIPPED because
+In the current run (`gono_20261006T203435+0530.json`), TabPFN was SKIPPED because
 `TABPFN_TOKEN` was unset in `.env`.
 For historical reference, the earlier run on instantaneous features (`gono_20261006T153335+0530.json`) reported:
 
