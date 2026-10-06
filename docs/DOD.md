@@ -34,6 +34,7 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | Gemma briefing path works | `brief.py`; `gemma-4-31b-it` via AI Studio free tier |
 | **DONE** | ≤120-word safety-aware briefing | `MAX_WORDS`, `enforce_safety` |
 | **DONE** | Pocket Mode | `pocket.py` + `static/`, verified headless |
+| **DONE** | Seasonal species cues, evidence-backed | `seasonal.py`; research-grade iNaturalist snapshot in `data/seasonal/`; hedged wording + radius clamping + safety suppression tested |
 | **DONE** | After-walk journal | `journal.py`, `baahar journal --markdown`; produces the field-test block |
 | **DONE** | CLI | `baahar brief · score · parks · journal · check · serve` |
 | **DONE** | Offline / fixture mode | `BAAHAR_OFFLINE=1`, `data/samples/` |

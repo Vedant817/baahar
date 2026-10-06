@@ -83,6 +83,59 @@ Then the briefing:
 
 Then tap **Pocket the phone**, and the screen above is the entire interface.
 
+There is one more button, **"another thing to notice"**. Three taps in, past the
+hand-written cues, it starts suggesting species — and this is where I spent more
+time on wording than on the model.
+
+![A seasonal cue with its evidence underneath](docs/media/03b-pocket-seasonal.png)
+
+The obvious implementation is "look for a Brahminy Kite!" It is also a lie about
+eight or nine records, and I did not want a park app inventing confidence on my
+behalf. So the species come from [iNaturalist](https://www.inaturalist.org)
+**research-grade** records — the tier where other observers agreed with the
+identification — filtered to research-grade only, within 5 km of the city centre,
+for the current month. Recorded in October 2026 near Bengaluru: a Chocolate Pansy,
+a Mysore Round-eyed Gecko, a Wandering Glider, a Brahminy Kite.
+
+Then I did the thing that turned out to matter most, which was split the line in
+two:
+
+> **Look for a Chocolate Pansy.**
+> *iNaturalist research grade: around a dozen recorded within 5 km of Bengaluru
+> this month. A record means someone logged it nearby, not that you will see it.*
+
+The instruction stays short enough to read at a glance, and the evidence sits
+underneath it in small type where it belongs. My first draft put the count and
+the radius *into* the instruction, and the screenshot came back four lines tall
+with a footnote stranded in the middle of it. That is a readout, not an
+instruction. A screen whose entire premise is that you should be looking at a tree
+should not be asking you to read a query string.
+
+Three rules fell out of that, and they are tests now rather than good intentions:
+
+* **The wording is guarded.** `tests/test_seasonal.py` fails the build if a cue
+  ever says "you will see", "guaranteed", or "there is a". The disclaimer itself
+  has to contain "not that you will see it", so the banned list applies to the
+  instruction only — which is a nice illustration of how a rule you actually mean
+  is more specific than the rule you first wrote.
+* **The geography is honest.** The snapshot is a radius around the city centre, so
+  `cues_for()` accepts no `lat`/`lon`. Passing the park's coordinates would have
+  implied the radius was measured from that park. It was not, so I removed the
+  parameters instead of adding a comment. The requested radius is clamped to the
+  snapshot's, so asking for 50 km gets you a 5 km claim rather than 5 km of
+  evidence stretched over 50 km of promise.
+* **Safety beats novelty.** On hazardous air or 34 °C apparent heat the species
+  cues are withheld entirely. "Find the coolest patch of shade within fifty metres"
+  is doing real work at that temperature, and a butterfly suggestion sitting three
+  taps away from it would be a distraction from the one instruction that matters.
+
+The last one generalises to the whole project, so it is worth stating plainly: the
+safest thing an LLM can be handed is a task it is not allowed to improvise. That
+is also why the briefing writer never sees a species cue — an LLM asked to
+"include this" will happily restate "around a dozen records nearby" as "keep an
+eye out for the pansies", and the fix is not a better prompt, it is removing the
+thing that tempts it.
+
 ---
 
 ## The part I did not expect to care about: which air quality index

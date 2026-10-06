@@ -111,7 +111,11 @@ def api_brief(
         plan, walk_minutes=pocket_mod.ensure_walk_minutes(walk_minutes)
     )
     briefing = brief_mod.generate(
-        plan, writer=model, park=chosen, voice=voice, notice_this=pocket.notice_this
+        plan,
+        writer=model,
+        park=chosen,
+        voice=voice,
+        notice_this=pocket_mod.briefing_cue(plan),
     )
 
     return BriefResponse(
@@ -123,6 +127,10 @@ def api_brief(
             "scorer": plan.scorer,
             "writer": briefing.writer,
             "cues_remaining": pocket_mod.alternate_cues(plan),
+            "cue_tags": [c.tag for c in pocket_mod.cue_pool(plan)],
+            # Per-cue provenance. The record count differs per species, so this is
+            # a mapping rather than one shared sentence.
+            "cue_evidence": pocket_mod.cue_evidence(plan),
             "walk_timer_seconds": pocket_mod.walk_timer_seconds(pocket.walk_minutes),
         },
     )

@@ -415,6 +415,45 @@ hour's weather separately. For a +6h horizon that can misattribute a rain-driven
 SKIP. This is recorded in every raw artifact as
 `_policy_approximation` rather than quietly corrected.
 
+### 11. The seasonal cue shipped as four lines of statistics
+
+Not an eval bug, but it belongs here because it is the failure mode the whole
+project is built against, caught by looking at a screenshot.
+
+The first version of the species cue put the record count, the radius and the
+source into the instruction itself:
+
+> look for a Chocolate Pansy near Bengaluru — researchers have logged around a
+> dozen within 5 km this month
+
+The unit tests passed. Every honesty rule was satisfied: it did not promise a
+sighting, it named the evidence, it stated the radius. But
+`docs/media/03b-pocket-seasonal.png` showed it rendering **four lines tall** with a
+footnote in the middle of a screen whose entire purpose is that you should be
+looking at a tree. The information was honest and the screen was still wrong.
+
+Fixing it meant splitting `SeasonalCue` into two fields — `text` for the
+instruction, `evidence` for the provenance — and then encoding the design rule as
+a test: the instruction must stay under 45 characters and must not contain a
+digit or the string "km". A reviewer reading only the tests can now see the
+constraint that a reviewer looking at a screenshot would otherwise have to notice.
+
+Two more bugs in the same feature, both found by the tests rather than by reading
+the code:
+
+* The seasonal cues were **unreachable**. `alternate_cues()` truncated to the first
+  two cues, and the pool put three hand-written cues first, so the shuffle button
+  could never land on a species. The API now returns the whole remainder, and
+  `scripts/ui_check.mjs` clicks the button until the seasonal cue is on screen and
+  asserts it got there.
+* The provenance line was **one global sentence**, so the number it showed did not
+  necessarily belong to the species above it. It is now a per-cue mapping, keyed by
+  cue text, because "around a dozen" is a different claim from "several".
+
+The headless UI check now asserts the credit line is **absent** under a hand-written
+cue and **present** under a data-backed one. Attributing a data source to a line
+the author wrote by hand is the same error as overclaiming a sighting, just quieter.
+
 ---
 
 # D · What was not measured
@@ -432,5 +471,7 @@ Stated so the gaps are visible rather than inferred.
 | Multi-seed variance | Tabular runs used `--repeat 1`; per-run values are in `raw/`, sd is `null`. |
 | Rubric discrimination | Scores run 8.92–10.00 across 72 briefings. The rubric catches a broken briefing and does almost nothing to rank good ones. |
 | Voice output quality | ElevenLabs implemented, never called. No audio was generated or assessed. |
+| Whether a seasonal cue led to a sighting | The cue wording and its provenance are tested; whether it changed what anyone looked at is not measured, because no human has walked with the app. Same answer as the field test: unknown, and not guessed at. |
+| Seasonal cue accuracy | No metric. There is no ground truth for "did this person see it", and inventing one (a self-reported sighting rate from n=0 walks) would be a number with no denominator. The tested properties are wording, radius anchoring, and suppression under unsafe conditions. |
 | A deployed end-to-end latency figure | `/api/brief` with the Gemma writer is 51.7 s p50 / 115.2 s p95 (measured, 36 calls); the template writer is 3 ms / 6 ms. A *hosted* p95 is **SKIPPED** — nothing is deployed. |
 | Whether any of this changed behaviour | Only a human can say whether a briefing got someone outside. That is the field test, and it has not happened. |

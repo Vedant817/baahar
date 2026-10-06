@@ -43,6 +43,10 @@ counter and nothing to come back to. The success metric is you leaving.
    [Tinker](https://tinker.ai).
 5. Optionally speaks it aloud, then drops into **Pocket Mode**: near-black
    screen, one line of text, a walk timer. No feeds, no badges, no notifications.
+   The "another thing to notice" button cycles past the hand-written cues to
+   species people have actually logged nearby this month, from research-grade
+   [iNaturalist](https://www.inaturalist.org) records — a suggestion, never a
+   promise that you'll see one.
 
 If the air is bad or it is genuinely too hot, Baahar says **SKIP** and means it.
 It will not cheer you into bad air.
@@ -86,6 +90,11 @@ uv run baahar serve         # http://127.0.0.1:8000
 ```
 
 ![Pocket Mode: one instruction, a timer, no scroll](docs/media/03-pocket.png)
+
+Tap **"another thing to notice"** a few times to reach a species suggestion, which
+carries its own provenance line rather than pretending to be hand-written:
+
+![A seasonal cue with its evidence underneath](docs/media/03b-pocket-seasonal.png)
 
 Regenerate the screenshots yourself, with a layout audit that fails on console
 errors or horizontal overflow:
@@ -271,13 +280,15 @@ baahar/
     score.py       TabPFN scorer + documented heuristic fallback
     brief.py       Gemma / Tinker / offline briefing writers
     pocket.py      Pocket Mode state + copy
+    seasonal.py    research-grade species cues from recorded iNaturalist data
     app.py         FastAPI: /api/brief, /api/score, static UI
     cli.py         Typer CLI
   data/
     parks_blr.json
     samples/       recorded real API responses (offline mode + tests)
+    seasonal/      committed monthly iNaturalist snapshots
     eval/          briefing cases, labelled go/no-go rows
-  scripts/         feature build, eval runners
+  scripts/         feature build, eval runners, seasonal snapshot recorder
   eval/            RESULTS.md + raw/ run artifacts
   docs/            ADRs, architecture, field test, human-only steps
   post.md          DEV submission draft

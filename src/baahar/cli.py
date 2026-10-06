@@ -12,6 +12,7 @@ import contextlib
 import json
 import logging
 import sys
+from datetime import datetime
 from typing import Annotated
 
 import typer
@@ -86,7 +87,11 @@ def _build(
         plan, walk_minutes=pocket_mod.ensure_walk_minutes(walk_minutes)
     )
     briefing = brief_mod.generate(
-        plan, writer=writer, park=park, voice=voice, notice_this=pocket.notice_this
+        plan,
+        writer=writer,
+        park=park,
+        voice=voice,
+        notice_this=pocket_mod.briefing_cue(plan),
     )
     return BriefResponse(plan=plan, briefing=briefing, pocket=pocket)
 
@@ -418,9 +423,39 @@ def check() -> None:
     console.print("  data sources:")
     for module_name in ("open-meteo forecast", "open-meteo air quality", "WAQI stations"):
         console.print(f"    {module_name:<24} keyless / optional")
+    print_seasonal_status()
     console.print()
     console.print("  [dim]keys are never printed, only presence.[/]")
     console.print()
+
+
+def print_seasonal_status() -> None:
+    """Which months have a recorded species snapshot, and which does not.
+
+    Worth surfacing because the answer changes monthly and the fallback is
+    silent. Without this line, a snapshot that has gone stale looks exactly like
+    a feature that never worked.
+    """
+    from . import seasonal
+
+    names = seasonal.available_snapshots()
+    console.print()
+    console.print("  seasonal cues (recorded iNaturalist snapshots):")
+    if not names:
+        console.print("    [yellow]none recorded[/] - hand-written cues only")
+        console.print("    [dim]record one: uv run python scripts/refresh_seasonal.py[/]")
+        return
+
+    now = datetime.now()
+    this_month = f"blr_{now.year}_{now.month:02d}.json"
+    for name in names:
+        if name == this_month:
+            console.print(f"    {name:<24} [green]current month[/]")
+        else:
+            console.print(f"    {name:<24} [dim]stale[/]")
+    if this_month not in names:
+        console.print(f"    [yellow]no snapshot for {now:%Y-%m} - hand-written cues only[/]")
+        console.print("    [dim]record one: uv run python scripts/refresh_seasonal.py[/]")
 
 
 @app.command("version")

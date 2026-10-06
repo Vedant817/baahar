@@ -132,6 +132,49 @@ Pocket Mode is a fullscreen state transition with a near-black background and
 large type. It does not need a component framework, and shipping without one
 keeps the repo approachable for someone new to software engineering.
 
+### 8. Seasonal cues: recorded, anchored, and worded so they cannot overclaim
+
+Pocket Mode's shuffle button cycles past the hand-written sensory cues to species
+that people have actually logged nearby this month. Three choices make this
+survivable.
+
+**A recorded snapshot, not a live call.** `seasonal.py` reads
+`data/seasonal/blr_<year>_<month>.json`, produced by
+`scripts/refresh_seasonal.py`. The briefing is supposed to be ready before it is
+asked for, and a committed file means every claim is traceable.
+
+**City-anchored, and the signature enforces it.** The snapshot is a radius around
+the configured city centre, so `cues_for()` accepts no `lat`/`lon`. Accepting the
+caller's park coordinates would have invited the reader to believe the radius was
+measured from that park. It was not, and omitting the parameters makes the honest
+reading the only one available. The requested radius is also clamped to the
+snapshot's, so asking for 50 km yields a 5 km claim rather than 5 km of evidence
+supporting a 50 km promise.
+
+**The instruction and the evidence are separate fields.** `SeasonalCue.text` is one
+short line — "Look for a Chocolate Pansy." — because the screen's rule is one
+instruction in large type, and an earlier draft put the record count and radius
+into the same string. It rendered four lines tall with a footnote in the middle,
+which is a readout, not an instruction. `SeasonalCue.evidence` carries the count,
+the radius, the source, and the disclaimer, and is rendered small underneath.
+`tests/test_seasonal.py` asserts the instruction stays under 45 characters and
+contains no statistics.
+
+Two boundaries keep the honesty from being merely intended:
+
+* `briefing_cue()` never hands a seasonal cue to the briefing writer. An LLM told
+  to include a species line will restate it more confidently than the record
+  supports, so the species never enters the prompt. This also keeps the 36-case
+  briefing evaluation describing the prompt that actually ships.
+* Seasonal cues are withheld entirely when the plan is not a GO, and whenever an
+  air or heat safety cue is showing. "Find the coolest patch of shade within fifty
+  metres" is doing real work at 34 °C, and a butterfly suggestion three taps away
+  from it would be a distraction from the one instruction that matters.
+
+The cue carries `taxon_id`, `scientific_name` and `source_url`, because common
+names are ambiguous and the binomial is what a reader can check. The app is not
+an identification tool and makes no identification claims.
+
 ## Module map
 
 | Module | Responsibility | Knows nothing about |
@@ -147,7 +190,8 @@ keeps the repo approachable for someone new to software engineering.
 | `score.py` | TabPFN + heuristic, safety asymmetry | language |
 | `parks.py` | curated parks, nearest + shade | scoring |
 | `brief.py` | writers, safety repair, caching, voice | UI |
-| `pocket.py` | Pocket Mode payload and cues | models |
+| `pocket.py` | Pocket Mode payload and cue ordering | the writer |
+| `seasonal.py` | recorded species cues, wording, evidence | the network, scoring |
 | `app.py` | HTTP surface | HTML |
 | `cli.py` | terminal surface | HTTP |
 
@@ -169,7 +213,13 @@ exhaustive.
   override. They are in `tests/` with comments saying what happened.
 - **The UI is checked headlessly.** `scripts/ui_check.mjs` drives Chrome over
   CDP using Node's built-in WebSocket — no npm install — and fails on console
-  errors, horizontal overflow, or a screen that should have been dismissed.
+  errors, horizontal overflow, or a screen that should have been dismissed. It
+  also asserts the provenance line is *absent* under a hand-written cue and
+  *present* under a data-backed one, since a source credit on the wrong line is
+  the kind of bug a screenshot review would not catch.
+- **Honesty rules are tests, not prose.** `tests/test_seasonal.py` fails the
+  build if a cue ever promises a sighting, if the instruction grows past a
+  glanceable line, or if a species claim reaches the briefing prompt.
 
 ## Deliberate omissions
 

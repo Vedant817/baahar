@@ -1,0 +1,104 @@
+{
+  "recorded_at": "2026-10-06T09:13:06.682547+05:30",
+  "city": "Bengaluru",
+  "lat": 12.9716,
+  "lon": 77.5946,
+  "radius_km": 5.0,
+  "year": 2026,
+  "month": 10,
+  "query": {
+    "source": "https://www.inaturalist.org",
+    "api": "https://api.inaturalist.org/v1/observations",
+    "params": {
+      "lat": 12.9716,
+      "lng": 77.5946,
+      "radius": 5,
+      "quality_grade": "research",
+      "month": 10,
+      "identifications": "most_agree"
+    }
+  },
+  "observations_examined": 600,
+  "species_found": 7,
+  "honesty_note": "Research grade means other observers agreed with the identification. A record means someone logged the species within this radius, NOT that a visitor will see it.",
+  "licence": "Observation data contributed to iNaturalist by its community; record licences are CC0 or CC-BY per record.",
+  "species": [
+    {
+      "id": 125570,
+      "name": "Junonia iphita",
+      "preferred_common_name": "Chocolate Pansy",
+      "taxon_rank": "species",
+      "observations": 15,
+      "best_agreements": 4,
+      "order": "Insecta",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Junonia iphita",
+      "iconic_group": "Insecta"
+    },
+    {
+      "id": 98049,
+      "name": "Cnemaspis mysoriensis",
+      "preferred_common_name": "Mysore Round-eyed Gecko",
+      "taxon_rank": "species",
+      "observations": 10,
+      "best_agreements": 1,
+      "order": "Reptilia",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Cnemaspis mysoriensis",
+      "iconic_group": "Reptilia"
+    },
+    {
+      "id": 128032,
+      "name": "Broussonetia papyrifera",
+      "preferred_common_name": "Paper mulberry",
+      "taxon_rank": "species",
+      "observations": 9,
+      "best_agreements": 1,
+      "order": "Plantae",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Broussonetia papyrifera",
+      "iconic_group": "Plantae"
+    },
+    {
+      "id": 5406,
+      "name": "Haliastur indus",
+      "preferred_common_name": "Brahminy Kite",
+      "taxon_rank": "species",
+      "observations": 8,
+      "best_agreements": 3,
+      "order": "Aves",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Haliastur indus",
+      "iconic_group": "Aves"
+    },
+    {
+      "id": 62345,
+      "name": "Duttaphrynus melanostictus",
+      "preferred_common_name": "Asian Common Toad",
+      "taxon_rank": "species",
+      "observations": 6,
+      "best_agreements": 2,
+      "order": "Amphibia",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Duttaphrynus melanostictus",
+      "iconic_group": "Amphibia"
+    },
+    {
+      "id": 45938,
+      "name": "Funambulus palmarum",
+      "preferred_common_name": "Three-striped Palm Squirrel",
+      "taxon_rank": "species",
+      "observations": 6,
+      "best_agreements": 2,
+      "order": "Mammalia",
+      "wikipedia_url": "https://en.wikipedia.org/wiki/Funambulus palmarum",
+      "iconic_group": "Mammalia"
+    },
+    {
+      "id": 796160,
+      "name": "Myrmaplata plataleoides",
+      "preferred_common_name": "Red Weaver Ant-mimicking Spider",
+      "taxon_rank": "species",
+      "observations": 6,
+      "best_agreements": 2,
+      "order": "Arachnida",
+      "wikipedia_url": "http://en.wikipedia.org/wiki/Myrmaplata_plataleoides",
+      "iconic_group": "Arachnida"
+    }
+  ]
+}

@@ -181,14 +181,55 @@ worse than one that says "check locally".
 
 ---
 
-## Bioregional context (not a data dependency)
+## Seasonal species cues
 
-`iNaturalist` (<https://api.inaturalist.org/v1/>) was on the stretch list for
-seasonal "notice this bird" priors. **Not implemented.** Adding a species lookup
-would need per-species research-grade filtering to avoid confidently wrong bird
-identifications, and "no fake bird ID confidence" is a rule in `AGENTS.md`. The
-sensory cues in `pocket.py` are written to invite noticing without claiming to
-identify anything.
+| What | Where | Licence |
+|---|---|---|
+| iNaturalist API v1 | <https://api.inaturalist.org/v1/> | free, no key |
+| iNaturalist observations | <https://www.inaturalist.org/observations> | CC0 / CC-BY, per record |
+
+Pocket Mode's "another thing to notice" button cycles to species suggestions drawn
+from research-grade iNaturalist records near the city centre. The rules that keep
+this from becoming a bird-identification confidence machine:
+
+* **Research grade only.** That is iNaturalist's community-verified tier: other
+  observers agreed with the identification. `tally()` additionally drops any
+  record with zero agreeing identifications.
+* **The cue never promises a sighting.** The instruction is "Look for a
+  Chocolate Pansy." The provenance line underneath says what the record count
+  does and does not mean: *"A record means someone logged it nearby, not that you
+  will see it."* `tests/test_seasonal.py` fails the build if a banned phrase like
+  "you will see" or "guaranteed" appears in an instruction.
+* **City-anchored, not park-anchored.** The snapshot is a radius around the
+  configured city centre, so `cues_for()` takes no `lat`/`lon`. Accepting the
+  caller's park coordinates would have implied the radius was measured from that
+  park, which it was not.
+* **The radius is clamped to the snapshot.** Asking for 50 km yields a 5 km claim,
+  because that is how much the recorded evidence covers.
+* **Evidence stays out of the instruction.** The count and radius live in a small
+  provenance line, not in the large type. The screen's rule is one short
+  instruction; a four-line cue with a footnote in it is a readout.
+* **The briefing writer never sees a species cue.** `briefing_cue()` hands it a
+  hand-written instruction only, because an LLM asked to include a species line
+  will restate it more confidently than the evidence supports.
+* **Safety outranks novelty.** On hazardous air or 33 °C apparent heat the
+  seasonal cues are withheld entirely, so a butterfly cannot displace "find the
+  coolest patch of shade".
+
+Recorded snapshots live in `data/seasonal/blr_<year>_<month>.json` and are
+committed. Re-record one with:
+
+```bash
+uv run python scripts/refresh_seasonal.py          # current month
+uv run python scripts/refresh_seasonal.py --all-months
+```
+
+Baahar does **not** call iNaturalist at request time. The briefing is meant to be
+ready before it is asked for, and a committed snapshot means every claim in the
+write-up is traceable to a file.
+
+Species names are iNaturalist taxonomy, used here as pointer labels only -- the
+app is not an identification tool and makes no identification claims.
 
 ---
 

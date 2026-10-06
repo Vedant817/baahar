@@ -200,6 +200,10 @@ class PocketMode(BaseModel):
     park_name: str | None = None
     #: Shown small at the bottom, so the user is not anxious about missing out.
     safety_note: str = ""
+    #: Provenance line for the current cue, when it came from a recorded dataset
+    #: rather than from a person who wrote it by hand. Empty for hand-written
+    #: cues, because claiming a data source for a hand-written line would be a lie.
+    seasonal_note: str = ""
 
 
 class BriefResponse(BaseModel):

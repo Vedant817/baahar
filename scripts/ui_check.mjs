@@ -42,6 +42,26 @@ const SHOTS = [
   { name: '02-brief', url: `${BASE}?auto=1&model=template`, ready: 'brief-body', wait: 30000 },
   { name: '03-pocket', url: `${BASE}?model=template#pocket`, ready: 'screen-pocket', wait: 30000 },
   {
+    // Cycle the shuffle button to the end of the cue pool. This is the only way a
+    // seasonal cue is ever seen, so it is the only way the credit line is ever
+    // seen -- and the check that it appears *only* then.
+    name: '03b-pocket-seasonal',
+    url: `${BASE}?model=template#pocket`,
+    ready: 'screen-pocket',
+    wait: 30000,
+    afterReady: async (send) => {
+      await send('Runtime.evaluate', {
+        expression: `(() => {
+          const btn = document.getElementById('next-cue');
+          for (let i = 0; i < 8 && btn && btn.style.display !== 'none'; i++) {
+            btn.click();
+          }
+        })()`,
+      });
+      await sleep(300);
+    },
+  },
+  {
     // `walk=0` is not allowed by the API, so the shortest walk is used and the
     // timer is expired programmatically. Verifying the journal must not require
     // waiting out a real walk.
@@ -212,6 +232,12 @@ async function main() {
               journal: rendered('journal'),
               journalDone: rendered('j-done'),
             },
+            // The data-source credit line must appear only while a seasonal cue
+            // is actually on screen. Shown under a hand-written cue it would
+            // claim a provenance the cue does not have.
+            seasonalNote: rendered('p-seasonal'),
+            cue: (document.getElementById('p-cue') || {}).textContent || '',
+            evidence: (document.getElementById('p-seasonal') || {}).textContent || '',
             decision: (document.getElementById('decision') || {}).textContent || null,
           };
       })()`,
@@ -239,6 +265,11 @@ async function main() {
       console.log(`  offenders       ${audit.result.value.offenders.join(' | ')}`);
     }
     console.log(`  screens         ${JSON.stringify(audit.result.value.screens)}`);
+    console.log(`  credit line     ${audit.result.value.seasonalNote}`);
+    console.log(`  cue             ${audit.result.value.cue}`);
+    if (audit.result.value.evidence) {
+      console.log(`  evidence        ${audit.result.value.evidence}`);
+    }
     console.log(`  decision        ${audit.result.value.decision}`);
   }
 
@@ -254,15 +285,47 @@ async function main() {
       ? false
       : false,
   );
-  // Screen-specific expectations.
+  // Screen-specific expectations. Indexed by name rather than position, so
+  // inserting a shot cannot silently shift every assertion down one.
+  const shot = Object.fromEntries(results.map((r) => [r.shot, r]));
+
   const problems = [];
-  if (results[1].screens.loading === 'VISIBLE') problems.push('02-brief: loading spinner still painted');
-  if (results[1].screens.briefBody !== 'VISIBLE') problems.push('02-brief: brief body not rendered');
-  if (results[2].screens.pocket !== 'VISIBLE') problems.push('03-pocket: pocket screen not rendered');
-  if (results[3] && results[3].screens.journal !== 'VISIBLE') {
+  if (shot['02-brief'].screens.loading === 'VISIBLE') {
+    problems.push('02-brief: loading spinner still painted');
+  }
+  if (shot['02-brief'].screens.briefBody !== 'VISIBLE') {
+    problems.push('02-brief: brief body not rendered');
+  }
+  for (const name of ['03-pocket', '03b-pocket-seasonal']) {
+    if (shot[name].screens.pocket !== 'VISIBLE') problems.push(`${name}: pocket screen not rendered`);
+  }
+
+  // The credit line follows the cue: hidden on a hand-written cue, visible on a
+  // seasonal one. Both halves matter -- a missing line under a data-backed claim
+  // hides where it came from, and a visible line under a hand-written cue invents
+  // a source for it.
+  const firstPocket = shot['03-pocket'];
+  if (firstPocket.seasonalNote === 'VISIBLE') {
+    problems.push('03-pocket: data-source credit shown under a hand-written cue');
+  }
+  const seasonalShot = shot['03b-pocket-seasonal'];
+  if (seasonalShot.seasonalNote !== 'VISIBLE') {
+    problems.push('03b-pocket-seasonal: no data-source credit on the seasonal cue');
+  }
+  if (!/^Look for an? [A-Z]/.test(seasonalShot.cue)) {
+    problems.push(`03b-pocket-seasonal: shuffle did not reach a seasonal cue (showed "${seasonalShot.cue}")`);
+  }
+  if (!/research grade/i.test(seasonalShot.evidence)) {
+    problems.push(`03b-pocket-seasonal: credit line does not name the data source (showed "${seasonalShot.evidence}")`);
+  }
+  if (!/not that you will see/i.test(seasonalShot.evidence)) {
+    problems.push('03b-pocket-seasonal: credit line is missing the "a record is not a promise" caveat');
+  }
+
+  if (shot['04-journal'].screens.journal !== 'VISIBLE') {
     problems.push('04-journal: after-walk journal not rendered');
   }
-  if (results[3] && results[3].screens.journalDone !== 'VISIBLE') {
+  if (shot['04-journal'].screens.journalDone !== 'VISIBLE') {
     problems.push('04-journal: journal markdown did not appear after tapping an outcome');
   }
 

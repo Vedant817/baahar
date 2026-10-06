@@ -147,6 +147,28 @@ screen. If time is short, this is the one to do.
 
 ---
 
+## 4b. Seasonal snapshots — optional, and needs no key at all
+
+**Status: shipping.** Pocket Mode's species cues read
+`data/seasonal/blr_<year>_<month>.json`, a recorded iNaturalist snapshot that is
+committed to the repo. No key, no network, nothing to do.
+
+It is listed here only because a snapshot goes stale. The one in the repo covers
+**October 2026**; next month the app falls back to the hand-written sensory cues,
+which is a supported outcome and not a broken state.
+
+To refresh — about 20 seconds, no key, no signup:
+
+```bash
+uv run python scripts/refresh_seasonal.py              # current month
+uv run python scripts/refresh_seasonal.py --all-months # one snapshot, no month filter
+```
+
+Commit the file it writes. Worth doing once a month if you keep using this
+repo; not worth doing at all if the field test is the priority.
+
+---
+
 ## 5. WAQI — optional live station cross-check
 
 Not a prize category. Improves the honesty of the number by showing what a real
@@ -216,13 +238,14 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 | 6 | Render promo | nothing | 10 min | yes |
 | 7 | The walk | credibility | 30 min | **yes, always** |
 | 8 | Publish | everything | 30 min | yes |
+| 4b | Monthly seasonal refresh | nothing (goes stale) | 20 s | no |
 
 ---
 
 ## What is already done, so you can skip ahead
 
 - Everything that needs no key: the whole product, the web UI, Pocket Mode, the
-  journal, the CLI, and 158 offline tests.
+  journal, the CLI, the seasonal species cues, and 230 offline tests.
 - **Gemma.** A key was present in the build environment, so the Gemma path was
   evaluated for real: 36 cases, machine checks plus a blind rubric.
   [`eval/RESULTS.md`](../eval/RESULTS.md) § B.

@@ -216,8 +216,14 @@ function renderPlan(data) {
     `Briefing writer: ${briefing.writer}. Baahar is informational, not medical advice.`;
 
   // Pocket Mode payload
-  state.cues = [pocket.notice_this].concat((data.meta && data.meta.cues_remaining) || [])
-    .filter(Boolean);
+  const remaining = (data.meta && data.meta.cues_remaining) || [];
+  const tags = (data.meta && data.meta.cue_tags) || [];
+  state.cues = [pocket.notice_this]
+    .concat(remaining)
+    .filter(Boolean)
+    .map((text, i) => ({ text, tag: i === 0 ? tags[0] || '' : tags[i] || '' }));
+  state.cueTags = tags;
+  state.evidence = (data.meta && data.meta.cue_evidence) || {};
   state.cueIndex = 0;
   state.walkSeconds = (pocket.walk_minutes || 20) * 60;
 
@@ -235,8 +241,20 @@ function renderPlan(data) {
 /* ── Pocket Mode ─────────────────────────────────────────────────────── */
 
 function paintCue() {
-  const cue = state.cues[state.cueIndex % Math.max(1, state.cues.length)] || '';
-  $('p-cue').textContent = cue;
+  const n = Math.max(1, state.cues.length);
+  const i = state.cueIndex % n;
+  const cue = state.cues[i];
+  $('p-cue').textContent = (cue && cue.text) || '';
+  // Provenance follows the cue. A hand-written line gets no credit line; a
+  // species suggestion gets the per-species one, which carries that species'
+  // own record count. The counts differ per cue, so a single shared sentence
+  // would either mismatch the cue above it or drop the numbers.
+  const note = $('p-seasonal');
+  if (note) {
+    const isData = cue && cue.tag === 'seasonal';
+    note.hidden = !isData;
+    if (isData) note.textContent = state.evidence[cue.text] || '';
+  }
 }
 
 function enterPocket(auto) {

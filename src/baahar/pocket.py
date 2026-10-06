@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from . import seasonal
 from .config import get_settings
 from .models import Decision, OutdoorPlan, PocketMode
 
@@ -84,6 +85,67 @@ def _cues_for(plan: OutdoorPlan) -> list[Cue]:
     return [Cue(t, "evening") for t in _CUES_CLEAR_EVENING]
 
 
+def _seasonal_for(plan: OutdoorPlan, limit: int = 2) -> list[Cue]:
+    """Seasonal cues for the configured city, as ordinary :class:`Cue` objects.
+
+    Every one of these is already hedged in its own text ("researchers have
+    logged", never "you will see"), because the module that builds them is
+    responsible for the honesty and the display layer should not have to
+    remember it.
+
+    Deliberately city-anchored rather than park-anchored: the snapshot was
+    recorded around the city centre, so a cue that said "in this park" would be
+    claiming a precision the data does not have.
+    """
+    try:
+        found = seasonal.cues_for(limit=limit)
+    except Exception:  # pragma: no cover - defensive
+        # A missing or malformed snapshot must never break the screen. The
+        # hand-written cues are a complete, shippable experience on their own.
+        found = []
+    return [Cue(c.text, c.tag) for c in found]
+
+
+#: Condition cues that exist to keep someone safe or comfortable. When one of
+#: these is showing, every remaining slot on the screen should serve that goal,
+#: so the seasonal suggestions step aside.
+_SAFETY_TAGS = frozenset({"air", "heat"})
+
+
+def _seasonal_allowed(plan: OutdoorPlan, condition_tags: set[str]) -> bool:
+    """Whether novelty cues belong on screen at all right now.
+
+    Suppressed on two independent grounds, either of which is enough:
+
+    * The plan is not a GO. There is no walk to have a species cue about.
+    * The active condition cue is a safety one. "Find the coolest patch of shade
+      within fifty metres and stay in it" is doing real work in 34 degree heat.
+      A butterfly suggestion sitting three taps away from it is a distraction
+      from the one instruction that matters, which is the opposite of what a
+      safety cue is for.
+
+    Rain is intentionally not in that set. Wet-weather cues are atmospheric
+    rather than protective, and the screen is not short on space.
+    """
+    if plan.overall is not Decision.GO:
+        return False
+    return not (condition_tags & _SAFETY_TAGS)
+
+
+def _cue_pool(plan: OutdoorPlan) -> list[Cue]:
+    """All cues for this plan: hand-written sensory ones, then seasonal ones.
+
+    The ordering matters. Hand-written cues come first because they are the ones
+    written to match *this* hour's conditions. Seasonal cues are appended, so
+    they surface on shuffle without ever displacing a safety-relevant
+    instruction, and they are withheld entirely when safety cues are showing.
+    """
+    conditions = _cues_for(plan)
+    if not _seasonal_allowed(plan, {c.tag for c in conditions}):
+        return conditions
+    return conditions + _seasonal_for(plan)
+
+
 def _headline_for(decision: Decision, park_name: str | None) -> tuple[str, str]:
     if decision is Decision.GO:
         return ("Phone in pocket.", f"Look up. Walk {park_name or 'the park'}")
@@ -138,8 +200,8 @@ def build_pocket(plan: OutdoorPlan, walk_minutes: int | None = None) -> PocketMo
     minutes = walk_minutes or settings.walk_minutes
     park_name = plan.park.name if plan.park else None
     headline, subline = _headline_for(plan.overall, park_name)
-    cues = _cues_for(plan)
-    notice = cues[0].text if cues else _CUES_DEFAULT[0]
+    pool = _cue_pool(plan)
+    notice = pool[0].text if pool else _CUES_DEFAULT[0]
 
     return PocketMode(
         active=plan.overall is not Decision.SKIP,
@@ -149,13 +211,63 @@ def build_pocket(plan: OutdoorPlan, walk_minutes: int | None = None) -> PocketMo
         notice_this=notice,
         park_name=park_name,
         safety_note=_safety_note(plan),
+        # Provenance of `notice_this` and nothing else. Empty for a hand-written
+        # cue, because claiming a data source for a line the author wrote would be
+        # a lie. The front end uses `cue_evidence` for the shuffle button, since
+        # the cue on screen changes without the payload being rebuilt.
+        seasonal_note=seasonal.evidence_for(notice),
     )
 
 
-def alternate_cues(plan: OutdoorPlan, count: int = 2) -> list[str]:
-    """The next `count` sensory cues, for the Pocket Mode shuffle button."""
+def cue_pool(plan: OutdoorPlan) -> list[Cue]:
+    """Public view of the cue pool, so the API can label each cue's provenance."""
+    return _cue_pool(plan)
+
+
+def cue_evidence(plan: OutdoorPlan) -> dict[str, str]:
+    """Cue text -> provenance line, for the cues that have one.
+
+    Hand-written cues are absent rather than mapped to ``""``, so the front end
+    can test for presence rather than for an empty string.
+    """
+    # Scoped to this plan's pool, so the payload does not carry provenance for
+    # species that were suppressed (hazardous air, extreme heat) and are not on
+    # screen. Sending them anyway would be harmless but would misreport what the
+    # product is showing.
+    shown = {c.text for c in _cue_pool(plan)}
+    return {c.text: c.evidence for c in seasonal.cues_for(limit=seasonal._POOL) if c.text in shown}
+
+
+def briefing_cue(plan: OutdoorPlan) -> str:
+    """The cue the *briefing writer* should quote.
+
+    Always a hand-written condition cue, never a seasonal one. Two reasons:
+
+    1. An LLM asked to "include this" will restate a species claim in its own
+       words and can turn "researchers have logged around a dozen within 5 km"
+       into "you will definitely see a Chocolate Pansy". Keeping species out of
+       the briefing prompt removes the temptation instead of policing the output.
+    2. It leaves the 36-case briefing evaluation in ``eval/RESULTS.md`` section B
+       describing the prompt that actually ships. Adding an untested variable to
+       that prompt would quietly invalidate a published result.
+    """
     cues = _cues_for(plan)
-    return [c.text for c in cues[1 : 1 + count]] or _CUES_DEFAULT[1 : 1 + count]
+    return cues[0].text if cues else _CUES_DEFAULT[0]
+
+
+def alternate_cues(plan: OutdoorPlan, count: int | None = None) -> list[str]:
+    """The cues after the first, for the Pocket Mode shuffle button.
+
+    ``count=None`` returns the whole remainder, which is what the web UI asks
+    for: it cycles through them as the reader taps, so the seasonal
+    suggestions are actually reachable after the condition-matched cues have
+    been seen. Truncating to two would have left them permanently off-screen.
+    """
+    pool = _cue_pool(plan)
+    remaining = [c.text for c in pool[1:]]
+    if not remaining:
+        remaining = list(_CUES_DEFAULT[1:])
+    return remaining if count is None else remaining[:count]
 
 
 def walk_timer_seconds(minutes: int | None = None) -> int:
