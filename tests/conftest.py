@@ -17,9 +17,11 @@ from baahar.models import HourlyAir, HourlyWeather, HourSlot, Park
 IST = timezone(timedelta(hours=5, minutes=30))
 BASE = datetime(2026, 10, 6, 5, 0, tzinfo=IST)
 
-#: A path that cannot exist, used to make the TabPFN artifact lookup miss
+#: Paths that cannot exist, used to make ML artifact lookups miss
 #: deterministically. See `_deterministic_scorer`.
 NO_TABPFN_ARTIFACT = Path(__file__).parent / "_no_such_tabpfn_model.pkl"
+NO_LGBM_ARTIFACT = Path(__file__).parent / "_no_such_lgbm_model.pkl"
+NO_ENSEMBLE_ARTIFACT = Path(__file__).parent / "_no_such_ensemble_model.pkl"
 
 
 def make_weather(
@@ -90,17 +92,18 @@ def make_slot(offset_hours: int = 0, **kwargs) -> HourSlot:
 
 @pytest.fixture(autouse=True)
 def _deterministic_scorer(monkeypatch):
-    """Stop `auto` from picking up a locally-fitted TabPFN model.
+    """Stop `auto` from picking up locally-fitted ML models.
 
-    `build_plan` defaults to `scorer="auto"`, which prefers a fitted
-    `eval/artifacts/tabpfn_gono.pkl` when one exists. That file is gitignored, so
-    the suite passed in CI and failed on a developer machine that had run the eval
-    -- same code, different answers.
+    `build_plan` defaults to `scorer="auto"`, which prefers fitted artifacts
+    when they exist. Those files are gitignored, so the suite passed in CI
+    and failed on a developer machine that had run evaluations.
 
-    Tests assert on decisions, so the scorer must be pinned. The TabPFN path has
-    its own tests that request it explicitly.
+    Tests assert on decisions, so the scorer must be pinned. The ML paths have
+    their own tests that request them explicitly.
     """
     monkeypatch.setenv("TABPFN_MODEL_PATH", str(NO_TABPFN_ARTIFACT))
+    monkeypatch.setenv("LGBM_MODEL_PATH", str(NO_LGBM_ARTIFACT))
+    monkeypatch.setenv("ENSEMBLE_MODEL_PATH", str(NO_ENSEMBLE_ARTIFACT))
 
 
 @pytest.fixture

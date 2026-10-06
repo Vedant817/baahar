@@ -1,4 +1,4 @@
-"""The GO / WAIT / SKIP policy, and the safety asymmetry around TabPFN.
+"""The GO / WAIT / SKIP policy, and the safety asymmetry around TabPFN, LightGBM, and Ensemble.
 
 The tests here encode the *safety contract*: the product must never tell a user
 to go outside in conditions the policy calls SKIP, no matter what a learned
@@ -15,6 +15,7 @@ import pytest
 
 from baahar.features import (
     BAND_ORDINALS,
+    COMPACT_FEATURE_NAMES,
     NAQI_SKIP,
     NAQI_WAIT,
     build_dataset,
@@ -24,11 +25,20 @@ from baahar.features import (
 )
 from baahar.models import DataSource, Decision, HourSlot, SlotScore
 from baahar.score import (
+    DEFAULT_ENSEMBLE_ARTIFACT,
+    DEFAULT_LGBM_ARTIFACT,
+    DEFAULT_TABPFN_ARTIFACT,
     TABPFN_LABELS,
     build_plan,
     choose_scorer,
     display_window,
+    ensemble_available,
+    lgbm_available,
+    load_ensemble_model,
+    load_lgbm_model,
     pick_best,
+    save_ensemble_model,
+    save_lgbm_model,
     score_heuristic,
     score_slots,
     tabpfn_available,
@@ -139,7 +149,7 @@ class TestScoring:
 
     def test_plan_reports_its_own_scorer(self, go_slot: HourSlot) -> None:
         plan = build_plan([go_slot], weather_source=DataSource.LIVE, air_source=DataSource.LIVE)
-        assert plan.scorer in {"heuristic", "tabpfn"}
+        assert plan.scorer in {"heuristic", "tabpfn", "lgbm", "ensemble"}
         assert plan.scorer_note
         assert plan.headline
 
@@ -281,6 +291,26 @@ class TestScorerSelection:
         if not available:
             assert ("not installed" in reason) or ("licence" in reason.lower())
 
+    def test_requesting_lgbm_without_artifact_degrades_to_heuristic(self) -> None:
+        name, note = choose_scorer("lgbm")
+        assert name == "heuristic"
+        assert "LightGBM" in note
+
+    def test_requesting_ensemble_without_artifact_degrades_to_heuristic(self) -> None:
+        name, note = choose_scorer("ensemble")
+        assert name == "heuristic"
+        assert "Ensemble" in note
+
+    def test_lgbm_available_returns_status(self) -> None:
+        available, reason = lgbm_available()
+        assert isinstance(available, bool)
+        assert isinstance(reason, str)
+
+    def test_ensemble_available_returns_status(self) -> None:
+        available, reason = ensemble_available()
+        assert isinstance(available, bool)
+        assert isinstance(reason, str)
+
     def test_auto_mode_note_stays_short_and_user_facing(self, go_slot) -> None:
         """`auto` did not ask for TabPFN, so no install command in the UI."""
         name, note = choose_scorer("auto")
@@ -295,6 +325,18 @@ class TestScorerSelection:
         assert name in {"heuristic", "tabpfn"}
         assert note
 
+    def test_score_slots_lgbm_never_raises(self, go_slot: HourSlot) -> None:
+        scores, name, note = score_slots([go_slot], "lgbm")
+        assert len(scores) == 1
+        assert name in {"heuristic", "lgbm"}
+        assert note
+
+    def test_score_slots_ensemble_never_raises(self, go_slot: HourSlot) -> None:
+        scores, name, note = score_slots([go_slot], "ensemble")
+        assert len(scores) == 1
+        assert name in {"heuristic", "ensemble"}
+        assert note
+
     def test_tabpfn_label_order_is_frozen(self) -> None:
         """Column and class order are part of the model's contract."""
         assert TABPFN_LABELS == (Decision.GO, Decision.WAIT, Decision.SKIP)
@@ -304,9 +346,6 @@ class TestSafetyAsymmetry:
     """A learned model must never be more permissive than the policy."""
 
     def test_model_cannot_override_a_skip(self, hazardous_slot: HourSlot) -> None:
-        # The TabPFN path needs numpy, which ships in the optional `ml` extra.
-        # The safety property is asserted here and re-checked end-to-end by
-        # `tests/test_tabpfn.py` when the extra is installed.
         np = pytest.importorskip("numpy")
 
         from baahar import score as score_mod
@@ -318,6 +357,34 @@ class TestSafetyAsymmetry:
         scores = score_mod.score_tabpfn([hazardous_slot], model=AlwaysGo())
         assert scores[0].decision is Decision.SKIP, "model talked a user into bad air"
         assert any("policy" in r for r in scores[0].reasons)
+
+    def test_lgbm_cannot_override_a_skip(self, hazardous_slot: HourSlot) -> None:
+        np = pytest.importorskip("numpy")
+
+        from baahar import score as score_mod
+
+        class AlwaysGo:
+            def predict_proba(self, x):
+                return np.tile([[1.0, 0.0, 0.0]], (len(x), 1))
+
+        scores = score_mod.score_lgbm([hazardous_slot], model=AlwaysGo())
+        assert scores[0].decision is Decision.SKIP, "lgbm talked a user into bad air"
+        assert any("policy" in r for r in scores[0].reasons)
+        assert scores[0].scorer == "lgbm"
+
+    def test_ensemble_cannot_override_a_skip(self, hazardous_slot: HourSlot) -> None:
+        np = pytest.importorskip("numpy")
+
+        from baahar import score as score_mod
+
+        class AlwaysGo:
+            def predict_proba(self, x):
+                return np.tile([[1.0, 0.0, 0.0]], (len(x), 1))
+
+        scores = score_mod.score_ensemble([hazardous_slot], model=AlwaysGo())
+        assert scores[0].decision is Decision.SKIP, "ensemble talked a user into bad air"
+        assert any("policy" in r for r in scores[0].reasons)
+        assert scores[0].scorer == "ensemble"
 
     def test_model_is_allowed_to_be_more_strict(self, go_slot: HourSlot) -> None:
         np = pytest.importorskip("numpy")
@@ -331,11 +398,51 @@ class TestSafetyAsymmetry:
         scores = score_mod.score_tabpfn([go_slot], model=AlwaysSkip())
         assert scores[0].decision is Decision.SKIP
 
+    def test_lgbm_is_allowed_to_be_more_strict(self, go_slot: HourSlot) -> None:
+        np = pytest.importorskip("numpy")
+
+        from baahar import score as score_mod
+
+        class AlwaysSkip:
+            def predict_proba(self, x):
+                return np.tile([[0.0, 0.0, 1.0]], (len(x), 1))
+
+        scores = score_mod.score_lgbm([go_slot], model=AlwaysSkip())
+        assert scores[0].decision is Decision.SKIP
+        assert scores[0].scorer == "lgbm"
+
+    def test_ensemble_is_allowed_to_be_more_strict(self, go_slot: HourSlot) -> None:
+        np = pytest.importorskip("numpy")
+
+        from baahar import score as score_mod
+
+        class AlwaysSkip:
+            def predict_proba(self, x):
+                return np.tile([[0.0, 0.0, 1.0]], (len(x), 1))
+
+        scores = score_mod.score_ensemble([go_slot], model=AlwaysSkip())
+        assert scores[0].decision is Decision.SKIP
+        assert scores[0].scorer == "ensemble"
+
     def test_absent_model_falls_back_to_policy(self, hazardous_slot: HourSlot) -> None:
         from baahar import score as score_mod
 
         scores = score_mod.score_tabpfn([hazardous_slot], model=None)
         assert scores[0].decision is Decision.SKIP
+
+    def test_absent_lgbm_falls_back_to_policy(self, hazardous_slot: HourSlot) -> None:
+        from baahar import score as score_mod
+
+        scores = score_mod.score_lgbm([hazardous_slot], model=None)
+        assert scores[0].decision is Decision.SKIP
+        assert scores[0].scorer == "heuristic"
+
+    def test_absent_ensemble_falls_back_to_policy(self, hazardous_slot: HourSlot) -> None:
+        from baahar import score as score_mod
+
+        scores = score_mod.score_ensemble([hazardous_slot], model=None)
+        assert scores[0].decision is Decision.SKIP
+        assert scores[0].scorer == "heuristic"
 
 
 class TestFeatures:
@@ -354,11 +461,21 @@ class TestFeatures:
         missing = [n for n in FEATURE_NAMES if n not in computed]
         assert not missing, f"declared but not computed: {missing}"
 
+    def test_every_compact_feature_is_computed(self, go_slot: HourSlot) -> None:
+        from baahar.features import COMPACT_FEATURE_NAMES, features_from_slot
+
+        computed = features_from_slot(go_slot)
+        missing = [n for n in COMPACT_FEATURE_NAMES if n not in computed]
+        assert not missing, f"compact feature missing: {missing}"
+
+    def test_compact_feature_names_has_17_elements(self) -> None:
+        assert len(COMPACT_FEATURE_NAMES) == 17
+
     def test_hour_and_month_are_model_columns(self, go_slot: HourSlot) -> None:
         """Regression guard for the 13-vs-15 feature divergence.
 
         The eval fitted on `hour`/`month` from the archive while the library built
-        `hour_sin`/`hour_cos`, so the fitted model could never be used by the app.
+        `hour_sin`/`hour_cos`, so the fitted model could never be used by the app.\
         These two must be part of the model's column contract.
         """
         from baahar.features import TABPFN_FEATURE_ORDER
@@ -417,12 +534,24 @@ class TestFeatures:
         assert Path(target) == tmp_path / "m.pkl"
         assert (tmp_path / "m.pkl").exists()
 
-    def test_default_artifact_is_gitignored(self) -> None:
-        """The fitted model is 840 MB and must never reach the repo."""
-        from baahar.score import DEFAULT_TABPFN_ARTIFACT
+    def test_save_and_load_lgbm_agree(self, tmp_path: Path) -> None:
+        target = save_lgbm_model({"sentinel": True}, path=tmp_path / "lgb.pkl")
+        assert Path(target) == tmp_path / "lgb.pkl"
+        loaded = load_lgbm_model(path=tmp_path / "lgb.pkl")
+        assert loaded == {"sentinel": True}
 
+    def test_save_and_load_ensemble_agree(self, tmp_path: Path) -> None:
+        target = save_ensemble_model({"sentinel": True}, path=tmp_path / "ens.pkl")
+        assert Path(target) == tmp_path / "ens.pkl"
+        loaded = load_ensemble_model(path=tmp_path / "ens.pkl")
+        assert loaded == {"sentinel": True}
+
+    def test_default_artifact_is_gitignored(self) -> None:
+        """The fitted models are artifacts and must never reach the repo."""
         gitignore = (Path(__file__).resolve().parents[1] / ".gitignore").read_text(encoding="utf-8")
         assert DEFAULT_TABPFN_ARTIFACT.parent.name in gitignore
+        assert DEFAULT_LGBM_ARTIFACT.parent.name in gitignore
+        assert DEFAULT_ENSEMBLE_ARTIFACT.parent.name in gitignore
         assert "*.pkl" in gitignore
 
     def test_hour_is_cyclically_encoded(self, slot) -> None:

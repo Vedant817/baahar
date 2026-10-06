@@ -73,6 +73,8 @@ class TestCommandsExitCleanly:
             ("parks", "--limit", "3"),
             ("journal",),
             ("score", "--offline"),
+            ("score", "--offline", "--scorer", "lgbm"),
+            ("score", "--offline", "--scorer", "ensemble"),
             ("brief", "--offline", "--model", "template"),
         ],
     )
@@ -107,7 +109,7 @@ class TestJsonOutput:
         first = payload["slots"][0]
         for key in ("time", "decision", "comfort", "reasons", "signals", "scorer"):
             assert key in first, f"{key} missing from a slot"
-        assert first["scorer"] in {"heuristic", "tabpfn"}
+        assert first["scorer"] in {"heuristic", "tabpfn", "lgbm", "ensemble"}
 
 
 class TestOfflineIsHonest:
