@@ -54,6 +54,8 @@ ALIASES: dict[str, str] = {
     # "tabpfn 9.1.0". RESULTS.md names the version and device because "TabPFN"
     # alone does not say which model produced the number.
     "tabpfn 9.1.0": "tabpfn",
+    "consensus ensemble": "ensemble",
+    "ensemble": "ensemble",
 }
 
 
@@ -458,6 +460,7 @@ def main(argv: list[str] | None = None) -> int:
                     f"eval/raw/. Falling back to the newest artifact."
                 )
             raw_path = newest("gono_*.json")
+
     brief_path = (
         RAW / Path(args.briefings).name
         if args.briefings

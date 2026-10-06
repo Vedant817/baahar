@@ -21,6 +21,8 @@ Models compared
   logreg      Multinomial logistic regression. A conventional tabular model,
               to show what the foundation model is actually buying.
   tabpfn      TabPFN, the model under test (requires `--group ml`).
+  lgbm        LightGBM tuned gradient booster.
+  ensemble    Consensus Ensemble (LightGBM + HistGB + RF).
 
 Reported metrics
   accuracy, macro-F1, per-class precision/recall/F1, full confusion matrix,
@@ -61,7 +63,12 @@ from baahar.features import (
     PRECIP_SKIP_MM,
     TABPFN_FEATURE_ORDER,
 )
-from baahar.score import CPU_LARGE_DATASET_ENV, save_tabpfn_model
+from baahar.score import (
+    CPU_LARGE_DATASET_ENV,
+    save_ensemble_model,
+    save_lgbm_model,
+    save_tabpfn_model,
+)
 
 sys.path.insert(0, str(Path(__file__).parent))
 from build_dataset import (  # noqa: E402
@@ -391,11 +398,100 @@ def fit_predict(
             verbosity=-1,
         )
         clf.fit(x_train, y_train)
+        try:
+            artifact = save_lgbm_model(clf)
+            print(f"  fitted lgbm model saved -> {artifact}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"  could not save fitted lgbm model: {exc}", file=sys.stderr)
         preds = clf.predict(x_test)
         return (
             [int(p) for p in preds],
             time.perf_counter() - t0,
             f"LightGBM {md.version('lightgbm')}",
+        )
+
+    if name == "ensemble":
+        import numpy as np
+        from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
+        from sklearn.utils.class_weight import compute_sample_weight
+
+        try:
+            import lightgbm as lgb
+        except ImportError as exc:
+            raise RuntimeError(f"lightgbm not installed ({exc}); run uv sync --group dev") from exc
+
+        # 1. LightGBM (18 leaves, depth 6, lr 0.025, alpha 0.8, lambda 3.5)
+        clf_lgb = lgb.LGBMClassifier(
+            random_state=seed,
+            n_estimators=380,
+            learning_rate=0.025,
+            num_leaves=18,
+            max_depth=6,
+            min_child_samples=30,
+            reg_alpha=0.8,
+            reg_lambda=3.5,
+            verbosity=-1,
+        )
+        clf_lgb.fit(x_train, y_train)
+
+        # 2. HistGradientBoosting with damped sqrt weights (max_iter 300, lr 0.04, leaves 22, l2 3.0)
+        sw_bal = compute_sample_weight("balanced", y_train)
+        sw_damped = np.sqrt(sw_bal)
+        clf_hgb = HistGradientBoostingClassifier(
+            random_state=seed,
+            max_iter=300,
+            learning_rate=0.04,
+            max_leaf_nodes=22,
+            min_samples_leaf=25,
+            l2_regularization=3.0,
+        )
+        clf_hgb.fit(x_train, y_train, sample_weight=sw_damped)
+
+        # 3. RandomForest (300 trees, depth 14)
+        clf_rf = RandomForestClassifier(
+            n_estimators=300,
+            max_depth=14,
+            min_samples_leaf=3,
+            random_state=seed,
+            n_jobs=-1,
+        )
+        clf_rf.fit(x_train, y_train)
+
+        def _expand(p: np.ndarray, classes: np.ndarray) -> np.ndarray:
+            full = np.zeros((p.shape[0], 6), dtype=np.float64)
+            for idx, c in enumerate(classes):
+                full[:, int(c)] = p[:, idx]
+            return full
+
+        p_lgb = _expand(clf_lgb.predict_proba(x_test), clf_lgb.classes_)
+        p_hgb = _expand(clf_hgb.predict_proba(x_test), clf_hgb.classes_)
+        p_rf = _expand(clf_rf.predict_proba(x_test), clf_rf.classes_)
+
+        p_blend = 0.50 * p_lgb + 0.35 * p_hgb + 0.15 * p_rf
+
+        tau_mod = 0.31
+        preds = np.argmax(p_blend, axis=1)
+        for i in range(len(preds)):
+            if preds[i] < 2 and p_blend[i, 2] >= tau_mod:
+                preds[i] = 2
+
+        ensemble_bundle = {
+            "lgb": clf_lgb,
+            "hgb": clf_hgb,
+            "rf": clf_rf,
+            "weights": (0.50, 0.35, 0.15),
+            "tau_mod": tau_mod,
+        }
+        try:
+            artifact = save_ensemble_model(ensemble_bundle)
+            print(f"  fitted ensemble model saved -> {artifact}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"  could not save fitted ensemble model: {exc}", file=sys.stderr)
+
+        return (
+            [int(p) for p in preds],
+            time.perf_counter() - t0,
+            "Consensus Ensemble (LGBM+HistGB+RF)",
         )
 
     raise ValueError(f"unknown model {name}")
@@ -442,7 +538,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--repeat", type=int, default=1, help="seeds to average over")
     ap.add_argument(
         "--models",
-        default="majority,persistence,logreg,rf,histgb,lgbm,tabpfn",
+        default="majority,persistence,logreg,rf,histgb,lgbm,ensemble,tabpfn",
         help="comma-separated model list",
     )
     args = ap.parse_args(argv)
