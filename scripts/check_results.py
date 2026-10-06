@@ -83,6 +83,13 @@ def newest_excluding(pattern: str, skip_fragments: set[str]) -> Path | None:
     return candidates[-1] if candidates else None
 
 
+#: RESULTS.md cites the artifact each section was written from, e.g.
+#: "Tabular artifact: [`gono_20261006T125637+0530.json`](raw/...)". Extracting the
+#: name lets the checker verify a document against the run that produced it rather
+#: than against whichever run happened to finish most recently.
+CITED_TABULAR_RE = re.compile(r"`(gono_[0-9A-Za-z_+\-]+)\.json`")
+
+
 def parse_tables(text: str) -> list[list[list[str]]]:
     """Every markdown table in the document, as lists of cell lists."""
     tables: list[list[list[str]]] = []
@@ -425,7 +432,31 @@ def main(argv: list[str] | None = None) -> int:
         md_path = ROOT / md_path
     md = md_path.read_text(encoding="utf-8")
 
-    raw_path = RAW / Path(args.tabular).name if args.tabular else newest("gono_*.json")
+    if args.tabular:
+        raw_path = RAW / Path(args.tabular).name
+    else:
+        # RESULTS.md names the artifact it was written from. Prefer that file
+        # rather than the newest on disk.
+        #
+        # Why this matters: CI re-runs `run_eval.py` with no keys, which writes a
+        # *new* artifact in which TabPFN is SKIPPED. Verifying the published
+        # TabPFN numbers against that file would fail -- correctly, but for the
+        # wrong reason. The published numbers came from the run that had the
+        # licence, and that run's raw output is committed precisely so it can be
+        # checked. A document that cites its own source is the invariant worth
+        # enforcing; "newest file wins" silently verifies a document against
+        # whatever happened to run last.
+        cited = CITED_TABULAR_RE.search(md)
+        candidate = RAW / f"{cited.group(1)}.json" if cited else None
+        if candidate is not None and candidate.exists():
+            raw_path = candidate
+        else:
+            if cited:
+                print(
+                    f"  !! RESULTS.md cites {cited.group(1)}.json, which is not in "
+                    f"eval/raw/. Falling back to the newest artifact."
+                )
+            raw_path = newest("gono_*.json")
     brief_path = (
         RAW / Path(args.briefings).name
         if args.briefings

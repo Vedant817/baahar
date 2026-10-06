@@ -19,7 +19,9 @@ execution and can be traced to a machine-readable file in [`raw/`](raw/).
 | Device | CPU only. No GPU was used or available. |
 | Python | 3.14.0 |
 | numpy / scikit-learn / tabpfn / torch | 2.5.3 / 1.9.1 / 9.1.0 / 2.14.1 |
-| Raw artifacts | [`raw/gono_*.json`](raw/) · [`raw/briefing_*.json`](raw/) |
+| Tabular artifact | [`gono_20261006T125637+0530.json`](raw/gono_20261006T125637+0530.json) — the run every § A number comes from |
+| Briefing artifact | [`briefing_20261006T050909+0530.json`](raw/briefing_20261006T050909+0530.json) — the run every § B number comes from |
+| Raw artifacts | [`raw/`](raw/) — every run, including superseded ones |
 
 The two runs above have different key sets on purpose and the numbers are not
 mixed: **§ B is from the 05:09 briefing run**, § A is from the **12:56 tabular
