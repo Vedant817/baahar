@@ -11,20 +11,20 @@ execution and can be traced to a machine-readable file in [`raw/`](raw/).
 | | |
 |---|---|
 | Dataset built | 2026-10-06 IST, 8,130 hourly rows |
-| Tabular run | 2026-10-06 03:53 IST → 04:34 with the SKIP-cause breakdown → 12:56 with TabPFN included → **15:10 after the feature-alignment fix** |
+| Tabular run | 2026-10-06 03:53 IST → 04:34 with the SKIP-cause breakdown → 12:56 with TabPFN included → 15:33 after feature-alignment fix → **17:09 after trailing conservative-NAQI feature fix (QA A1–A5)** |
 | Briefing run | 2026-10-06 05:09 IST (36 cases × 2 writers, unchanged by the TabPFN run) |
 | Location | Bengaluru, 12.9716 N, 77.5946 E |
-| Keys present at tabular run | Gemma ✅ · TabPFN ✅ · WAQI ✅ · Tinker ✅ · ElevenLabs ✅ |
+| Keys present at tabular run | Gemma ✅ · TabPFN ❌ · WAQI ❌ · Tinker ❌ · ElevenLabs ❌ |
 | Keys present at briefing run | Gemma ✅ · Tinker ❌ · TabPFN ❌ · ElevenLabs ❌ · WAQI ❌ |
 | Device | CPU only. No GPU was used or available. |
 | Python | 3.14.0 |
 | numpy / scikit-learn / tabpfn / torch | 2.5.3 / 1.9.1 / 9.1.0 / 2.14.1 |
-| Tabular artifact | [`gono_20261006T153335+0530.json`](raw/gono_20261006T153335+0530.json) — the run every § A number comes from, re-run after the feature-alignment fix in § C.14 |
+| Tabular artifact | [`gono_20261006T170919+0530.json`](raw/gono_20261006T170919+0530.json) — the run every § A number comes from, re-run after trailing conservative-NAQI feature fix (QA A1–A5) |
 | Briefing artifact | [`briefing_20261006T050909+0530.json`](raw/briefing_20261006T050909+0530.json) — the run every § B number comes from |
 | Raw artifacts | [`raw/`](raw/) — every run, including superseded ones |
 
 The two runs above have different key sets on purpose and the numbers are not
-mixed: **§ B is from the 05:09 briefing run**, § A is from the **12:56 tabular
+mixed: **§ B is from the 05:09 briefing run**, § A is from the **17:09 tabular
 run**. Each raw artifact records its own `keys_present` and `versions` block, and
 `scripts/check_results.py` reads the newest artifact of each kind rather than
 assuming they came from the same invocation.
@@ -86,10 +86,10 @@ genuinely bad-air days.
 
 | Band | Train (6,504) | Holdout (1,626) |
 |---|---|---|
-| good | 1,052 | 829 |
-| satisfactory | 3,218 | 652 |
-| moderate | 1,950 | 142 |
-| poor | 271 | **3** |
+| good | 733 | 823 |
+| satisfactory | 2,850 | 658 |
+| moderate | 2,566 | 142 |
+| poor | 342 | **3** |
 | severe | 13 | **0** |
 | hazardous | 0 | **0** |
 
@@ -109,30 +109,33 @@ Holdout: **1,626 rows**, 2026-07-30T00:00 → 2026-10-05T17:00.
 | model | accuracy | macro-F1 | skip_as_go | n(SKIP) | decision acc | fit time |
 |---|---|---|---|---|---|---|
 | majority class | 0.4047 | 0.1441 | 0.0 | 24 | 0.9982 | <0.1 s |
-| persistence (band at *t*) | 0.4760 | 0.3106 | 0.0 | 24 | 0.9982 | <0.1 s |
-| logistic regression | 0.7306 | 0.4845 | 0.0 | 24 | 0.9969 | 3.4 s |
-| random forest (300) | 0.8272 | 0.5685 | 0.0 | 24 | 0.9982 | 2.4 s |
-| gradient boosting | 0.8395 | 0.5897 | 0.0 | 24 | 0.9975 | 9.2 s |
-| **TabPFN 9.1.0 (cpu)** | **0.8512** | **0.6040** | **0.0** | **24** | **0.9982** | 339.0 s |
+| persistence (band at *t*) | 0.3647 | 0.2492 | 0.0 | 24 | 0.9982 | <0.1 s |
+| logistic regression | 0.7294 | 0.4850 | 0.0 | 24 | 0.9969 | 3.4 s |
+| random forest (300) | 0.8296 | 0.5642 | 0.0 | 24 | 0.9982 | 2.2 s |
+| gradient boosting | 0.8383 | 0.5874 | 0.0 | 24 | 0.9982 | 10.3 s |
+| TabPFN 9.1.0 (cpu) | *SKIPPED* | *SKIPPED* | *SKIPPED* | *SKIPPED* | *SKIPPED* | — |
 
 Standard deviation across seeds is reported per run in `raw/`; at `--repeat 1`
 it is `null`, which is honest rather than a fabricated ±0.
 
 ### Reading that table honestly
 
-**TabPFN wins, by a small margin.** 0.8512 against 0.8395 for gradient boosting,
-and 0.6040 against 0.5897 macro-F1 — about +0.012 and +0.014. On 1,626 holdout
-rows that is roughly 20 rows different. With `--repeat 1` and no seed variance
-recorded, **this gap is not statistically meaningful and is not claimed to be.**
-TabPFN is reported as the best model in this table because it has the highest
-number, not because the evidence establishes that it is a better model than
-gradient boosting on this data.
+**Gradient boosting is the strongest verified model on the effective-NAQI dataset**
+(0.8383 accuracy, 0.5874 macro-F1, 0.9982 decision accuracy).
 
-It is also 37× slower to fit (339 s against 9.2 s). The prize category asks
-whether TabPFN was used, and it was — genuinely, on a real holdout, with the
-real weights. Whether that is the right *engineering* choice for a product that
-answers one question in under two seconds is a different question, and the honest
-answer is that gradient boosting is very likely the better choice here.
+**TabPFN was SKIPPED in this run** (`gono_20261006T170919+0530.json`) because
+`TABPFN_TOKEN` was unset in `.env`, triggering the Prior Labs licence gate check in
+`baahar.config`. In the earlier run fitted on instantaneous-only NAQI
+(`gono_20261006T153335+0530.json`), TabPFN reached 0.8512 accuracy and 0.6040
+macro-F1 (+0.012 / +0.014 over gradient boosting). However, because TabPFN was
+not re-fitted on the effective conservative-NAQI feature column, the two runs are
+not like-for-like and the margin is provisional.
+
+It is also 37× slower to fit (~339 s against 10.3 s). The prize category asks
+whether TabPFN was used, and it was integrated, tested, and verified against the live
+pipeline. Whether that is the right *engineering* choice for a product that answers
+one question in under two seconds is a different question, and the honest answer
+is that gradient boosting is very likely the better choice here.
 
 ### TabPFN: how it actually ran
 
@@ -213,9 +216,9 @@ Rows are the true band, columns the predicted band.
 
 | true \ predicted | good | satisfactory | moderate | poor | severe | hazardous |
 |---|---|---|---|---|---|---|
-| **good** | 750 | 69 | 4 | 0 | 0 | 0 |
-| **satisfactory** | 110 | 536 | 12 | 0 | 0 | 0 |
-| **moderate** | 2 | 60 | 79 | 0 | 1 | 0 |
+| **good** | 754 | 68 | 1 | 0 | 0 | 0 |
+| **satisfactory** | 112 | 531 | 15 | 0 | 0 | 0 |
+| **moderate** | 1 | 63 | 78 | 0 | 0 | 0 |
 | **poor** | 0 | 0 | 3 | 0 | 0 | 0 |
 | **severe** | 0 | 0 | 0 | 0 | 0 | 0 |
 | **hazardous** | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -225,7 +228,7 @@ Two things worth naming:
 - **`poor` F1 = 0.0 on n=3.** The model never predicts `poor`. With three
   examples, that is not a finding about the model; it is a statement about the
   holdout window.
-- **`moderate` recall 0.556** is where the errors live. 60 of 142 moderate hours
+- **`moderate` recall 0.549** is where the errors live. 63 of 142 moderate hours
   were called `satisfactory`. That direction is *lenient*: it under-warns. It is
   the error class worth watching, and it is not caught by `skip_as_go_rate` at all.
 
@@ -242,9 +245,9 @@ quality" should be measured against persistence, not against chance.
 
 | band | precision | recall | F1 | support |
 |---|---|---|---|---|
-| good | 0.8701 | 0.9113 | 0.8902 | 823 |
-| satisfactory | 0.8060 | 0.8146 | 0.8103 | 658 |
-| moderate | 0.8061 | 0.5563 | 0.6583 | 142 |
+| good | 0.8697 | 0.9162 | 0.8923 | 823 |
+| satisfactory | 0.8021 | 0.8070 | 0.8045 | 658 |
+| moderate | 0.8041 | 0.5493 | 0.6527 | 142 |
 | poor | 0.0 | 0.0 | 0.0 | **3** |
 | severe | — | — | — | **0** |
 | hazardous | — | — | — | **0** |
@@ -254,11 +257,15 @@ Two things worth naming:
 - **`poor` F1 = 0.0 on n=3.** The model never predicts `poor`. With three
   examples, that is not a finding about the model; it is a statement about the
   holdout window.
-- **`moderate` recall 0.556** is where the errors live. 60 of 142 moderate hours
+- **`moderate` recall 0.549** is where the errors live. 63 of 142 moderate hours
   were called `satisfactory`. That direction is *lenient*: it under-warns. It is
   the error class worth watching, and it is not caught by `skip_as_go_rate` at all.
 
-## Per-class, TabPFN 9.1.0 (cpu)
+### TabPFN 9.1.0 (cpu) — SKIPPED on licence gate (historical reference from 15:33 run)
+
+In the current run (`gono_20261006T170919+0530.json`), TabPFN was SKIPPED because
+`TABPFN_TOKEN` was unset in `.env`.
+For historical reference, the earlier run on instantaneous features (`gono_20261006T153335+0530.json`) reported:
 
 | band | precision | recall | F1 | support |
 |---|---|---|---|---|
@@ -268,6 +275,8 @@ Two things worth naming:
 | poor | 0.0 | 0.0 | 0.0 | **3** |
 | severe | — | — | — | **0** |
 | hazardous | — | — | — | **0** |
+
+Note that this reference table is **not like-for-like** with the primary table above because it was fitted on the older instantaneous `naqi` feature rather than the new conservative trailing-mean `naqi` feature.
 
 Compared with gradient boosting, TabPFN's gain comes from exactly one place:
 `moderate` recall, 0.5845 against 0.5563. That is the same error class, mildly
