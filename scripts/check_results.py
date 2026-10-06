@@ -48,6 +48,7 @@ ALIASES: dict[str, str] = {
     "logistic regression": "logreg",
     "random forest": "rf",
     "gradient boosting": "histgb",
+    "lightgbm": "lgbm",
     "tabpfn": "tabpfn",
     # `norm()` strips the trailing "(cpu)", so the row arrives here as
     # "tabpfn 9.1.0". RESULTS.md names the version and device because "TabPFN"

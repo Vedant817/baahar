@@ -373,6 +373,31 @@ def fit_predict(
             print(f"  could not save the fitted model: {exc}", file=sys.stderr)
         return preds, time.perf_counter() - t0, f"TabPFN {md.version('tabpfn')}, cpu"
 
+    if name == "lgbm":
+        try:
+            import lightgbm as lgb
+        except ImportError as exc:
+            raise RuntimeError(f"lightgbm not installed ({exc}); run uv sync --group dev") from exc
+
+        clf = lgb.LGBMClassifier(
+            random_state=seed,
+            n_estimators=450,
+            learning_rate=0.04,
+            num_leaves=28,
+            subsample=0.85,
+            colsample_bytree=0.85,
+            reg_alpha=0.5,
+            reg_lambda=1.0,
+            verbosity=-1,
+        )
+        clf.fit(x_train, y_train)
+        preds = clf.predict(x_test)
+        return (
+            [int(p) for p in preds],
+            time.perf_counter() - t0,
+            f"LightGBM {md.version('lightgbm')}",
+        )
+
     raise ValueError(f"unknown model {name}")
 
 
@@ -391,7 +416,7 @@ def fit_predict_persistence(y_train_bands: list[int], n_test: int) -> list[int]:
 # ---------------------------------------------------------------------------
 def package_versions() -> dict:
     out = {"python": platform.python_version(), "platform": platform.platform()}
-    for pkg in ("numpy", "pandas", "scikit-learn", "tabpfn", "torch"):
+    for pkg in ("numpy", "pandas", "scikit-learn", "tabpfn", "torch", "lightgbm"):
         try:
             out[pkg] = md.version(pkg)
         except md.PackageNotFoundError:
@@ -417,7 +442,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--repeat", type=int, default=1, help="seeds to average over")
     ap.add_argument(
         "--models",
-        default="majority,persistence,logreg,rf,histgb,tabpfn",
+        default="majority,persistence,logreg,rf,histgb,lgbm,tabpfn",
         help="comma-separated model list",
     )
     args = ap.parse_args(argv)
