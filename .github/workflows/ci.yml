@@ -58,15 +58,49 @@ jobs:
           BAAHAR_OFFLINE: "1"
           GEMINI_API_KEY: ""
         run: |
-          set -o pipefail
-          uv run baahar check
-          uv run baahar brief --city Bengaluru --offline --model template
-          uv run baahar parks --limit 3
-          uv run baahar journal
-          # `| head` used to hide a non-zero exit from these two, which is how
-          # a TypeError in `score --json` shipped green.
-          uv run baahar score --offline --json | head -40
-          uv run baahar score --offline | head -20
+          set -euo pipefail
+
+          # Run a command, assert its exit status, and preview the output.
+          #
+          # Deliberately *not* `cmd | head -n`: `head` closes the pipe as soon as
+          # it has enough lines, the writer dies of SIGPIPE, and `pipefail` then
+          # reports the whole pipeline as failed. Writing to a file first keeps
+          # the exit status meaningful and prints the log when something breaks.
+          run() {
+            local out
+            out="$(mktemp)"
+            if ! "$@" > "$out" 2>&1; then
+              echo "::error::command failed with a non-zero exit: $*"
+              cat "$out"
+              rm -f "$out"
+              exit 1
+            fi
+            head -n 25 "$out"
+            rm -f "$out"
+          }
+
+          run uv run baahar check
+          run uv run baahar brief --city Bengaluru --offline --model template
+          run uv run baahar parks --limit 3
+          run uv run baahar journal
+          run uv run baahar score --offline
+          run uv run baahar score --offline --json
+          run uv run baahar version
+
+          # The JSON must actually parse, not merely exit zero.
+          # `uv run python`, because a bare `python` is not on PATH in this job.
+          uv run baahar score --offline --json > score.json
+          uv run python - <<'PY'
+          import json
+
+          with open("score.json", encoding="utf-8") as fh:
+              data = json.load(fh)
+          assert data["slots"], "expected at least one scored hour"
+          assert data["overall"] in {"GO", "WAIT", "SKIP"}, data["overall"]
+          assert all("signals" in s for s in data["slots"]), "slots must carry signals"
+          print(f"score --json parses: {len(data['slots'])} slots, overall={data['overall']}")
+          PY
+          rm -f score.json
 
       - name: Verify no secrets are committed
         run: |
