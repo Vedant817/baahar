@@ -267,12 +267,23 @@ class TestTemplateWriter:
         config.get_settings.cache_clear()
 
     def test_tinker_without_a_key_says_the_key_is_missing(self, go_plan, monkeypatch) -> None:
-        monkeypatch.setenv("TINKER_API_KEY", "")
+        # `get_settings` is memoised, so clearing the environment variable alone is
+        # not enough -- a cached Settings built earlier still carries the key.
+        # This test only passed while no Tinker key existed anywhere; it started
+        # failing the moment one was configured, which is a test bug, not a
+        # product bug.
+        from baahar import config
         from baahar.brief import write_tinker
         from baahar.http_client import UpstreamError
 
-        with pytest.raises(UpstreamError, match="TINKER_API_KEY"):
-            write_tinker(go_plan, park=go_plan.park)
+        monkeypatch.setenv("TINKER_API_KEY", "")
+        config.get_settings.cache_clear()
+        try:
+            assert config.get_settings().tinker_api_key is None
+            with pytest.raises(UpstreamError, match="TINKER_API_KEY"):
+                write_tinker(go_plan, park=go_plan.park)
+        finally:
+            config.get_settings.cache_clear()
 
 
 class TestGeminiResponseParsing:

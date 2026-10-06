@@ -266,22 +266,44 @@ genuinely bad-air days.
 
 Holdout: last 20% chronologically — 1,626 rows, 2026-07-30 → 2026-10-05.
 
-| model | accuracy | macro-F1 | skip_as_go | n(SKIP) |
-|---|---|---|---|---|
-| majority class | 0.4047 | 0.1441 | 0.0 | 24 |
-| persistence (band at *t*) | 0.4760 | 0.3106 | 0.0 | 24 |
-| logistic regression | 0.7306 | 0.4845 | 0.0 | 24 |
-| random forest | 0.8272 | 0.5685 | 0.0 | 24 |
-| **gradient boosting** | **0.8395** | **0.5897** | **0.0** | **24** |
-| TabPFN | *SKIPPED — see below* | | | |
+| model | accuracy | macro-F1 | skip_as_go | n(SKIP) | fit time |
+|---|---|---|---|---|---|
+| majority class | 0.4047 | 0.1441 | 0.0 | 24 | <0.1 s |
+| persistence (band at *t*) | 0.4760 | 0.3106 | 0.0 | 24 | <0.1 s |
+| logistic regression | 0.7306 | 0.4845 | 0.0 | 24 | 4.8 s |
+| random forest | 0.8272 | 0.5685 | 0.0 | 24 | 1.9 s |
+| gradient boosting | 0.8395 | 0.5897 | 0.0 | 24 | 9.2 s |
+| **TabPFN 9.1.0 (cpu)** | **0.8512** | **0.6040** | **0.0** | **24** | **339 s** |
 
-**Read that table honestly: gradient boosting won.** TabPFN did not run, so I am
-not going to pretend it did — see the next section. And notice the safety column
-is `0.0` for everything, including the majority-class baseline that predicts a
-single band. That is not a triumph of modelling; it is a consequence of the
-decision rule being *hard* — if the predicted band is not Severe and the heat and
-rain are fine, the answer is GO or WAIT regardless. The band classification is
-where the real work is, and that is where the accuracy numbers live.
+**TabPFN wins. By an amount I do not think means anything.** +0.012 accuracy and
++0.014 macro-F1 over gradient boosting is about 20 rows out of 1,626, from a single
+seed with no variance recorded. If I ran that comparison ten times the order would
+probably flip. So: TabPFN is the top line because it has the highest number, and I
+am not going to dress that up as "prior-learning transformers beat gradient
+boosting on Indian air quality".
+
+Two things I find more interesting than the ranking:
+
+**Where the gain actually came from.** One place: `moderate` recall, 0.5845 vs
+0.5563. Same error class, slightly fewer of them. The hard bands — `poor` on three
+examples, `severe` and `hazardous` on zero — are untested for TabPFN exactly as
+they are for everything else in the table.
+
+**It is 37× slower to fit, and on the live window it picks the same hour as the
+heuristic.** All 24 hours, zero disagreements. So for *this product*, TabPFN is
+currently paying 339 seconds for nothing visible. I am shipping the claim because
+it genuinely ran and won the table, not because I think it is the right engine
+yet. The honest version of this row is "it works, it is the best number I have,
+and I cannot yet show it is worth it".
+
+Now notice the safety column is `0.0` for everything, *including the majority-class
+baseline that predicts a single band for every hour.* That is not a triumph of
+modelling; it is a consequence of the decision rule being hard — if the predicted
+band is not Severe and the heat and rain are fine, the answer is GO or WAIT
+regardless. Worse, every one of the 24 SKIPs was rain (22) or heat (2) and **zero
+was air quality**, so this column does not test polluted-day safety at all. The
+band classification is where the real work is, and that is where the accuracy
+numbers live.
 
 I included the `n(SKIP)` column because 24 is a small number, and a bare rate on
 24 cases would be misleading. Wilson 95% interval: **[0.000, 0.138]**. In plain
@@ -402,12 +424,28 @@ than win it with code I know is fake.
 
 - **No field test.** ⟨FILL: section 7, or state honestly that the walk has not
   happened. `docs/FIELD_TEST.md` says NOT YET DONE. Do not imply otherwise.⟩
-- **TabPFN never ran.** `tabpfn==9.1.0` refuses to download weights until a Prior
-  Labs licence acceptance is recorded, *even though the weights are public on
-  Hugging Face* — I verified `gated=False`. That is a licence gate, not a
-  technical one, so I did not route around it. The code path is implemented and
-  tested; `uv run python scripts/run_eval.py` reports it as `SKIPPED` with the
-  three steps to unblock.
+- **TabPFN took a licence and a CPU override to run.** Two separate gates, and
+  they behave completely differently:
+
+  - The *licence* is a real gate. `tabpfn==9.1.0` will not fetch weights until a
+    Prior Labs acceptance is recorded, even though `Prior-Labs/TabPFN-v2-clf` is
+    public and reports `gated=False`. I did not route around that — a human
+    accepted it and put the key in `.env`.
+  - The *CPU size guard* is not. TabPFN refuses >5,000 rows on CPU by default and
+    hands you the switch: `TABPFN_ALLOW_CPU_LARGE_DATASET=1`, or a GPU, or the
+    hosted API. I measured it first — 6,504 rows fit in 1.6 s, 1,626 predictions
+    take 312 s — and took the switch. Five and a half minutes is a reasonable
+    price to actually measure the model I was claiming to use.
+
+  The thing that cost me an hour: **you have to set that variable before importing
+  `tabpfn`.** The guard reads a pydantic settings object that snapshots at import
+  time, so setting it afterwards does nothing, and the symptom is *identical* to
+  the guard not existing — same `SKIPPED` line, same non-zero feeling. Twice I
+  "fixed" it and got the same output. If you hit that, it is not your code.
+- **TabPFN's fitted model is 840 MB, so it is not in the repo.** `eval/artifacts/`
+  is gitignored and `scripts/run_eval.py` recreates it. Committing an 840 MB pickle
+  to a public repo would have been a hostile thing to do to every judge who clones
+  it, and the brief says no multi-GB downloads — this one stayed out.
 - **Gemma is slow.** Measured **40–95 seconds** per briefing, because the Gemma 4
   reasoning trace cannot be disabled on these models — the API returns
   *"Thinking budget is not supported for this model."* That is why Baahar ships a
@@ -431,7 +469,7 @@ alternative would undermine every number above.
 | Category | Entering? | Why |
 |---|---|---|
 | **Best Use of Gemma** | ✅ | `gemma-4-31b-it` generated and evaluated every model briefing. Open-weight model at the core of the product. |
-| **Best Use of TabPFN** | ❌ | Code complete, **never executed** — blocked by a licence acceptance. Not claiming it. |
+| **Best Use of TabPFN** | ✅ | `tabpfn==9.1.0` ran on a real 1,626-row chronological holdout: 0.8512 acc / 0.6040 macro-F1, best in my table. Licence accepted by a human; CPU override documented. |
 | **Best Use of Tinker** | ❌ | Fine-tuning dataset built (219 balanced examples), **run not performed** — API unverifiable. Not claiming it. |
 | **Best Use of Render** | ❌ | Not deployed. |
 | **Best Use of ElevenLabs** | ❌ | Client implemented, never called. |
@@ -461,7 +499,7 @@ read a briefing should not pay for a model they did not ask for. The heuristic
 scorer is a real fallback with a real test suite, not a stub.
 
 - **MIT licensed.** [`LICENSE`](https://github.com/Vedant817/baahar/blob/main/LICENSE)
-- **173 tests pass offline.** `uv run pytest`
+- **267 tests pass offline.** `uv run pytest`
 - **CI** runs lint, format, tests, an offline CLI smoke test, a secret scan, and a
   headless-Chrome layout audit of all three screens.
 - **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
@@ -475,16 +513,22 @@ scorer is a real fallback with a real test suite, not a stub.
 A lot, and none of it is "add a feed".
 
 1. **Run the field test** and find out whether I actually pocket the phone.
-2. **Get the TabPFN licence accepted** and run the number for real. The
-   conventional baselines are strong enough that TabPFN has to earn its place.
-3. **Finish the Tinker fine-tune** — the 219-example dataset exists; the reason is
-   a missing API URL, not a missing idea. The fine-tune's target is stylistic:
-   prose instead of a restated plan, Indian outdoor vocabulary, a firmer SKIP
-   register.
-4. **Make the SKIP decision feel better.** Right now Baahar tells you not to go
+2. **Get a holdout that can test what I am claiming.** Zero Severe hours, three
+   Poor hours, and every SKIP caused by rain or heat — so the one metric I care
+   about most, polluted-day safety, is currently unmeasured. A Bengaluru winter
+   dataset is the fix, and it is boring data collection rather than modelling.
+3. **Make TabPFN earn its 339 seconds.** It is the best number in my table and it
+   changes none of my answers. Either it starts beating the heuristic where it
+   matters — the bands the holdout cannot currently test — or it goes back to being
+   an optional extra, which is where it honestly belongs right now.
+4. **Finish the Tinker fine-tune** — the 219-example dataset exists; the reason is
+   that `tinker.ai` does not resolve from my environment, not a missing idea. The
+   fine-tune's target is stylistic: prose instead of a restated plan, Indian outdoor
+   vocabulary, a firmer SKIP register.
+5. **Make the SKIP decision feel better.** Right now Baahar tells you not to go
    and leaves it there. The honest, non-preachy version of "go outside *later*,
    here is the hour" is the unsolved design problem.
-5. **More cities**, but only ones with a published national air quality index I
+6. **More cities**, but only ones with a published national air quality index I
    can compute honestly. I do not want to ship a US AQI number wearing an Indian
    label, and that principle should generalise.
 

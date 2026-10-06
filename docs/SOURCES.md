@@ -154,14 +154,30 @@ Two verified behaviours that shaped the implementation:
    and `gemini-flash-latest` all answered. The eval harness probes a candidate
    list and records which model actually judged.
 
-### TabPFN licence gate — verified, not assumed
+### TabPFN: licence gate vs CPU guard — two different kinds of "no"
 
-`Prior-Labs/TabPFN-v2-clf` reports `gated=False` via the Hugging Face API and is
-downloadable anonymously. Nevertheless `tabpfn==9.1.0` calls
-`ensure_license_accepted()` before fetching weights and requires
-`TABPFN_TOKEN` from a Prior Labs account. That is a licence gate, not a
-technical one, so Baahar does not route around it. See
-[`adr/001-tinker-outcome.md`](adr/001-tinker-outcome.md) and `NEEDS_HUMAN.md` §1.
+Both were hit on 2026-10-06 and they are worth keeping apart, because treating
+them the same way is how you either break a licence or waste an afternoon.
+
+**Licence gate — real, and not routed around.** `Prior-Labs/TabPFN-v2-clf` reports
+`gated=False` via the Hugging Face API and is downloadable anonymously.
+Nevertheless `tabpfn==9.1.0` calls `ensure_license_accepted()` before fetching
+weights and requires `TABPFN_TOKEN` from a Prior Labs account. A human accepted the
+licence and put the key in `.env`. See `NEEDS_HUMAN.md` §1.
+
+**CPU size guard — a performance default, not a restriction.** TabPFN refuses to
+fit more than ~5,000 rows on CPU and offers three documented ways out:
+`TABPFN_ALLOW_CPU_LARGE_DATASET=1`, a GPU, or the hosted `tabpfn-client` API.
+Measured here before taking it: 6,504 rows fit in 1.6 s, 1,626 predictions take
+312 s.
+
+The trap: **`TABPFN_ALLOW_CPU_LARGE_DATASET` must be set before `tabpfn` is
+imported.** `tabpfn/validation.py` reads `settings.tabpfn.allow_cpu_large_dataset`,
+a pydantic settings object that snapshots at import time. Setting the variable
+afterwards is silently ignored and produces byte-identical output to the guard not
+existing — the same `SKIPPED` line. `score.py` and `scripts/run_eval.py` set it
+before the import, with a comment, because the failure looks like a missing
+feature rather than an ordering bug.
 
 ---
 

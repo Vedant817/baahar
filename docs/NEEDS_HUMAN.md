@@ -30,6 +30,10 @@ does not patch around it. Everything else about the TabPFN path is done: the
 adapter, the feature matrix, the eval harness, and the safety asymmetry that
 prevents the model from being more permissive than the safety policy.
 
+> **UPDATE 2026-10-06: licence accepted, TabPFN runs.** `TABPFN_TOKEN` is now in
+> `.env` and `TabPFNClassifier(device="cpu").fit(...)` completed against
+> `tabpfn_3_5` weights. The results below are the ones to follow.
+
 ### Steps (about 3 minutes)
 
 1. Register at <https://ux.priorlabs.ai>.
@@ -245,7 +249,7 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 ## What is already done, so you can skip ahead
 
 - Everything that needs no key: the whole product, the web UI, Pocket Mode, the
-  journal, the CLI, the seasonal species cues, and 230 offline tests.
+  journal, the CLI, the seasonal species cues, and 267 offline tests.
 - **Gemma.** A key was present in the build environment, so the Gemma path was
   evaluated for real: 36 cases, machine checks plus a blind rubric.
   [`eval/RESULTS.md`](../eval/RESULTS.md) § B.

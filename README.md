@@ -144,9 +144,19 @@ uv run baahar score --city Bengaluru --scorer tabpfn
 
 Baahar tells you which scorer produced every decision, and the heuristic path is
 a first-class fallback rather than a stub. Without the licence, `run_eval.py`
-reports TabPFN as **`SKIPPED`** with the reason — the tabular category is not
-claimed in the write-up, and the conventional baselines carry the argument
-instead.
+reports TabPFN as **`SKIPPED`** with the reason and still publishes the
+conventional baselines.
+
+**With the licence accepted**, TabPFN runs for real on a 1,626-row chronological
+holdout and scores **0.8512 accuracy / 0.6040 macro-F1** — the best number in the
+table. Two things worth knowing before you trust it:
+
+- TabPFN guards against >5,000 rows on CPU. `score.py` sets
+  `TABPFN_ALLOW_CPU_LARGE_DATASET=1` for you, **before importing tabpfn** (setting
+  it afterwards does nothing — the guard snapshots its settings at import). Full
+  eval is ~5.5 minutes.
+- The fitted classifier is **840 MB**, so `eval/artifacts/` is gitignored and
+  `run_eval.py` recreates it. No weights in this repo, by design.
 
 ---
 
@@ -192,12 +202,13 @@ PDT is UTC−7, so Oct 11 23:59 PDT = Oct 12 06:59 UTC = Oct 12 12:29 IST.
 ```
 
 **Status of each box:** weather, air quality, Indian NAQI, the heuristic scorer,
-the Gemma briefing and Pocket Mode all run today with zero keys. **TabPFN** is
-implemented and tested but needs a Prior Labs licence acceptance before it can
-download weights ([why](docs/NEEDS_HUMAN.md)). **Tinker** has a built dataset
-(219 examples) but the API could not be verified, so no endpoint is hard-coded
-([adr/001](docs/adr/001-tinker-outcome.md)). **ElevenLabs** voice is implemented
-against fixtures and never called. None of the three are claimed in the write-up.
+the Gemma briefing and Pocket Mode all run today with zero keys. **TabPFN** runs
+for real once a Prior Labs licence acceptance is in `TABPFN_TOKEN`
+([how](docs/NEEDS_HUMAN.md)) — 0.8512 acc / 0.6040 macro-F1 on a 1,626-row
+chronological holdout. **Tinker** has a built dataset (219 examples) but
+`tinker.ai` did not resolve from the build environment, so no endpoint is
+hard-coded ([adr/001](docs/adr/001-tinker-outcome.md)) and the category is not
+claimed. **ElevenLabs** voice is implemented against fixtures and never called.
 
 Full module-by-module detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 Decision records: [`docs/adr/`](docs/adr/).

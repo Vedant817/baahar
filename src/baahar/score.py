@@ -22,6 +22,7 @@ Design rules that the eval section depends on:
 from __future__ import annotations
 
 import logging
+import os
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Any
@@ -111,6 +112,22 @@ def tabpfn_available() -> tuple[bool, str]:
     return True, "installed and licensed"
 
 
+#: TabPFN's own CPU guard. Above ~5000 rows it refuses to fit on CPU unless this
+#: is set, because inference cost grows with dataset size. Measured on this
+#: machine (2026-10-06, CPU only): 6,504 rows fit in 1.6 s and 1,626 predictions
+#: take 312 s, so the full eval is about five minutes -- a reasonable wait, not a
+#: reason to skip the model under test.
+#:
+#: This is a performance default, not a licence or correctness condition. The
+#: package offers the switch itself, alongside "use a GPU" and "use the hosted
+#: API", so lifting it is a supported configuration.
+#:
+#: Set it *before* importing `tabpfn`. The guard reads a pydantic settings object
+#: that snapshots values at import time, so assigning the variable afterwards is
+#: silently ignored and the failure looks identical to the guard not existing.
+CPU_LARGE_DATASET_ENV = "TABPFN_ALLOW_CPU_LARGE_DATASET"
+
+
 def _resolve_labels(preds: Sequence[Any], slots: Sequence[HourSlot]) -> list[Decision]:
     """Map TabPFN class indices to decisions, using the ordered label list.
 
@@ -138,6 +155,11 @@ def fit_tabpfn(rows: Sequence[Any], *, seed: int = 0):
     Kept in one place so `scripts/run_eval.py` and the live scorer fit the same
     way, and so the fitted artifact can be cached to disk for the web app.
     """
+    # Set before the import. TabPFN snapshots its settings object at import time,
+    # so assigning the environment variable afterwards is silently ignored -- which
+    # looks identical to the guard not existing.
+    os.environ.setdefault(CPU_LARGE_DATASET_ENV, "1")
+
     import numpy as np
     from tabpfn import TabPFNClassifier
 
@@ -155,6 +177,7 @@ def fit_tabpfn(rows: Sequence[Any], *, seed: int = 0):
         medians = np.where(np.isnan(medians), 0.0, medians)
         inds = np.where(np.isnan(x))
         x[inds] = np.take(medians, inds[1])
+
     clf = TabPFNClassifier(device="cpu", random_state=seed)
     clf.fit(x, y)
     return clf
@@ -314,6 +337,48 @@ def score_slots(
     return score_heuristic(slots), name, note
 
 
+def display_window(
+    scores: Sequence[SlotScore], best: SlotScore | None, window_hours: int
+) -> list[SlotScore]:
+    """The hours to show, chosen so the recommended hour is always one of them.
+
+    The user-facing table is capped at ``window_hours`` rows to keep the screen
+    short. Truncating from the front -- ``scores[:window_hours]`` -- looks
+    harmless and is wrong in the common case: at 13:00 the first 12 hours run to
+    midnight, while the best hour is 07:00 tomorrow. The briefing said "Go at
+    07:00" and every visible row said WAIT or SKIP, so the table appeared to
+    contradict the advice.
+
+    The window is therefore anchored on the recommendation instead of on "now",
+    keeping some lead-in context so the improvement is visible rather than
+    asserted:
+
+    * if the best hour is already inside the first ``window_hours``, keep the
+      existing behaviour;
+    * otherwise show the hours leading up to it, ending just after it.
+
+    Falling back to the leading slice when there is no best hour keeps the
+    all-SKIP case showing every hour rather than nothing.
+    """
+    if not scores:
+        return []
+    if best is None:
+        return list(scores[:window_hours])
+
+    try:
+        best_index = next(i for i, s in enumerate(scores) if s.time == best.time)
+    except StopIteration:  # pragma: no cover - defensive
+        return list(scores[:window_hours])
+
+    if best_index < window_hours:
+        return list(scores[:window_hours])
+
+    # One hour of context after the recommendation, so the user can see it is
+    # better than the hour that follows rather than just better than midnight.
+    start = max(0, best_index - window_hours + 2)
+    return list(scores[start : best_index + 2])
+
+
 def pick_best(scores: Sequence[SlotScore]) -> SlotScore | None:
     """Best hour to go out: GO beats WAIT beats SKIP, then comfort, then sooner.
 
@@ -379,7 +444,7 @@ def build_plan(
         best_slot=best_slot,
         best_time=best.time if best else None,
         headline=headline,
-        slots=scores[:window_hours],
+        slots=display_window(scores, best, window_hours),
         park=park,
         scorer=scorer_name,
         scorer_note=note,

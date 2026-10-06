@@ -824,7 +824,8 @@ def generate(
             elif not TINKER_SAMPLE_URL:
                 note_parts.append(
                     "Tinker was requested but TINKER_SAMPLE_URL is not configured, so "
-                    "Gemma was used instead. See docs/adr/001-tinker-outcome.md."
+                    "Gemma was used instead. No fine-tuned model served this briefing. "
+                    "See docs/adr/001-tinker-outcome.md."
                 )
             else:
                 try:

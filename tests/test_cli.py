@@ -135,8 +135,15 @@ class TestErrorHandling:
         assert result.returncode != 0
         assert "Traceback" not in result.stderr
 
-    def test_requesting_tinker_never_claims_a_finetune(self) -> None:
-        """No TINKER_API_KEY here, so the note must say Gemma was substituted."""
+    def test_requesting_tinker_never_claims_a_finetune(self, monkeypatch) -> None:
+        """The fallback must be explicit, whether or not a key is configured.
+
+        The key is blanked here on purpose: a developer who has added
+        TINKER_API_KEY to `.env` still has to see that no fine-tuned model ran,
+        because `TINKER_SAMPLE_URL` is unset and no request is ever attempted.
+        Asserting that unconditionally is what makes this test worth having.
+        """
+        monkeypatch.setenv("TINKER_API_KEY", "")
         result = run_cli("brief", "--offline", "--model", "tinker")
         assert result.returncode == 0
         combined = result.stdout + result.stderr

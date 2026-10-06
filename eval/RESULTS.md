@@ -11,12 +11,21 @@ execution and can be traced to a machine-readable file in [`raw/`](raw/).
 | | |
 |---|---|
 | Dataset built | 2026-10-06 IST, 8,130 hourly rows |
-| Tabular run | 2026-10-06 03:53 IST → refreshed 04:34 IST with the SKIP-cause breakdown |
+| Tabular run | 2026-10-06 03:53 IST → refreshed 04:34 with the SKIP-cause breakdown → **12:56 IST with TabPFN included** |
+| Briefing run | 2026-10-06 05:09 IST (36 cases × 2 writers, unchanged by the TabPFN run) |
 | Location | Bengaluru, 12.9716 N, 77.5946 E |
-| Keys present at run time | Gemma ✅ · Tinker ❌ · TabPFN ❌ · ElevenLabs ❌ · WAQI ❌ |
+| Keys present at tabular run | Gemma ✅ · TabPFN ✅ · WAQI ✅ · Tinker ✅ · ElevenLabs ✅ |
+| Keys present at briefing run | Gemma ✅ · Tinker ❌ · TabPFN ❌ · ElevenLabs ❌ · WAQI ❌ |
+| Device | CPU only. No GPU was used or available. |
 | Python | 3.14.0 |
 | numpy / scikit-learn / tabpfn / torch | 2.5.3 / 1.9.1 / 9.1.0 / 2.14.1 |
 | Raw artifacts | [`raw/gono_*.json`](raw/) · [`raw/briefing_*.json`](raw/) |
+
+The two runs above have different key sets on purpose and the numbers are not
+mixed: **§ B is from the 05:09 briefing run**, § A is from the **12:56 tabular
+run**. Each raw artifact records its own `keys_present` and `versions` block, and
+`scripts/check_results.py` reads the newest artifact of each kind rather than
+assuming they came from the same invocation.
 
 ### Reproduce
 
@@ -101,16 +110,49 @@ Holdout: **1,626 rows**, 2026-07-30T00:00 → 2026-10-05T17:00.
 | persistence (band at *t*) | 0.4760 | 0.3106 | 0.0 | 24 | 0.9982 | <0.1 s |
 | logistic regression | 0.7306 | 0.4845 | 0.0 | 24 | 0.9969 | 3.4 s |
 | random forest (300) | 0.8272 | 0.5685 | 0.0 | 24 | 0.9982 | 2.4 s |
-| **gradient boosting** | **0.8395** | **0.5897** | **0.0** | **24** | 0.9975 | 12.3 s |
-| TabPFN | **SKIPPED** — see below | | | | | |
+| gradient boosting | 0.8395 | 0.5897 | 0.0 | 24 | 0.9975 | 9.2 s |
+| **TabPFN 9.1.0 (cpu)** | **0.8512** | **0.6040** | **0.0** | **24** | **0.9982** | 339.0 s |
 
 Standard deviation across seeds is reported per run in `raw/`; at `--repeat 1`
 it is `null`, which is honest rather than a fabricated ±0.
 
 ### Reading that table honestly
 
-**Gradient boosting wins.** TabPFN did not run, so there is no number for it and
-none is invented.
+**TabPFN wins, by a small margin.** 0.8512 against 0.8395 for gradient boosting,
+and 0.6040 against 0.5897 macro-F1 — about +0.012 and +0.014. On 1,626 holdout
+rows that is roughly 20 rows different. With `--repeat 1` and no seed variance
+recorded, **this gap is not statistically meaningful and is not claimed to be.**
+TabPFN is reported as the best model in this table because it has the highest
+number, not because the evidence establishes that it is a better model than
+gradient boosting on this data.
+
+It is also 37× slower to fit (339 s against 9.2 s). The prize category asks
+whether TabPFN was used, and it was — genuinely, on a real holdout, with the
+real weights. Whether that is the right *engineering* choice for a product that
+answers one question in under two seconds is a different question, and the honest
+answer is that gradient boosting is very likely the better choice here.
+
+### TabPFN: how it actually ran
+
+Two gates had to be lifted, and neither is a licence or correctness condition:
+
+1. **The licence.** `TABPFN_TOKEN` is set. Without it `tabpfn>=2.x` refuses to
+   download weights even though `Prior-Labs/TabPFN-v2-clf` is public and reports
+   `gated=False`. That is a licence acceptance tied to a Prior Labs account, and
+   Baahar does not route around it — the human accepted it. See
+   `docs/NEEDS_HUMAN.md` § 1.
+2. **The CPU size guard.** TabPFN refuses to fit more than ~5,000 rows on CPU by
+   default, and offers `TABPFN_ALLOW_CPU_LARGE_DATASET=1`, a GPU, or the hosted
+   API as the alternatives. Measured here: 6,504 rows fit in 1.6 s and 1,626
+   predictions take 312 s, so the whole eval is about five and a half minutes.
+
+The second gate cost an hour of confusion worth recording: setting the environment
+variable *after* importing `tabpfn` does nothing, because the guard reads a
+pydantic settings object that snapshots its values at import time. The failure mode
+is indistinguishable from the guard not existing — the same `SKIPPED` message, the
+same exit. `score.py` and `scripts/run_eval.py` now set it before the import, with
+a comment saying why, because the next person to hit this will otherwise assume
+the feature is unavailable.
 
 **`skip_as_go_rate = 0.0` is a much weaker result than it looks**, and the
 harness now says so explicitly. Breaking down *why* each of the 24 true-SKIP
@@ -155,7 +197,25 @@ Rows are the true band, columns the predicted band.
 | **severe** | 0 | 0 | 0 | 0 | 0 | 0 |
 | **hazardous** | 0 | 0 | 0 | 0 | 0 | 0 |
 
-Per-class, gradient boosting:
+Two things worth naming:
+
+- **`poor` F1 = 0.0 on n=3.** The model never predicts `poor`. With three
+  examples, that is not a finding about the model; it is a statement about the
+  holdout window.
+- **`moderate` recall 0.556** is where the errors live. 60 of 142 moderate hours
+  were called `satisfactory`. That direction is *lenient*: it under-warns. It is
+  the error class worth watching, and it is not caught by `skip_as_go_rate` at all.
+
+### Baseline framing
+
+`persistence` is not a strawman. Air quality is persistent, so predicting the
+current band six hours out is a real meteorological baseline, and it beats the
+majority class by 7 points of accuracy. Any claim that a model "understands air
+quality" should be measured against persistence, not against chance.
+
+---
+
+## Per-class, gradient boosting
 
 | band | precision | recall | F1 | support |
 |---|---|---|---|---|
@@ -175,33 +235,31 @@ Two things worth naming:
   were called `satisfactory`. That direction is *lenient*: it under-warns. It is
   the error class worth watching, and it is not caught by `skip_as_go_rate` at all.
 
-### Baseline framing
+## Per-class, TabPFN 9.1.0 (cpu)
 
-`persistence` is not a strawman. Air quality is persistent, so predicting the
-current band six hours out is a real meteorological baseline, and it beats the
-majority class by 7 points of accuracy. Any claim that a model "understands air
-quality" should be measured against persistence, not against chance.
+| band | precision | recall | F1 | support |
+|---|---|---|---|---|
+| good | 0.8909 | 0.9028 | 0.8968 | 823 |
+| satisfactory | 0.8029 | 0.8480 | 0.8248 | 658 |
+| moderate | 0.8557 | 0.5845 | 0.6946 | 142 |
+| poor | 0.0 | 0.0 | 0.0 | **3** |
+| severe | — | — | — | **0** |
+| hazardous | — | — | — | **0** |
 
----
+Compared with gradient boosting, TabPFN's gain comes from exactly one place:
+`moderate` recall, 0.5845 against 0.5563. That is the same error class, mildly
+reduced. It does not fix `poor`, and it cannot touch `severe` or `hazardous`
+because there are no such rows in the holdout to be right or wrong about.
 
-## TabPFN: `SKIPPED`
+It also produces a decision confusion matrix identical to the majority baseline's
+(`[[1367,0,0],[3,232,0],[0,0,24]]`, decision accuracy 0.9982). Gradient boosting
+made one GO-into-SKIP mistake; TabPFN made none. On 24 SKIP hours that difference
+is one row, and it is not worth reading as a safety property.
 
-```
-tabpfn  SKIPPED -- tabpfn refuses to download weights until a Prior Labs licence
-        acceptance is recorded in TABPFN_TOKEN, even though the weights are
-        public on Hugging Face. We do not bypass a licence gate.
-        See docs/NEEDS_HUMAN.md for the 3 steps.
-```
-
-Verified on 2026-10-06: `Prior-Labs/TabPFN-v2-clf` reports `gated=False` via the
-Hugging Face API and is downloadable anonymously. `tabpfn==9.1.0` nevertheless
-calls `ensure_license_accepted()` before fetching weights and requires
-`TABPFN_TOKEN` from a Prior Labs account. That is a licence gate, not a
-technical or access limit, so it was not patched around.
-
-The code path is implemented and tested; it degrades to the documented policy with
-a reason rather than a traceback. To produce the number:
-<https://github.com/Vedant817/baahar/blob/main/docs/NEEDS_HUMAN.md>
+The honest summary: **TabPFN is the highest number in this table by a margin too
+small to defend, on a holdout that cannot test the bands that matter most, at
+37× the fit cost.** It is reported because it ran, not because it should be
+shipped.
 
 ---
 
@@ -415,7 +473,57 @@ hour's weather separately. For a +6h horizon that can misattribute a rain-driven
 SKIP. This is recorded in every raw artifact as
 `_policy_approximation` rather than quietly corrected.
 
-### 11. The seasonal cue shipped as four lines of statistics
+### 11. The hour table excluded the hour it was recommending
+
+The single most user-visible bug in this project, and it was invisible to every
+test because every test asserted the wrong thing.
+
+`build_plan` populated the plan with `scores[:window_hours]` — the first 12 hours
+from now. At 13:00 with a 24-hour window those run 13:00 → midnight, while the
+best hour was **07:00 the next morning**. So the briefing said *"Go at 07:00"* and
+every row of the table beside it read `WAIT` or `SKIP`. The table appeared to
+contradict the advice it was meant to justify.
+
+Nothing was wrong with the data, the scorer, or the headline. The bug was purely
+one of slicing: "show the next N hours" and "show the hour we are recommending"
+are not the same request, and the first was implemented where the second was
+meant.
+
+`display_window()` now anchors on the recommendation. If the best hour is already
+inside the window, behaviour is unchanged; otherwise the window shifts to end just
+after it, keeping lead-in context so the reader can see the hour is better rather
+than take it on faith. `tests/test_score.py::TestDisplayWindow` asserts the
+property for every position 0–23, that the cap holds, that no invented hours
+appear, and — end to end through `build_plan` — that a plan never omits its own
+recommendation.
+
+### 12. A station reading 1,727 km away looked entirely plausible
+
+With a WAQI token configured, a query for Bengaluru (`geo:12.9716;77.5946/`)
+returned *Dr. Karni Singh Shooting Range, Delhi* at `28.499727, 77.267095` with a
+perfectly reasonable AQI of 89 and a well-formed payload. Nothing about it looked
+broken — no error field, no nulls, no missing coordinates. It would have put a
+Delhi air-quality number on a Bengaluru screen, labelled as a local cross-check,
+next to a park name.
+
+`stations.py` now computes the haversine distance and discards anything beyond
+`MAX_STATION_KM = 60`. The reading is also deleted rather than shown with a
+caveat, because 60 km of "nearby" that turns out to be 1,727 km is not a caveat
+anyone reads. The distance is included in the payload for the readings that
+survive, so a judge can check the claim rather than take it.
+
+60 km is deliberately generous: it covers the whole city plus a wide margin, so a
+Bengaluru park with no station of its own still gets its cross-check. The guard
+exists to catch a different city, not to demand a sensor in the park. Absent
+coordinates are not a rejection — no distance check is possible, so the reading
+stands.
+
+`tests/test_stations.py` covers this with the real response shape, plus the
+payload-shape bug found alongside it: WAQI returns `city` as an object for the
+geo feed and as a list for some other feeds, and the original code only read the
+object form, so the station name silently vanished on one of them.
+
+### 13. The seasonal cue shipped as four lines of statistics
 
 Not an eval bug, but it belongs here because it is the failure mode the whole
 project is built against, caught by looking at a screenshot.
@@ -462,10 +570,11 @@ Stated so the gaps are visible rather than inferred.
 
 | Not measured | Why |
 |---|---|
-| `severe` / `hazardous` band accuracy | Zero such hours in the holdout. Not testable with this split. |
+| `severe` / `hazardous` band accuracy | Zero such hours in the holdout. Not testable with this split. This is the gap that matters most. |
 | `poor` band accuracy | 3 examples. F1 = 0.0 is not a meaningful signal. |
 | Air-quality-driven SKIP safety | Every SKIP in the holdout was rain or heat. `skip_as_go_rate` does not test polluted-day safety. |
-| TabPFN | Licence gate. See above. |
+| Whether TabPFN beats gradient boosting | One seed, no variance recorded. The +0.012 accuracy gap is ~20 rows on 1,626 and is not claimed to be significant. |
+| TabPFN's behaviour on the bands that matter | `severe` / `hazardous` / `poor` are unvalidated for TabPFN too, for the same reason as every other model here. |
 | Fine-tuned vs baseline briefings | Tinker API unverifiable; endpoint deliberately not invented. |
 | Field test | Not performed. No human has walked with Baahar. Not fabricated. |
 | Multi-seed variance | Tabular runs used `--repeat 1`; per-run values are in `raw/`, sd is `null`. |

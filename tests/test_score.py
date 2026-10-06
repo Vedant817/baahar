@@ -7,6 +7,8 @@ model says.
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 
 from baahar.features import (
@@ -18,16 +20,22 @@ from baahar.features import (
     heuristic_decision,
     time_split,
 )
-from baahar.models import DataSource, Decision, HourSlot
+from baahar.models import DataSource, Decision, HourSlot, SlotScore
 from baahar.score import (
     TABPFN_LABELS,
     build_plan,
     choose_scorer,
+    display_window,
     pick_best,
     score_heuristic,
     score_slots,
     tabpfn_available,
 )
+
+#: Mirrors `tests/conftest.py`. Duplicated rather than imported because `tests/`
+#: is not a package, so `from tests.conftest import ...` fails at collection.
+IST = timezone(timedelta(hours=5, minutes=30))
+BASE = datetime(2026, 10, 6, 5, 0, tzinfo=IST)
 
 
 class TestPolicy:
@@ -143,6 +151,102 @@ class TestScoring:
         plan = build_plan([])
         assert plan.overall is Decision.SKIP
         assert plan.best_time is None
+
+
+class TestDisplayWindow:
+    """The recommended hour must be visible in the table the user reads.
+
+    Regression test for a real bug: `build_plan` truncated with
+    `scores[:window_hours]`, which at 13:00 showed 13:00-to-midnight while the
+    briefing recommended 07:00 tomorrow. Every visible row read WAIT or SKIP, so
+    the table appeared to contradict the advice it was meant to justify.
+    """
+
+    @staticmethod
+    def _scores(count: int) -> list[SlotScore]:
+        start = datetime(2026, 10, 6, 13, 0, tzinfo=IST)
+        return [
+            SlotScore(
+                time=start + timedelta(hours=i),
+                decision=Decision.WAIT,
+                comfort=50.0,
+            )
+            for i in range(count)
+        ]
+
+    @staticmethod
+    def _go_at(scores: list[SlotScore], index: int) -> SlotScore:
+        return SlotScore(
+            time=scores[index].time,
+            decision=Decision.GO,
+            comfort=99.0,
+        )
+
+    def test_best_hour_is_always_in_the_window(self) -> None:
+        for index in range(24):
+            scores = self._scores(24)
+            best = self._go_at(scores, index)
+            out = display_window(scores, best, 12)
+            assert any(s.time == best.time for s in out), (
+                f"best hour at index {index} is missing from the window"
+            )
+
+    def test_window_never_exceeds_its_cap(self) -> None:
+        for index in (0, 5, 11, 12, 18, 23):
+            scores = self._scores(24)
+            best = self._go_at(scores, index)
+            assert len(display_window(scores, best, 12)) <= 12
+
+    def test_window_shows_only_real_hours(self) -> None:
+        scores = self._scores(24)
+        best = self._go_at(scores, 18)
+        known = {s.time for s in scores}
+        out = display_window(scores, best, 12)
+        assert all(s.time in known for s in out)
+
+    def test_behaviour_is_unchanged_when_best_is_already_visible(self) -> None:
+        scores = self._scores(24)
+        best = self._go_at(scores, 3)
+        assert display_window(scores, best, 12) == scores[:12]
+
+    def test_window_keeps_lead_in_context(self) -> None:
+        """The point of anchoring is that the improvement is *visible*.
+
+        Showing only the best row would assert 07:00 is good without showing
+        that 06:00 was worse, which is the evidence a sceptical reader wants.
+        """
+        scores = self._scores(24)
+        best = self._go_at(scores, 18)
+        out = display_window(scores, best, 12)
+        assert len(out) > 1
+        assert out[0].time < best.time
+
+    def test_no_best_hour_still_shows_the_leading_slice(self) -> None:
+        scores = self._scores(24)
+        assert display_window(scores, None, 12) == scores[:12]
+
+    def test_window_larger_than_the_data(self) -> None:
+        scores = self._scores(5)
+        best = self._go_at(scores, 2)
+        assert len(display_window(scores, best, 12)) == 5
+
+    def test_empty_scores(self) -> None:
+        assert display_window([], None, 12) == []
+
+    def test_plan_actually_shows_its_own_recommendation(self, slot) -> None:
+        """End to end through build_plan, which is where the bug lived."""
+        base = datetime(2026, 10, 6, 13, 0, tzinfo=IST)
+        slots = []
+        for i in range(24):
+            offset = int((base + timedelta(hours=i) - BASE).total_seconds() // 3600)
+            # Poor until early morning, then clean.
+            pm25 = 150.0 if i < 16 else 15.0
+            slots.append(slot(offset, pm25=pm25, temp_c=24.0, apparent_c=25.0))
+        plan = build_plan(slots, weather_source=DataSource.LIVE, air_source=DataSource.LIVE)
+        assert plan.best_time is not None
+        assert any(s.time == plan.best_time for s in plan.slots), (
+            "build_plan produced a plan whose table omits its own recommendation"
+        )
 
 
 class TestScorerSelection:

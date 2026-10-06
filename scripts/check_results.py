@@ -49,6 +49,10 @@ ALIASES: dict[str, str] = {
     "random forest": "rf",
     "gradient boosting": "histgb",
     "tabpfn": "tabpfn",
+    # `norm()` strips the trailing "(cpu)", so the row arrives here as
+    # "tabpfn 9.1.0". RESULTS.md names the version and device because "TabPFN"
+    # alone does not say which model produced the number.
+    "tabpfn 9.1.0": "tabpfn",
 }
 
 
@@ -223,6 +227,95 @@ def check_tabular(md: str, raw_path: Path, out: Problem) -> None:
         out.add(f"tabular: verified {checked} numbers against {raw_path.name}", ok=True)
 
 
+def check_per_class(md: str, raw_path: Path, out: Problem) -> None:
+    """Verify every "Per-class, <model>" table against the artifact.
+
+    RESULTS.md publishes per-class precision/recall/F1 tables, which are a dozen
+    numbers each. They were previously unchecked, which meant a stale or
+    hand-edited per-class table would pass CI silently while the summary table
+    beside it was verified -- the exact gap that let the old "TabPFN: SKIPPED"
+    section sit in the document beside a table claiming it was the best model.
+    """
+    payload = json.loads(raw_path.read_text(encoding="utf-8"))
+    results = payload.get("results") or {}
+    if not results:
+        return
+
+    checked = 0
+    # Matches "## Per-class, gradient boosting" and
+    # "## Per-class, TabPFN 9.1.0 (cpu)". The model name may contain commas, so the
+    # capture is greedy up to the end of the line and normalised afterwards.
+    for match in re.finditer(r"^#+\s*Per-class,\s*(.+?)\s*$", md, re.MULTILINE | re.IGNORECASE):
+        heading = match.group(1).strip().rstrip(":").strip()
+        key = ALIASES.get(norm(heading))
+        if key is None:
+            # "TabPFN 9.1.0 (cpu)" -> try the leading words before the version.
+            key = ALIASES.get(norm(re.split(r"\d+\.\d+", heading)[0]))
+        if key is None or key not in results:
+            out.add(
+                f"per-class: section {heading!r} does not map to a model in "
+                f"{raw_path.name}, so its numbers cannot be verified"
+            )
+            continue
+
+        entry = results[key]
+        if entry.get("status") != "OK" or not entry.get("per_class"):
+            out.add(
+                f"per-class: {heading} has a table in RESULTS.md but no per-class "
+                f"data in {raw_path.name}"
+            )
+            continue
+
+        per_class = entry["per_class"]
+        # The table body starts after the heading and runs to the next heading.
+        tail = md[match.end() :]
+        nxt = re.search(r"^#+\s", tail, re.MULTILINE)
+        body = tail[: nxt.start()] if nxt else tail
+
+        for band, stats in per_class.items():
+            row = re.search(rf"^\|\s*{re.escape(band)}\s*\|(.+)\|\s*$", body, re.MULTILINE)
+            if row is None:
+                if int(stats.get("support") or 0) == 0:
+                    # Zero-support bands are legitimately absent or dashed.
+                    continue
+                out.add(
+                    f"per-class {key}: band {band!r} has support "
+                    f"{stats['support']} in the artifact but no row in RESULTS.md"
+                )
+                continue
+
+            cells = [c.strip().replace("*", "") for c in row.group(1).split("|")]
+            cells = [c for c in cells if c]
+            if len(cells) < 4:
+                out.add(f"per-class {key}.{band}: expected precision/recall/F1/support")
+                continue
+
+            for label, idx in (("precision", 0), ("recall", 1), ("f1", 2)):
+                got = num(cells[idx])
+                expected = stats.get(label)
+                if got is None or expected is None:
+                    continue
+                if abs(got - float(expected)) > 0.0005:
+                    out.add(
+                        f"per-class {key}.{band}.{label}: RESULTS.md says {got}, "
+                        f"artifact says {expected}"
+                    )
+                else:
+                    checked += 1
+
+            got_support = num(cells[3].replace("**", ""))
+            if got_support is not None and abs(got_support - int(stats["support"])) > 0:
+                out.add(
+                    f"per-class {key}.{band}.support: RESULTS.md says {got_support}, "
+                    f"artifact says {stats['support']}"
+                )
+            elif got_support is not None:
+                checked += 1
+
+    if checked:
+        out.add(f"per-class: verified {checked} numbers against {raw_path.name}", ok=True)
+
+
 def check_skip_causes(md: str, raw_path: Path, out: Problem) -> None:
     payload = json.loads(raw_path.read_text(encoding="utf-8"))
     entry = next((v for v in payload["results"].values() if v.get("status") == "OK"), None)
@@ -344,7 +437,7 @@ def main(argv: list[str] | None = None) -> int:
         print(out[0])
         return 1
 
-    for check in (check_dataset, check_tabular, check_skip_causes):
+    for check in (check_dataset, check_tabular, check_per_class, check_skip_causes):
         check(md, raw_path, out)
     try:
         check_briefings(md, brief_path, out)

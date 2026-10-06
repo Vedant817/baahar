@@ -29,6 +29,13 @@ models/
 tabpfn_cache/
 .torch/
 
+# Fitted TabPFN classifiers. Measured 2026-10-06: 840 MB for the gono model, so
+# committing one would break the repo for every judge and blow the disk budget in
+# AGENTS.md. Recreate it with `uv run python scripts/run_eval.py`, which is the
+# only thing that writes it in the first place.
+eval/artifacts/
+*.pkl
+
 # --- eval raw output ---------------------------------------------------------
 # Raw run logs ARE committed (eval/raw/*.json) because RESULTS.md must be
 # reproducible. Cached API responses under data/cache/ are NOT.

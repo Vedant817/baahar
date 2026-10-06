@@ -30,7 +30,7 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | Indian NAQI, not US AQI | `naqi.py`; CPCB breakpoints; `naqi_basis` provenance on every result |
 | **DONE** | GO / WAIT / SKIP scorer with documented policy | `features.py`, `score.py` |
 | **DONE** | Heuristic fallback always available | `score_heuristic`, exercised by 12 tests |
-| **PARTIAL** | TabPFN path implemented + evaluated | Code complete and tested; **eval blocked** on a Prior Labs licence acceptance → `NEEDS_HUMAN.md` §1 |
+| **DONE** | TabPFN path implemented + evaluated | `tabpfn==9.1.0` on cpu, real holdout: **0.8512 acc / 0.6040 macro-F1**, best in table. `eval/RESULTS.md` § A |
 | **DONE** | Gemma briefing path works | `brief.py`; `gemma-4-31b-it` via AI Studio free tier |
 | **DONE** | ≤120-word safety-aware briefing | `MAX_WORDS`, `enforce_safety` |
 | **DONE** | Pocket Mode | `pocket.py` + `static/`, verified headless |
@@ -84,7 +84,7 @@ Only categories for tech that **actually ran**, per the challenge rule.
 | Category | Claim? | Why |
 |---|---|---|
 | **Gemma** | **Yes** | `gemma-4-31b-it` generated and evaluated briefings. Open-weight model at the core of the product. |
-| **TabPFN** | **No** | Code complete, never executed — blocked by a licence acceptance. Do not claim. |
+| **TabPFN** | **Yes** | `tabpfn==9.1.0` ran on a real chronological holdout (1,626 rows): 0.8512 acc / 0.6040 macro-F1. Licence accepted by the human, not bypassed. `eval/RESULTS.md` § A. |
 | **Tinker** | **No** | Dataset built (219 examples), run not performed. Do not claim. |
 | **Render** | **No** | Not deployed. |
 | **ElevenLabs** | **No** | Client implemented, never called. Do not claim. |
@@ -100,8 +100,10 @@ name what a reader can reproduce.**
    the shortest part of the walk — is currently unverified by a human. This is
    the most important outstanding item. `baahar journal` now makes it a three-tap
    job rather than a blank form.
-2. **No TabPFN or Tinker numbers.** Both are one human step away. Both are
-   documented rather than faked.
+2. **No Tinker numbers.** `tinker.ai` is unreachable from this environment
+   (DNS fails), so the API shape stays unverified and the endpoint stays empty.
+   The 219-example fine-tune dataset is built and committed; the run has not
+   happened. Documented in `adr/001`, not faked.
 3. **The tabular holdout contains no Severe or Hazardous hours**, and every SKIP
    in it was rain (22) or heat (2) — zero air quality. So `skip_as_go_rate = 0.0`
    measures rain and heat handling, **not** air-quality safety, and this
@@ -116,5 +118,13 @@ name what a reader can reproduce.**
    and archive come from the same CAMS model — but it is not zero.
 6. **Gemma latency is 51.7 s p50 / 115.2 s p95.** Real, measured, and the reason
    the deterministic writer is the default.
-7. **Not deployed.** A local run plus a recorded walk is acceptable to the
+7. **TabPFN wins by an amount this run cannot defend.** +0.012 accuracy and
+   +0.014 macro-F1 over gradient boosting is ~20 rows on a 1,626-row holdout, at
+   `--repeat 1` with no seed variance. It is reported as the best number in the
+   table because it is, not because the gap is significant. It is also 37× slower
+   to fit, and on the live window it and the heuristic pick the same hour.
+8. **The fitted TabPFN classifier is 840 MB** and is deliberately not committed
+   (`eval/artifacts/` is gitignored). `scripts/run_eval.py` recreates it. This is
+   the disk constraint doing its job: the weights stay out of the repo.
+9. **Not deployed.** A local run plus a recorded walk is acceptable to the
    challenge; `render.yaml` is ready if a promo is claimed.

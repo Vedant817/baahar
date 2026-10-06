@@ -86,6 +86,27 @@ is discarded in favour of the policy. A model may talk someone out of a walk; it
 may never talk them into bad air. This is one comparison in `score.py` and it
 is covered by tests with a deliberately adversarial stub model.
 
+Two practical notes, both learned by hitting them:
+
+- **TabPFN's CPU size guard must be lifted before the import.** The guard reads a
+  pydantic settings object that snapshots at import time, so
+  `os.environ["TABPFN_ALLOW_CPU_LARGE_DATASET"] = "1"` set after `import tabpfn`
+  does nothing and produces output identical to the guard not existing. It is a
+  documented performance default (the alternatives are a GPU or the hosted API),
+  not a licence condition, so `score.py` sets it — and the ordering is commented,
+  because the symptom looks like a missing feature rather than a sequencing bug.
+- **The fitted classifier is 840 MB.** `save_tabpfn_model` writes it to
+  `eval/artifacts/`, which is gitignored along with `*.pkl`. The weights stay out
+  of the repository and `scripts/run_eval.py` recreates them. This is the disk
+  constraint from `AGENTS.md` enforced at the file level rather than by
+  discipline.
+
+Measured on the offline fixture window: TabPFN and the heuristic pick the **same
+best hour and disagree on 0 of 24 hours**. The model is in the product because the
+challenge asked for it and because it is genuinely the highest-scoring model on
+the holdout — not because it currently changes an answer. That is recorded rather
+than smoothed over.
+
 ### 4. Safety is enforced after generation, not requested in a prompt
 
 The Gemma prompt *asks* for a caveat. A prompt is a suggestion. `enforce_safety`
