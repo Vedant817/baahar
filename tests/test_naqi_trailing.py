@@ -245,12 +245,87 @@ class TestPartialHistory:
         """Long series, but nothing in it: no mean is invented."""
         assert compute_naqi_trailing([row(), row(), row()]) is None
 
-    def test_a_negative_reading_is_clamped_not_averaged_in(self) -> None:
-        """A bad sensor value must not drag the mean below what was measured."""
-        trailing = compute_naqi_trailing([row(pm25=-50.0), row(pm25=60.0), row(pm25=60.0)])
+    def test_a_negative_reading_is_dropped_not_averaged_in(self) -> None:
+        """A bad sensor value must not drag the mean below what was measured.
+
+        It used to be clamped to zero, which *invented* a clean reading and
+        pulled the mean down -- the same unsafe direction as an upstream gap.
+        Now the hour is dropped like a missing one, so `hours_used` records it
+        and the mean cannot move downwards because of a broken sensor.
+        """
+        trailing = compute_naqi_trailing(
+            [row(pm25=-50.0), row(pm25=60.0), row(pm25=60.0), row(pm25=60.0)]
+        )
         assert trailing is not None
-        # Clamped to 0, so the mean is 40 rather than 23.3.
-        assert trailing.index == pytest.approx(compute_naqi({"pm25": 40.0}).index, abs=0.01)
+        # Dropped, so the mean is 60 -- not the 45 a zero-clamp would average.
+        assert trailing.hours_used["pm25"] == 3
+        assert trailing.index == pytest.approx(compute_naqi({"pm25": 60.0}).index, abs=0.01)
+        # Pin the direction explicitly: the old behaviour produced a *lower*
+        # number, and this is the unsafe one.
+        clamped_mean = (0.0 + 60.0 + 60.0 + 60.0) / 4
+        assert trailing.index > compute_naqi({"pm25": clamped_mean}).index
+
+
+class TestSeriesOrder:
+    """An out-of-order window is a loud failure, not a cleaner-looking day."""
+
+    def _stamped(self, hours: int, pm25: float = 60.0) -> list[dict]:
+        start = datetime(2026, 10, 6, 0, 0, tzinfo=UTC)
+        return [
+            {**row(pm25=pm25), "time": (start + timedelta(hours=i)).isoformat()}
+            for i in range(hours)
+        ]
+
+    def test_out_of_order_history_is_refused(self) -> None:
+        history = self._stamped(6)
+        shuffled = [history[0], history[3], history[1], history[2], history[4], history[5]]
+        with pytest.raises(ValueError, match="ascending"):
+            compute_naqi_trailing(shuffled)
+
+    def test_repeated_timestamps_are_refused(self) -> None:
+        history = self._stamped(4)
+        with pytest.raises(ValueError, match="ascending"):
+            compute_naqi_trailing([history[0], history[1], history[1], history[3]])
+
+    def test_chronological_history_is_accepted(self) -> None:
+        assert compute_naqi_trailing(self._stamped(6)) is not None
+
+    def test_unstamped_history_is_left_alone(self) -> None:
+        """The guard checks what it can see; it does not invent a requirement.
+
+        `compute_naqi_trailing` is a public calculator and plenty of callers
+        have no timestamps to give it. Refusing those would be a new API
+        contract, not an ordering fix.
+        """
+        assert compute_naqi_trailing([row(pm25=60.0)] * 6) is not None
+
+    def test_parse_air_refuses_a_shuffled_payload(self) -> None:
+        payload = openmeteo_payload(diurnal_pm25_curve(hours=8))
+        payload["hourly"]["time"] = list(reversed(payload["hourly"]["time"]))
+        with pytest.raises(ValueError, match="ascending"):
+            parse_air(payload)
+
+    def test_parse_air_refuses_repeated_hours(self) -> None:
+        payload = openmeteo_payload(diurnal_pm25_curve(hours=8))
+        payload["hourly"]["time"][3] = payload["hourly"]["time"][2]
+        with pytest.raises(ValueError, match="ascending"):
+            parse_air(payload)
+
+    def test_the_reversed_window_really_would_have_been_lower(self) -> None:
+        """Why this matters, in the archive's own shape.
+
+        Overnight accumulation then an afternoon dip. The 8 hours *behind* the
+        morning peak are the polluted ones; a newest-first payload puts the
+        clean afternoon at the end of the list instead, so ``history[-8:]``
+        averages the wrong hours and the index comes out lower. Lower is the
+        direction that sends someone out on a day CPCB would call Poor, which is
+        why the guard refuses rather than sorting.
+        """
+        curve = diurnal_pm25_curve(hours=24)
+        right_mean = sum(r["pm25"] for r in curve[:8]) / 8
+        wrong_mean = sum(r["pm25"] for r in list(reversed(curve))[:8]) / 8
+        assert right_mean > wrong_mean
+        assert compute_naqi({"pm25": wrong_mean}).index < compute_naqi({"pm25": right_mean}).index
 
 
 class TestConservativeRule:
@@ -297,11 +372,12 @@ class TestConservativeRule:
         """The public entry points other code and the whole suite depend on."""
         assert compute_naqi({"pm25": 30.0}).index == pytest.approx(50.0, abs=0.01)
         assert naqi_from_pm(pm25=30.0, pm10=50.0).index == pytest.approx(50.0, abs=0.01)
-        # Basis is unchanged on both, and both still advertise that the 24h-vs-
-        # hourly caveat applies -- the pre-existing test in test_naqi.py relies
-        # on both of those.
-        assert naqi_from_pm().basis == NAQI_BASIS
-        assert compute_naqi({"pm25": 30.0}).basis == NAQI_BASIS
+        # The *index* is unchanged on both. The basis is the instantaneous one,
+        # and that is a correction rather than a regression: it used to assert
+        # the combined `NAQI_BASIS`, which pinned a claim of a trailing mean onto
+        # a function that reads exactly one hour.
+        assert naqi_from_pm().basis == NAQI_BASIS_INSTANTANEOUS
+        assert compute_naqi({"pm25": 30.0}).basis == NAQI_BASIS_INSTANTANEOUS
 
 
 class TestProvenance:
@@ -327,6 +403,36 @@ class TestProvenance:
         assert payload["basis"] == NAQI_BASIS_TRAILING
         assert payload["trailing_hours_used"]["pm25"] == 24
         assert payload["trailing_window_hours"] == 24
+
+    def test_an_instantaneous_result_never_claims_a_trailing_mean(self) -> None:
+        """A2: the function that cannot average must not say it averaged.
+
+        ``NaqiResult.basis`` defaulted to the combined ``NAQI_BASIS``, so
+        ``compute_naqi`` published a trailing mean it never computed. Two eval
+        consumers (``build_dataset.py``, ``run_briefing_eval.py``) write these
+        results straight into artifacts, so the mislabel was machine-readable.
+        """
+        result = compute_naqi({"pm25": 60.0, "pm10": 120.0})
+        assert result.basis == NAQI_BASIS_INSTANTANEOUS
+        assert NAQI_BASIS_TRAILING not in result.basis
+        assert result.to_dict()["basis"] == NAQI_BASIS_INSTANTANEOUS
+        # The unusable result inherits the same honest default.
+        assert compute_naqi({}).basis == NAQI_BASIS_INSTANTANEOUS
+
+    def test_each_result_names_the_reading_it_came_from(self) -> None:
+        """`conservative_naqi` hands back one of its two inputs unchanged."""
+        instant = compute_naqi({"pm25": 60.0})
+        trailing = compute_naqi_trailing([row(pm25=300.0)] * 24)
+        assert trailing is not None
+        assert conservative_naqi(instant, trailing).basis == NAQI_BASIS_TRAILING
+        assert conservative_naqi(instant, compute_naqi_trailing([row(pm25=10.0)] * 24)).basis == (
+            NAQI_BASIS_INSTANTANEOUS
+        )
+
+    def test_the_parsed_hour_carries_the_combined_basis(self) -> None:
+        """`parse_air` builds the *effective* number, so it declares both halves."""
+        hours = parse_air(openmeteo_payload(diurnal_pm25_curve(hours=12)))
+        assert all(h.naqi_basis == NAQI_BASIS for h in hours)
 
     def test_us_aqi_is_still_never_mislabelled(self) -> None:
         trailing = compute_naqi_trailing([row(pm25=60.0)] * 24)
@@ -403,6 +509,37 @@ class TestEffectiveValueIsStructural:
         air = HourlyAir(time=WHEN, naqi=40.0, naqi_trailing=120.0)
         with pytest.raises((AttributeError, ValueError)):
             air.naqi_effective = 40.0  # type: ignore[misc]
+
+    def test_a_nan_cannot_poison_the_effective_value(self) -> None:
+        """`max([nan, 120.0])` is `nan`, so a nan must not enter the max.
+
+        `parse_air` cannot produce one, but every direct constructor in this
+        repo can -- the test suite, `build_dataset.py`, the eval harness. Those
+        are precisely the callers the computed field exists to defend against,
+        and a single nan took the whole hour's safety number down to *no* number
+        while still looking like data.
+        """
+        air = HourlyAir(time=WHEN, naqi=float("nan"), naqi_trailing=250.0)
+        assert air.naqi_effective == 250.0
+        assert air.naqi_effective_band == "poor"
+        assert air.naqi_uses_trailing_mean
+        # ...and it is not treated as "no data": a real reading is present.
+        assert not make_slot(air).naive
+
+    def test_an_infinite_reading_is_excluded_too(self) -> None:
+        air = HourlyAir(time=WHEN, naqi=float("inf"), naqi_trailing=180.0)
+        assert air.naqi_effective == 180.0
+        assert air.naqi_uses_trailing_mean
+
+    def test_a_non_finite_only_hour_is_no_data_not_a_guess(self) -> None:
+        """Both readings garbage => the hour has no number, and says so."""
+        air = HourlyAir(time=WHEN, naqi=float("nan"), naqi_trailing=float("inf"))
+        assert air.naqi_effective is None
+        assert air.naqi_effective_band is None
+        assert not air.naqi_uses_trailing_mean
+        assert make_slot(air).naive
+        # Missing is missing: the policy refuses the hour rather than guessing.
+        assert heuristic_decision(make_slot(air))[0] is Decision.SKIP
 
 
 class TestPolicyUsesTheEffectiveValue:

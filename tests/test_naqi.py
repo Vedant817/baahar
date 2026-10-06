@@ -15,7 +15,8 @@ import math
 import pytest
 
 from baahar.naqi import (
-    NAQI_BASIS,
+    NAQI_BASIS_INSTANTANEOUS,
+    NAQI_BASIS_TRAILING,
     POLLUTANTS,
     band_for_index,
     band_index_range,
@@ -182,10 +183,15 @@ class TestMissingData:
 class TestProvenance:
     def test_basis_is_carried_on_every_result(self) -> None:
         """The 24h-vs-hourly caveat must travel with the number."""
-        assert "24h" in NAQI_BASIS
-        assert "hourly" in NAQI_BASIS
-        assert naqi_from_pm(pm25=30.0).basis == NAQI_BASIS
-        assert naqi_from_pm(pm25=30.0).to_dict()["basis"] == NAQI_BASIS
+        assert "24h" in NAQI_BASIS_INSTANTANEOUS
+        assert "hourly" in NAQI_BASIS_INSTANTANEOUS
+        # `naqi_from_pm` reads one hour and never averages, so it must claim the
+        # instantaneous basis. It used to assert `NAQI_BASIS` here, which pinned
+        # the *combined* string onto a function that cannot compute a trailing
+        # mean -- the mislabel this test now guards against.
+        assert naqi_from_pm(pm25=30.0).basis == NAQI_BASIS_INSTANTANEOUS
+        assert naqi_from_pm(pm25=30.0).to_dict()["basis"] == NAQI_BASIS_INSTANTANEOUS
+        assert NAQI_BASIS_TRAILING not in naqi_from_pm(pm25=30.0).basis
 
     def test_us_aqi_is_never_mislabelled(self) -> None:
         """A US AQI number must not survive anywhere in our payload."""

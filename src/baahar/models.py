@@ -7,6 +7,7 @@ consume.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 from datetime import datetime
 from enum import StrEnum
@@ -125,9 +126,18 @@ class HourlyAir(BaseModel):
         exactly that. The guarantee has to hold by construction, not by
         discipline.
 
-        ``None`` only when both readings are absent, i.e. genuinely no data.
+        Non-finite readings are excluded from the comparison rather than
+        poisoning it. ``max([nan, 120.0])`` is ``nan``, so a single ``nan``
+        placed in either field -- something only a direct constructor can do,
+        since ``parse_air`` cannot produce one -- would take the whole hour's
+        safety number down to *no number at all* while looking like data. An
+        hour whose only readings are non-finite is treated the same as an hour
+        with no readings: ``None``, i.e. ``SKIP``, not a guess.
+
+        ``None`` only when both readings are absent or non-finite, i.e. genuinely
+        no data.
         """
-        known = [v for v in (self.naqi, self.naqi_trailing) if v is not None]
+        known = [v for v in (self.naqi, self.naqi_trailing) if v is not None and math.isfinite(v)]
         return max(known) if known else None
 
     @computed_field  # type: ignore[prop-decorator]
@@ -143,10 +153,17 @@ class HourlyAir(BaseModel):
         """True when the trailing mean, not the hour's own reading, is the one acted on.
 
         Surfaced so the UI can say why a number is higher than the
-        concentration on screen would suggest.
+        concentration on screen would suggest. Compares against the same
+        finite-only reading of ``naqi`` that :attr:`naqi_effective` uses, so
+        the flag and the number can never disagree about which one won.
         """
         trailing = self.naqi_trailing
-        return trailing is not None and (self.naqi is None or trailing > self.naqi)
+        if trailing is None or not math.isfinite(trailing):
+            return False
+        instant = self.naqi
+        if instant is None or not math.isfinite(instant):
+            return True
+        return trailing > instant
 
 
 class HourSlot(BaseModel):

@@ -150,14 +150,15 @@ class TestCheckCommand:
         assert "seasonal cues" in out
         assert f"blr_{SNAPSHOT_YEAR}_{SNAPSHOT_MONTH:02d}.json" in out
 
-    def test_check_never_prints_a_secret_value(self) -> None:
+    def test_check_never_prints_a_secret_value(self, monkeypatch: pytest.MonkeyPatch) -> None:
         from typer.testing import CliRunner
 
         from baahar.cli import app
 
+        monkeypatch.setenv("GEMINI_API_KEY", "sentinel-super-secret-key-12345")
         out = CliRunner().invoke(app, ["check"]).output
         assert "keys are never printed" in out
-        assert os.environ.get("GEMINI_API_KEY", "sentinel-not-present") not in out
+        assert "sentinel-super-secret-key-12345" not in out
 
 
 # ── Wording ──────────────────────────────────────────────────────────────────

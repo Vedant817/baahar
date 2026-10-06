@@ -15,6 +15,12 @@ Instead the task is a genuine **next-step prediction**:
 
   * Features come only from hour *t*. Nothing downstream of the split can see
     hour *t+6*. See `assert_no_leakage`.
+  * The `naqi` feature is the **effective** (conservative) reading -- the higher
+    of the hour's instantaneous value and its trailing-mean value, i.e. what
+    `baahar.features.features_from_slot` serves and what the policy acts on. The
+    instantaneous reading is kept beside it as `naqi_instant`. Fitting on one and
+    serving the other under the same column name is the train/serve skew this
+    project already paid for once; see `NAQI_FEATURE_NOTE`.
   * The label is a *band* (6 classes), and the GO/WAIT/SKIP decision is a
     documented policy applied on top of the predicted band by
     `apply_band_policy`. That keeps the safety rule human-readable and stops the
@@ -52,7 +58,13 @@ from datetime import datetime
 from baahar.config import DATA_DIR, get_settings
 from baahar.features import NAQI_SKIP, NAQI_WAIT, PRECIP_SKIP_MM
 from baahar.http_client import UpstreamError, get_json
-from baahar.naqi import compute_naqi
+from baahar.naqi import (
+    assert_chronological,
+    band_for_index,
+    compute_naqi,
+    compute_naqi_trailing,
+    conservative_naqi,
+)
 
 AQ_ARCHIVE_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
 #: ERA5 reanalysis archive. Note the path: the weather archive is
@@ -89,6 +101,30 @@ OUT_DIR = DATA_DIR / "eval"
 #: persistence is not trivially correct and short enough to be actionable.
 HORIZON_H = 6
 
+#: What the `naqi` column of this dataset means, in the dataset's own words.
+#:
+#: Read by `scripts/run_eval.py` so the raw eval artifact states it too. An
+#: artifact that does not say what its feature column means is how
+#: `baahar.features` and this builder came to disagree about what "naqi" was
+#: while both were correct about their own code -- see eval/RESULTS.md C.14.
+NAQI_FEATURE_NOTE = (
+    "naqi is the EFFECTIVE (conservative) NAQI at hour t: the higher of that "
+    "hour's own instantaneous reading and the trailing-mean reading over each "
+    "pollutant's CPCB averaging period, i.e. baahar.naqi.conservative_naqi. It "
+    "is the same number baahar.features.features_from_slot emits under the key "
+    "'naqi', which is what score.py serves to the policy and to TabPFN. The "
+    "instantaneous reading is kept beside it as naqi_instant (with "
+    "naqi_trailing and naqi_trailing_hours) so the gap is auditable instead of "
+    "invisible. band is the band of that effective value."
+)
+
+LABEL_NOTE = (
+    "target_band and target_naqi are unchanged: the band and index at "
+    f"t+{HORIZON_H}h computed from that future hour's own instantaneous reading. "
+    "The feature is the effective value; the label is not. That asymmetry is "
+    "recorded here rather than left for a reader to discover."
+)
+
 
 @dataclass(frozen=True)
 class Row:
@@ -97,6 +133,17 @@ class Row:
     time: str
     #: features from hour t
     naqi: float
+    """Effective (conservative) NAQI at hour t -- `max(instant, trailing)`.
+
+    This is the column the model is fitted on, and it is the value
+    `features_from_slot` serves. See :data:`NAQI_FEATURE_NOTE`.
+    """
+    naqi_instant: float
+    """The hour's own instantaneous reading, kept for audit."""
+    naqi_trailing: float
+    """The trailing-mean reading behind `naqi`; NaN where there was no history."""
+    naqi_trailing_hours: int
+    """Hours that actually backed `naqi_trailing`; 0 when there was none."""
     band: str
     pm25: float
     pm10: float
@@ -110,11 +157,26 @@ class Row:
     is_day: int
     hour: int
     month: int
-    #: target: band at t + HORIZON_H
+    #: target: band at t + HORIZON_H, from that hour's own instantaneous reading
     target_band: str
     target_naqi: float
     #: policy decision derived from the *target* band (the ground-truth decision)
     decision: str
+
+
+@dataclass(frozen=True)
+class _Hourly:
+    """Both readings of one archive hour, plus the bands they imply."""
+
+    #: Band of the effective value -- the band the product would report.
+    band: str | None
+    #: Band of the instantaneous value. This is what the *label* is built from,
+    #: and what decides whether the hour can be a row at all.
+    instant_band: str | None
+    effective: float
+    instant: float
+    trailing: float
+    trailing_hours: int
 
 
 def _num(series, i):
@@ -190,6 +252,7 @@ def build_rows(start: str, end: str, *, force: bool) -> list[Row]:
     aq_times = aq_h.get("time") or []
     if not aq_times:
         raise SystemExit("air-quality archive returned no rows")
+    assert_chronological(aq_times, where=f"air-quality archive {start}..{end}")
 
     wx_params = dict(common)
     wx_params["hourly"] = ",".join(WX_VARS)
@@ -200,15 +263,37 @@ def build_rows(start: str, end: str, *, force: bool) -> list[Row]:
     def readings_at(i: int) -> dict:
         return {AQ_VAR_TO_KEY[v]: _num(aq_h.get(v), i) for v in AQ_VARS}
 
-    band_at: list[tuple[str | None, float, float]] = []
+    # One history list, built exactly the way `air.parse_air` builds it, and one
+    # trailing mean per hour computed by `compute_naqi_trailing` over that list.
+    #
+    # This used to be `compute_naqi(readings_at(i))` -- the instantaneous
+    # reading only. So the eval fitted a model on the `naqi` column while the app
+    # served the conservative value under that same column name: a train/serve
+    # skew one layer above the one `score_tabpfn` now guards against. The
+    # archive has every hour, so the trailing mean is computable here exactly as
+    # it is live.
+    history: list[dict] = []
+    for i, ts in enumerate(aq_times):
+        readings = {k: v for k, v in readings_at(i).items() if v is not None}
+        # Stamped so `compute_naqi_trailing` refuses a mis-ordered series rather
+        # than averaging across hours that are not in sequence.
+        readings["time"] = ts
+        history.append(readings)
+
+    band_at: list[_Hourly] = []
     for i in range(len(aq_times)):
-        rd = {k: v for k, v in readings_at(i).items() if v is not None}
-        res = compute_naqi(rd)
+        rd = history[i]
+        instant = compute_naqi(rd)
+        trailing = compute_naqi_trailing(history[: i + 1])
+        effective = conservative_naqi(instant, trailing)
         band_at.append(
-            (
-                res.band.value if res.band and res.is_usable else None,
-                float(res.index) if res.is_usable else float("nan"),
-                rd.get("pm25", float("nan")),
+            _Hourly(
+                band=effective.band.value if effective.band and effective.is_usable else None,
+                instant_band=(instant.band.value if instant.band and instant.is_usable else None),
+                effective=float(effective.index) if effective.is_usable else float("nan"),
+                instant=float(instant.index) if instant.is_usable else float("nan"),
+                trailing=float("nan") if trailing is None else float(trailing.index),
+                trailing_hours=trailing.hours if trailing is not None else 0,
             )
         )
 
@@ -221,9 +306,15 @@ def build_rows(start: str, end: str, *, force: bool) -> list[Row]:
         if wi is None:
             continue
 
-        band_now, naqi_now, _ = band_at[i]
-        band_tgt, naqi_tgt, _ = band_at[j]
-        if band_now is None or band_tgt is None:
+        now = band_at[i]
+        target = band_at[j]
+        # The label is the *instantaneous* band at t+6h, unchanged. A row still
+        # needs a usable instantaneous reading at t as well, so the dataset has
+        # exactly the same hours in it as it did before the feature changed.
+        if now.instant_band is None or target.instant_band is None:
+            continue
+        # The feature must be a real number, whatever the label is made of.
+        if now.band is None:
             continue
 
         pm25 = _num(aq_h.get("pm2_5"), i)
@@ -253,8 +344,11 @@ def build_rows(start: str, end: str, *, force: bool) -> list[Row]:
         rows.append(
             Row(
                 time=ts,
-                naqi=round(naqi_now, 2),
-                band=band_now,
+                naqi=round(now.effective, 2),
+                naqi_instant=round(now.instant, 2),
+                naqi_trailing=round(now.trailing, 2),
+                naqi_trailing_hours=now.trailing_hours,
+                band=now.band,
                 pm25=pm25 if pm25 is not None else float("nan"),
                 pm10=pm10 if pm10 is not None else float("nan"),
                 temp_c=temp_c,
@@ -267,12 +361,29 @@ def build_rows(start: str, end: str, *, force: bool) -> list[Row]:
                 is_day=1 if dt.hour >= 6 and dt.hour < 19 else 0,
                 hour=dt.hour,
                 month=dt.month,
-                target_band=band_tgt,
-                target_naqi=round(naqi_tgt, 2),
-                decision=apply_band_policy(band_tgt, t_precip, t_prob, t_apparent),
+                target_band=target.instant_band,
+                target_naqi=round(target.instant, 2),
+                decision=apply_band_policy(target.instant_band, t_precip, t_prob, t_apparent),
             )
         )
     return rows
+
+
+def assert_feature_is_effective(rows: list[Row]) -> None:
+    """The fitted feature must be the effective reading, and must say so.
+
+    Two invariants, both of which the dataset used to break:
+
+    * ``naqi`` is never below ``naqi_instant`` -- a model fitted on a lower
+      number than the one served would be trained on optimistic air.
+    * ``band`` is the band of ``naqi``, so the row cannot describe an hour two
+      different ways.
+    """
+    for row in rows:
+        assert row.naqi >= row.naqi_instant, f"{row.time}: effective < instantaneous"
+        assert row.band == band_for_index(row.naqi).value, (
+            f"{row.time}: band {row.band!r} is not the band of naqi {row.naqi}"
+        )
 
 
 def assert_no_leakage(rows: list[Row]) -> None:
@@ -313,6 +424,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     assert_no_leakage(rows)
+    assert_feature_is_effective(rows)
 
     rows_path = OUT_DIR / "gono_rows.jsonl"
     with rows_path.open("w", encoding="utf-8") as fh:
@@ -321,6 +433,7 @@ def main(argv: list[str] | None = None) -> int:
 
     bands = Counter(r.target_band for r in rows)
     decisions = Counter(r.decision for r in rows)
+    raised = sum(1 for r in rows if r.naqi > r.naqi_instant)
     meta = {
         "generated_at": datetime.now().astimezone().isoformat(),
         "start": args.start,
@@ -337,6 +450,16 @@ def main(argv: list[str] | None = None) -> int:
             "weather": WX_ARCHIVE_URL,
             "naqi_method": "CPCB 2014 sub-index breakpoints; overall = worst sub-index",
         },
+        "feature_semantics": {
+            "naqi": NAQI_FEATURE_NOTE,
+            "target": LABEL_NOTE,
+            "rows_where_effective_exceeds_instantaneous": raised,
+            "trailing_note": (
+                "naqi_trailing is NaN for the first hours of the window, where there "
+                "is not enough history for a mean, and naqi_trailing_hours records "
+                "how many hours actually backed each value."
+            ),
+        },
         "label_policy": "GO/WAIT/SKIP derived from the target band via apply_band_policy",
         "leakage_note": (
             f"Features are hour t only; target band is measured at t+{HORIZON_H}h. "
@@ -346,6 +469,7 @@ def main(argv: list[str] | None = None) -> int:
     (OUT_DIR / "gono_dataset.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
     print(f"wrote {len(rows)} rows -> {rows_path}")
+    print(f"naqi feature is the effective reading ({raised} rows above instantaneous)")
     print("target band distribution:")
     for band, count in sorted(bands.items()):
         print(f"  {band:<14} {count:5}  ({100 * count / max(1, len(rows)):.1f}%)")

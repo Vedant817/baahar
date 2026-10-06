@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-06T03:52:33.225758+05:30",
+  "generated_at": "2026-10-06T17:08:51.162568+05:30",
   "start": "2025-11-01",
   "end": "2026-10-05",
   "horizon_hours": 6,
@@ -23,6 +23,12 @@
     "air_quality": "https://air-quality-api.open-meteo.com/v1/air-quality",
     "weather": "https://archive-api.open-meteo.com/v1/archive",
     "naqi_method": "CPCB 2014 sub-index breakpoints; overall = worst sub-index"
+  },
+  "feature_semantics": {
+    "naqi": "naqi is the EFFECTIVE (conservative) NAQI at hour t: the higher of that hour's own instantaneous reading and the trailing-mean reading over each pollutant's CPCB averaging period, i.e. baahar.naqi.conservative_naqi. It is the same number baahar.features.features_from_slot emits under the key 'naqi', which is what score.py serves to the policy and to TabPFN. The instantaneous reading is kept beside it as naqi_instant (with naqi_trailing and naqi_trailing_hours) so the gap is auditable instead of invisible. band is the band of that effective value.",
+    "target": "target_band and target_naqi are unchanged: the band and index at t+6h computed from that future hour's own instantaneous reading. The feature is the effective value; the label is not. That asymmetry is recorded here rather than left for a reader to discover.",
+    "rows_where_effective_exceeds_instantaneous": 3830,
+    "trailing_note": "naqi_trailing is NaN for the first hours of the window, where there is not enough history for a mean, and naqi_trailing_hours records how many hours actually backed each value."
   },
   "label_policy": "GO/WAIT/SKIP derived from the target band via apply_band_policy",
   "leakage_note": "Features are hour t only; target band is measured at t+6h. No feature column contains the target."

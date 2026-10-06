@@ -38,9 +38,12 @@ acts on the more conservative of them:
 
 :func:`conservative_naqi` takes the higher of the two, so the number the product
 acts on can never be lower than the reading it started from. Every result
-carries :data:`NAQI_BASIS` naming both halves, and the UI labels the number
-accordingly. We think a clearly-labelled approximation is honest; a
-mislabelled number is not.
+carries a basis string naming how *it* was computed --
+:data:`NAQI_BASIS_INSTANTANEOUS`, :data:`NAQI_BASIS_TRAILING`, or the combined
+:data:`NAQI_BASIS` for the hour objects `parse_air` builds -- and the UI labels
+the number accordingly. We think a clearly-labelled approximation is honest; a
+mislabelled number is not. A function that only ever reads a single hour
+therefore never claims a trailing mean, whatever the dataclass default says.
 
 Measured on the recorded Bengaluru archive (Nov 2025 - Oct 2026, 8,112 hours),
 the trailing mean runs up to 23 index points above the instantaneous value and
@@ -57,6 +60,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
@@ -66,11 +70,13 @@ __all__ = [
     "NAQI_BASIS",
     "NAQI_BASIS_INSTANTANEOUS",
     "NAQI_BASIS_TRAILING",
+    "HISTORY_TIME_KEYS",
     "NaqiBand",
     "NaqiResult",
     "PollutantSpec",
     "POLLUTANTS",
     "TrailingNaqi",
+    "assert_chronological",
     "band_for_index",
     "band_index_range",
     "compute_naqi",
@@ -124,7 +130,75 @@ AVERAGING_PERIOD_HOURS: dict[str, int] = {
 #: authoritative. Refusing to produce one is the honest answer.
 MIN_TRAILING_HOURS = 3
 
+#: Keys a caller may use to stamp an hour inside a history mapping. If any of
+#: them is present, :func:`compute_naqi_trailing` checks the series is in
+#: ascending time order before it averages anything.
+HISTORY_TIME_KEYS: tuple[str, ...] = ("time", "timestamp")
+
 _INF = math.inf
+
+
+def _as_epoch(value: Any) -> float | None:
+    """Seconds since the epoch for a datetime, an ISO string or a number."""
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        moment = value
+    elif isinstance(value, str):
+        try:
+            moment = datetime.fromisoformat(value)
+        except ValueError:
+            return None
+    else:
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=UTC)
+    return moment.timestamp()
+
+
+def _stamp_of(row: Mapping[str, Any]) -> Any:
+    """The hour a history row claims to be, if it claims one at all.
+
+    Returns the raw value under the first key in :data:`HISTORY_TIME_KEYS` that
+    is present, so the error message from :func:`assert_chronological` quotes the
+    caller's own timestamp rather than a normalised one.
+    """
+    for key in HISTORY_TIME_KEYS:
+        if key in row:
+            return row[key]
+    return None
+
+
+def assert_chronological(times: Sequence[Any], *, where: str) -> None:
+    """Raise ``ValueError`` unless ``times`` is strictly ascending.
+
+    A trailing mean over an out-of-order series is silently wrong, and it is
+    wrong in the unsafe direction: mixing a dirty afternoon into a clean
+    overnight window can pull the mean *down*, so the number reads better than
+    the hours it was measured from. Sorting quietly here would hide an upstream
+    data bug behind a correct-looking number, so this refuses instead -- the
+    same discipline as ``assert_no_leakage`` in ``scripts/build_dataset.py``:
+    state the invariant, then let the reader see it break.
+
+    Entries that carry no recognisable timestamp (``None``, or a string that is
+    not ISO-8601) are skipped rather than guessed at. If two *known* stamps are
+    out of order, that is still an error.
+    """
+    known = [
+        (i, raw, stamp) for i, raw in enumerate(times) if (stamp := _as_epoch(raw)) is not None
+    ]
+    for (i, prev_raw, prev), (j, cur_raw, cur) in zip(known, known[1:], strict=False):
+        if cur <= prev:
+            raise ValueError(
+                f"{where}: entry {j} ({cur_raw!r}) is not in ascending time "
+                f"order after entry {i} ({prev_raw!r}). A trailing mean over an "
+                "out-of-order series can come out LOWER than the hours it was "
+                "measured from, which is the unsafe direction. Fix the series "
+                "upstream; this function will not sort it for you."
+            )
 
 
 class NaqiBand(StrEnum):
@@ -398,7 +472,14 @@ class NaqiResult:
     dominant_label: str | None
     sub_indices: dict[str, float] = field(default_factory=dict)
     missing: tuple[str, ...] = ()
-    basis: str = NAQI_BASIS
+    #: Instantaneous by default, because the only calculators that build a
+    #: :class:`NaqiResult` without saying otherwise are the ones that read a
+    #: single hour (:func:`compute_naqi`, :func:`naqi_from_pm`). Defaulting this
+    #: to the combined basis would make every one of them publish a trailing
+    #: mean it never computed -- the exact quiet mislabelling this module
+    #: exists to prevent. :func:`compute_naqi_trailing` and
+    #: :func:`parse_air` set their own basis explicitly.
+    basis: str = NAQI_BASIS_INSTANTANEOUS
 
     @property
     def is_usable(self) -> bool:
@@ -440,8 +521,14 @@ def compute_naqi(readings: Mapping[str, Any]) -> NaqiResult:
     :func:`compute_naqi_trailing` for the averaged reading and
     :func:`conservative_naqi` for the number the product should act on. This
     function's behaviour is unchanged from before; it remains the honest
-    single-reading calculator it always was, and the recorded eval dataset is
-    built on it.
+    single-reading calculator it always was.
+
+    The result therefore carries :data:`NAQI_BASIS_INSTANTANEOUS`, which names
+    the instantaneous reading and nothing else. It used to inherit the combined
+    :data:`NAQI_BASIS` from the dataclass default, which made a function that
+    never averages anything claim a trailing mean -- and two consumers
+    (``scripts/build_dataset.py`` and ``scripts/run_briefing_eval.py``) publish
+    these results straight into eval artifacts.
 
     ``readings`` uses Baahar's own keys (``pm25``, ``pm10``, ``no2``, ``o3``,
     ``co``, ``so2``, ``nh3``, ``pb``) with values in Open-Meteo's source units.
@@ -561,10 +648,17 @@ def _trailing_mean(
         value = _as_float(row.get(key))
         if value is None:
             continue
-        # A negative concentration is not a real measurement. Clamping to zero
-        # before averaging keeps a bad sensor value from dragging the mean below
-        # what was actually measured.
-        values.append(max(0.0, value))
+        if value < 0.0:
+            # A negative concentration is not a measurement at all, and the two
+            # honest ways to handle one differ in *direction*. Clamping to zero
+            # would pull the mean DOWN -- a worse-looking day caused by a
+            # broken sensor, in the same direction as a gap in the feed. Worse,
+            # it invents a reading the archive does not contain. So the hour is
+            # dropped instead, exactly like a missing one, and `hours_used`
+            # records that it is gone. Dropping it cannot make the reported
+            # number look cleaner than the hours that were measured.
+            continue
+        values.append(value)
     if not values:
         return float("nan"), 0
     return math.fsum(values) / len(values), len(values)
@@ -590,10 +684,21 @@ def compute_naqi_trailing(history: Sequence[Mapping[str, Any]]) -> TrailingNaqi 
     and a mean over twenty-four are not the same claim and the reader is
     entitled to know which one they are looking at.
 
+    **Order is checked, not assumed.** If the history mappings carry a timestamp
+    (any key in :data:`HISTORY_TIME_KEYS`) the series must be strictly ascending,
+    or this raises ``ValueError``. Averaging an out-of-order window silently
+    mixes hours from the wrong day and can lower the mean, which is the unsafe
+    direction; sorting here would hide the upstream bug behind a plausible
+    number.
+
     Returns ``None`` when there is less than :data:`MIN_TRAILING_HOURS` of usable
     history for any pollutant. A mean over one or two samples would be arithmetic
     dressed up as a 24-hour average, and this module does not invent numbers.
     """
+    assert_chronological(
+        [_stamp_of(row) for row in history],
+        where="compute_naqi_trailing(history)",
+    )
     if len(history) < MIN_TRAILING_HOURS:
         return None
 

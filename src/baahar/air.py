@@ -19,6 +19,9 @@ This module is where Baahar earns its honesty claim. Two things are deliberate:
   belongs to is Poor. So every hour gets both an instantaneous reading and a
   trailing-mean reading, and the product acts on the higher of the two.
   See :func:`baahar.naqi.conservative_naqi`.
+* **Hours are in order or the run stops.** ``parse_air`` refuses a payload whose
+  ``hourly.time`` is not strictly ascending, because a trailing mean over
+  shuffled hours can come out lower than the hours it was measured from.
 """
 
 from __future__ import annotations
@@ -32,6 +35,7 @@ from .http_client import UpstreamError, get_json, load_sample
 from .models import DataSource, HourlyAir, slice_from_now
 from .naqi import (
     NAQI_BASIS,
+    assert_chronological,
     compute_naqi,
     compute_naqi_trailing,
     conservative_naqi,
@@ -96,17 +100,23 @@ def parse_air(payload: dict[str, Any]) -> list[HourlyAir]:
 
     This needs no extra network request: the caller already asks for
     ``past_days=1``, so the series carries a day of history ahead of "now".
+
+    Raises ``ValueError`` if the payload's ``hourly.time`` is not strictly
+    ascending. A trailing mean over an out-of-order series is silently wrong
+    and can come out *lower* than the hours it was measured from, so an
+    upstream that returns hours shuffled is a loud failure, not a better day.
     """
     hourly = payload.get("hourly") or {}
     times = hourly.get("time") or []
     us_aqi = hourly.get("us_aqi")
+    assert_chronological(times, where="Open-Meteo air-quality payload hourly.time")
 
     # Two passes, because the trailing mean needs the hours *before* the hour
     # being scored. Collecting the readings first turns the second pass into a
     # slice rather than a nested re-parse of the payload per hour.
     history: list[dict[str, Any]] = []
     all_values: list[dict[str, float | None]] = []
-    for i in range(len(times)):
+    for i, raw_time in enumerate(times):
         readings: dict[str, Any] = {}
         values: dict[str, float | None] = {}
         for var, key in VAR_TO_KEY.items():
@@ -114,6 +124,11 @@ def parse_air(payload: dict[str, Any]) -> list[HourlyAir]:
             values[key] = val
             if val is not None:
                 readings[key] = val
+        # The hour's own timestamp travels with its readings so
+        # `compute_naqi_trailing` can refuse an out-of-order slice instead of
+        # averaging across hours that are not in sequence. `compute_naqi`
+        # ignores unknown keys, so this costs the instantaneous path nothing.
+        readings["time"] = raw_time
         history.append(readings)
         all_values.append(values)
 

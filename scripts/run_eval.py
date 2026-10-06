@@ -64,7 +64,11 @@ from baahar.features import (
 from baahar.score import CPU_LARGE_DATASET_ENV, save_tabpfn_model
 
 sys.path.insert(0, str(Path(__file__).parent))
-from build_dataset import apply_band_policy  # noqa: E402
+from build_dataset import (  # noqa: E402
+    LABEL_NOTE,
+    NAQI_FEATURE_NOTE,
+    apply_band_policy,
+)
 
 BANDS = ["good", "satisfactory", "moderate", "poor", "severe", "hazardous"]
 DECISIONS = ["GO", "WAIT", "SKIP"]
@@ -563,6 +567,10 @@ def main(argv: list[str] | None = None) -> int:
             "test_time_range": [test_rows[0]["time"], test_rows[-1]["time"]],
             "split": f"chronological, last {args.holdout:.0%} held out",
             "feature_columns": FEATURE_COLUMNS,
+            "feature_semantics": {
+                "naqi": NAQI_FEATURE_NOTE,
+                "target": LABEL_NOTE,
+            },
             "classes": BANDS,
             "test_band_support": holdout_support(test_rows),
             "absent_from_holdout": [
