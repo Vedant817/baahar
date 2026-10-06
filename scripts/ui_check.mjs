@@ -169,25 +169,42 @@ async function main() {
     '--no-default-browser-check',
     '--disable-gpu',
     '--hide-scrollbars',
-    // Belt and braces on top of the fresh profile.
-    '--disable-application-cache',
-    '--disk-cache-size=1',
     '--user-data-dir=' + profile,
     'about:blank',
   ], { stdio: 'ignore' });
 
   // Wait for the debugger endpoint.
+  //
+  // 120s, not 15s. On a cold GitHub runner, first-launch Chrome with a brand-new
+  // profile takes noticeably longer than on a warm dev machine, and the previous
+  // 15s budget failed the whole UI job with "Chrome debugger never came up" --
+  // which says nothing about the thing the job exists to check. A generous
+  // ceiling costs nothing when Chrome starts in two seconds.
+  const DEBUGGER_BUDGET_MS = 120000;
   let wsUrl = null;
-  for (let i = 0; i < 60 && !wsUrl; i++) {
+  const started = Date.now();
+  let lastError = '';
+  while (Date.now() - started < DEBUGGER_BUDGET_MS && !wsUrl) {
     await sleep(250);
     try {
       const res = await fetch(`http://127.0.0.1:${PORT}/json/list`);
       const tabs = await res.json();
       const page = tabs.find((t) => t.type === 'page');
       if (page) wsUrl = page.webSocketDebuggerUrl;
-    } catch { /* not up yet */ }
+    } catch (e) {
+      lastError = e.message || String(e);
+    }
   }
-  if (!wsUrl) { child.kill(); throw new Error('Chrome debugger never came up'); }
+  if (!wsUrl) {
+    child.kill();
+    throw new Error(
+      `Chrome debugger never came up after ${DEBUGGER_BUDGET_MS}ms. ` +
+      `Binary: ${bin}. Last probe error: ${lastError || 'none'}. ` +
+      'On CI, check that Chrome is installed and that the runner is not ' +
+      'memory-starved -- headless Chrome with a fresh profile is the first ' +
+      'thing to get OOM-killed.',
+    );
+  }
 
   const ws = new WebSocket(wsUrl);
   await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
