@@ -26,6 +26,11 @@ const state = {
   walkTimer: null,
   countdown: null,
   autoPocketAt: 0,
+  autoTick: null,
+  // Whether Pocket Mode is available at all, straight from `pocket.active`.
+  // Defaults to false so the deep-link path can never enter a walk the backend
+  // has not agreed to: an unset flag is not permission.
+  pocketActive: false,
   // Species name from the last seasonal cue that was actually shown, and what
   // the walker said about it. Both feed the after-walk journal, which is the only
   // place in this product where a human supplies the missing evidence.
@@ -50,6 +55,33 @@ const AUTO_POCKET_MS = 45000;
 function show(name) {
   Object.entries(screens).forEach(([key, el]) => { el.hidden = key !== name; });
   window.scrollTo(0, 0);
+}
+
+/* Pocket Mode, or an honest reason there isn't any.
+ *
+ * The button is disabled rather than hidden, because a control that silently
+ * disappears is a bug report waiting to happen, whereas a disabled control with
+ * a reason underneath it reads as a decision. The reason is the payload's own
+ * `safety_note` and `headline`, so the wording cannot drift from the verdict:
+ * this function never invents safety language.
+ */
+function applyPocketAvailability() {
+  const btn = $('pocket');
+  const why = $('pocket-blocked');
+  if (!btn) return;
+
+  btn.disabled = !state.pocketActive;
+  if (!why) return;
+  if (state.pocketActive) {
+    why.textContent = '';
+    why.hidden = true;
+    return;
+  }
+  const pocket = (state.data && state.data.pocket) || {};
+  why.textContent = [pocket.headline, pocket.safety_note]
+    .filter(Boolean)
+    .join(' — ');
+  why.hidden = false;
 }
 
 function fmtClock(sec) {
@@ -231,6 +263,16 @@ function renderPlan(data) {
     `Briefing writer: ${briefing.writer}. Baahar is informational, not medical advice.`;
 
   // Pocket Mode payload
+  //
+  // `pocket.active` is false only on a SKIP. Honouring it is the difference
+  // between the app agreeing with its own safety verdict and quietly
+  // contradicting it: the button and the auto-pocket countdown used to fire
+  // regardless, so a user who had just been told the air was hazardous got the
+  // dark-screen walk UI anyway.
+  state.pocketActive = pocket.active === true;
+  state.data = data;
+  applyPocketAvailability();
+
   const remaining = (data.meta && data.meta.cues_remaining) || [];
   const tags = (data.meta && data.meta.cue_tags) || [];
   state.cues = [pocket.notice_this]
@@ -312,7 +354,13 @@ function exitPocket() {
   clearInterval(state.walkTimer);
   document.body.style.background = '';
   show('brief');
-  scheduleAutoPocket();
+  // Cancel, do not re-arm. `scheduleAutoPocket()` here restarted the full
+  // AUTO_POCKET_MS countdown the instant the user backed out, which yanked
+  // them into the black screen again after the walk timer had just released
+  // them -- and a person who reached for "back" has said no to the phone.
+  // The brief screen's own idle countdown is armed in `load()`, which is the
+  // only place a fresh countdown should start.
+  cancelAutoPocket();
 }
 
 /* ── after-walk journal ─────────────────────────────────────────────────
@@ -519,10 +567,13 @@ async function load(modelOverride) {
       throw new Error(detail);
     }
     const data = await res.json();
-    state.data = data;
     renderPlan(data);
     stopLoading();
-    scheduleAutoPocket();
+    // Never arm the countdown on a SKIP. Tearing the phone away from someone
+    // right after the app told them to stay indoors is the failure this whole
+    // product exists to avoid.
+    if (state.pocketActive) scheduleAutoPocket();
+    else cancelAutoPocket();
   } catch (err) {
     clearInterval(elapsedTimer);
     $('loading').innerHTML =
@@ -553,7 +604,13 @@ async function populateParks() {
 
 function boot() {
   $('go').addEventListener('click', () => load());
-  $('pocket').addEventListener('click', () => { cancelAutoPocket(); enterPocket(false); });
+  // The guard is belt-and-braces with the `disabled` attribute: a click that
+  // arrives some other way must not become a walk on a SKIP day either.
+  $('pocket').addEventListener('click', () => {
+    if (!state.pocketActive) return;
+    cancelAutoPocket();
+    enterPocket(false);
+  });
   $('pocket-exit').addEventListener('click', exitPocket);
   $('next-cue').addEventListener('click', () => { state.cueIndex += 1; paintCue(); });
   $('use-fast').addEventListener('click', () => load('template'));
