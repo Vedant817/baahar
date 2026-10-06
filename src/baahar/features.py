@@ -98,14 +98,22 @@ def features_from_slot(slot: HourSlot) -> dict[str, float]:
     TabPFN model without reordering. Derived extras that the heuristic and the UI
     find useful are included too -- a missing key here raises ``KeyError`` at
     predict time, which is a much better failure than silently misaligned columns.
+
+    The ``naqi`` column is the **effective** reading
+    (:attr:`~baahar.models.HourlyAir.naqi_effective`): the higher of the hour's
+    instantaneous value and its trailing-mean value. Not the instantaneous one,
+    because a model trained on optimistic air is a model that learns to send
+    people out on the hours the CPCB day average says to stay in. See the
+    policy block below -- the thresholds are unchanged, only the number they
+    are applied to.
     """
     air = slot.air
     weather = slot.weather
     hour = weather.time.hour
-    band = air.naqi_band or ""
+    band = air.naqi_effective_band or ""
     return {
         # -- model columns, in FEATURE_NAMES order -----------------------------
-        "naqi": _f(air.naqi),
+        "naqi": _f(air.naqi_effective),
         "pm25": _f(air.pm25),
         "pm10": _f(air.pm10),
         "temp_c": _f(weather.temp_c),
@@ -160,6 +168,12 @@ def matrix_from_slots(
 # Severe = 301-400), so the policy is anchored to published health guidance
 # rather than to numbers tuned on our own data. Tuning these on the holdout
 # would be the single easiest way to fake a good score, so we do not do it.
+#
+# NONE of these thresholds moved. What changed is the *input*: the policy reads
+# `naqi_effective`, the higher of the hour's instantaneous reading and its
+# trailing-mean reading, where it used to read the instantaneous value alone.
+# The skip path is therefore strictly less permissive than before -- it can only
+# fire on hours it would not have fired on before, never the reverse.
 
 NAQI_SKIP = 300.0
 NAQI_WAIT = 200.0
@@ -174,10 +188,14 @@ def heuristic_decision(slot: HourSlot) -> tuple[Decision, list[str]]:
     reasons: list[str] = []
     air, weather = slot.air, slot.weather
 
-    if air.naqi is None:
+    # The conservative reading. `naqi_effective` is never lower than the
+    # instantaneous value, so this call is never *more* permissive than the
+    # policy was before it started reading the trailing mean too.
+    value = air.naqi_effective
+    if value is None:
         return Decision.SKIP, ["No air-quality reading for this hour -- not guessing."]
 
-    naqi = air.naqi
+    naqi = value
     if naqi >= NAQI_SKIP:
         reasons.append(f"NAQI {naqi:.0f} is Severe or worse.")
 
@@ -215,6 +233,14 @@ def heuristic_decision(slot: HourSlot) -> tuple[Decision, list[str]]:
     if reasons:
         return Decision.WAIT, reasons
 
+    if air.naqi_uses_trailing_mean:
+        # Say so rather than letting a number that disagrees with the
+        # concentration on screen look like an error.
+        reasons.append(
+            f"NAQI {naqi:.0f}, from the last {air.naqi_trailing_hours} h of air, "
+            "not just this hour."
+        )
+
     if not weather.is_day:
         return Decision.WAIT, ["Night-time. Good air, but park gates may be shut."]
 
@@ -248,8 +274,11 @@ def build_dataset(slots: Sequence[HourSlot]) -> list[LabelledRow]:
                 label=decision.value,
                 time=slot.weather.time.isoformat(),
                 meta={
-                    "naqi": slot.air.naqi,
-                    "naqi_band": slot.air.naqi_band,
+                    "naqi": slot.air.naqi_effective,
+                    "naqi_band": slot.air.naqi_effective_band,
+                    "naqi_instant": slot.air.naqi,
+                    "naqi_trailing": slot.air.naqi_trailing,
+                    "naqi_trailing_hours": slot.air.naqi_trailing_hours,
                     "apparent_c": slot.weather.apparent_c,
                     "precip_mm": slot.weather.precip_mm,
                     "reasons": reasons,

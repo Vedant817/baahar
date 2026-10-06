@@ -12,9 +12,9 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Any, Protocol, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
-from .naqi import NAQI_BASIS
+from .naqi import NAQI_BASIS, band_for_index
 
 
 class Decision(StrEnum):
@@ -76,7 +76,31 @@ class HourlyAir(BaseModel):
     nh3: float | None = None
     pb: float | None = None
 
+    #: CPCB breakpoints applied to this hour's *instantaneous* concentrations.
+    #:
+    #: Deliberately kept, unrenamed and unchanged: the eval dataset and the
+    #: recorded artifacts are shaped around it, and downstream code reads it.
+    #: It is no longer the number the product acts on -- see
+    #: :attr:`naqi_effective`.
     naqi: float | None = None
+
+    #: CPCB breakpoints applied to a *trailing mean* over each pollutant's own
+    #: averaging period (24 h; 8 h for O3 and CO). This is the closer match to
+    #: official NAQI, because the breakpoints were defined on averaged
+    #: concentrations. ``None`` when there was too little history to average:
+    #: see :data:`baahar.naqi.MIN_TRAILING_HOURS`.
+    naqi_trailing: float | None = None
+
+    #: Hours of history that actually backed :attr:`naqi_trailing`, for the
+    #: pollutant that drove it. Recorded so a partial window is auditable
+    #: rather than passed off as a full 24-hour mean. ``0`` when there was no
+    #: trailing value at all.
+    naqi_trailing_hours: int = 0
+
+    # The remaining band fields describe the *effective* (conservative) index,
+    # because health copy that understates the risk is the exact failure this
+    # module exists to prevent. `naqi` above stays the raw instantaneous number.
+
     naqi_band: str | None = None
     naqi_band_label: str | None = None
     naqi_health_impact: str | None = None
@@ -87,6 +111,42 @@ class HourlyAir(BaseModel):
     #: Open-Meteo's own US-EPA scale, kept for comparison only and never shown
     #: as "AQI". CPCB and EPA scales differ, so mixing them would be a lie.
     us_aqi_reference: float | None = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def naqi_effective(self) -> float | None:
+        """The NAQI everything downstream acts on: the more conservative reading.
+
+        Always ``max(naqi, naqi_trailing)``, so it can never be lower than the
+        instantaneous value the product used to act on. Computed rather than
+        stored, which is the point: a stored field could be filled in with
+        something lower by any caller that constructs `HourlyAir` directly --
+        and the test suite, the dataset builder and the eval harness all do
+        exactly that. The guarantee has to hold by construction, not by
+        discipline.
+
+        ``None`` only when both readings are absent, i.e. genuinely no data.
+        """
+        known = [v for v in (self.naqi, self.naqi_trailing) if v is not None]
+        return max(known) if known else None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def naqi_effective_band(self) -> str | None:
+        """CPCB band of :attr:`naqi_effective`."""
+        band = band_for_index(self.naqi_effective)
+        return band.value if band else None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def naqi_uses_trailing_mean(self) -> bool:
+        """True when the trailing mean, not the hour's own reading, is the one acted on.
+
+        Surfaced so the UI can say why a number is higher than the
+        concentration on screen would suggest.
+        """
+        trailing = self.naqi_trailing
+        return trailing is not None and (self.naqi is None or trailing > self.naqi)
 
 
 class HourSlot(BaseModel):
@@ -104,8 +164,13 @@ class HourSlot(BaseModel):
 
     @property
     def naive(self) -> bool:
-        """True when Baahar could not find usable air data for this hour."""
-        return self.air.naqi is None
+        """True when Baahar could not find usable air data for this hour.
+
+        Keyed on the effective reading, not the instantaneous one: an hour
+        whose own sensor values are missing still has a trailing mean behind it,
+        and that mean is a real number we can act on.
+        """
+        return self.air.naqi_effective is None
 
     @model_validator(mode="before")
     @classmethod

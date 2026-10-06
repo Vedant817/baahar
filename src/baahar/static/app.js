@@ -126,8 +126,16 @@ function renderSignals(plan) {
   const air = slot.air || {};
   const wx = slot.weather || {};
   const rows = [];
-  if (air.naqi !== null && air.naqi !== undefined) {
-    rows.push(['Indian NAQI', `${air.naqi} · ${(air.naqi_band || '')}`]);
+  // Show the conservative reading the decision was actually made on. Falling back
+  // to `naqi` keeps older payloads (and hand-built test fixtures) rendering
+  // instead of showing a blank row.
+  const naqi = air.naqi_effective ?? air.naqi;
+  if (naqi !== null && naqi !== undefined) {
+    rows.push(['Indian NAQI', `${naqi} · ${(air.naqi_band || air.naqi_effective_band || '')}`]);
+    if (air.naqi_trailing !== null && air.naqi_trailing !== undefined &&
+        air.naqi !== null && air.naqi !== undefined && air.naqi_trailing > air.naqi) {
+      rows.push(['', `${air.naqi_trailing_hours} h average is worse than this hour's reading`]);
+    }
   }
   if (air.dominant_label) rows.push(['Main pollutant', air.dominant_label]);
   if (wx.temp_c !== null && wx.temp_c !== undefined) {
@@ -436,8 +444,8 @@ function saveJournal(outcome) {
     planned_decision: plan.overall || null,
     planned_window: plan.best_time ? `${fmtTime(plan.best_time)}-${String((parseInt(fmtTime(plan.best_time), 10) + 1) % 24).padStart(2, '0')}:00` : null,
     park: plan.park ? plan.park.name : null,
-    naqi: air.naqi ?? null,
-    naqi_band: air.naqi_band || null,
+    naqi: air.naqi_effective ?? air.naqi ?? null,
+    naqi_band: air.naqi_effective_band || air.naqi_band || null,
     minutes_planned: pocket.walk_minutes || null,
     minutes_walked: outcome === 'skipped' ? 0 : elapsedMin,
     reached_for_phone: reached,

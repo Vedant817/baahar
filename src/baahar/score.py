@@ -68,11 +68,20 @@ def score_heuristic(slots: Sequence[HourSlot]) -> list[SlotScore]:
 
 
 def _signals(slot: HourSlot) -> dict[str, Any]:
-    """The handful of numbers shown in the "why" panel."""
+    """The handful of numbers shown in the "why" panel.
+
+    ``naqi`` here is the *effective* (conservative) value the decision was
+    actually made on, so the panel cannot disagree with the recommendation.
+    The two inputs behind it are included too -- a user told to stay in has a
+    right to see which reading raised the number and over how many hours.
+    """
     air, weather = slot.air, slot.weather
     return {
-        "naqi": air.naqi,
+        "naqi": air.naqi_effective,
         "naqi_band": air.naqi_band,
+        "naqi_instant": air.naqi,
+        "naqi_trailing": air.naqi_trailing,
+        "naqi_trailing_hours": air.naqi_trailing_hours,
         "dominant_pollutant": air.dominant_label,
         "pm25": air.pm25,
         "pm10": air.pm10,

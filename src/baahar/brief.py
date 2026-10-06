@@ -137,12 +137,18 @@ def build_context(plan: OutdoorPlan, park: Park | None = None) -> dict[str, Any]
         }
         if park
         else None,
+        # `naqi` in the briefing context is the conservative reading, so the model
+        # cannot describe the hour as cleaner than the product decided it was.
+        # Both inputs travel along, and the basis string names how they combine.
         "air": {
-            "naqi": air.naqi,
-            "band": air.naqi_band,
+            "naqi": air.naqi_effective,
+            "band": air.naqi_effective_band,
             "dominant_pollutant": air.dominant_label,
             "pm25": air.pm25,
             "pm10": air.pm10,
+            "naqi_instant": air.naqi,
+            "naqi_trailing": air.naqi_trailing,
+            "naqi_trailing_hours": air.naqi_trailing_hours,
             "naqi_basis": air.naqi_basis,
         }
         if air
@@ -565,11 +571,15 @@ def enforce_safety(text: str, plan: OutdoorPlan, park: Park | None = None) -> st
 
     if not _has_caveat(text):
         slot = plan.best_slot
-        if slot is not None and slot.air.naqi is not None and not _has_numeric_caveat(text):
-            band = (slot.air.naqi_band or "").lower()
+        if (
+            slot is not None
+            and slot.air.naqi_effective is not None
+            and not _has_numeric_caveat(text)
+        ):
+            band = (slot.air.naqi_effective_band or "").lower()
             text = (
                 f"{text.rstrip()} Air right now is Indian NAQI "
-                f"{slot.air.naqi:.0f}, {band} -- informational, not medical "
+                f"{slot.air.naqi_effective:.0f}, {band} -- informational, not medical "
                 "advice."
             ).strip()
             fixed.append("added_naqi_caveat")
@@ -707,7 +717,9 @@ def _cache_key(plan: OutdoorPlan, park: Park | None, writer: str) -> str:
         "decision": plan.overall.value,
         "hour": plan.best_time.strftime("%H") if plan.best_time else None,
         "park": park.name if park else None,
-        "naqi": round(air.naqi / 10) * 10 if air and air.naqi is not None else None,
+        "naqi": round(air.naqi_effective / 10) * 10
+        if air and air.naqi_effective is not None
+        else None,
         "apparent": round(weather.apparent_c) if weather and weather.apparent_c else None,
         "precip": round(weather.precip_prob / 10) * 10 if weather and weather.precip_prob else None,
     }

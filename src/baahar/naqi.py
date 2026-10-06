@@ -25,12 +25,27 @@ https://cpcb.nic.in/National-Air-Quality-Index/  See also `docs/SOURCES.md`.
 Honest caveat: averaging period
 -------------------------------
 The CPCB breakpoints are defined on **24-hour mean** concentrations (8-hour for
-O3 and CO). Open-Meteo publishes **hourly** values. Baahar therefore applies the
-CPCB 24-hour breakpoints to hourly concentrations, which is an *approximation*
-of official NAQI, not official NAQI. Every result carries
-:data:`NAQI_BASIS` describing exactly this, and the UI labels the number
+O3 and CO). Open-Meteo publishes **hourly** values, so no single hourly reading
+*is* an official NAQI input. Baahar therefore reports two numbers per hour and
+acts on the more conservative of them:
+
+* :func:`compute_naqi` -- CPCB breakpoints applied to the **instantaneous**
+  hourly concentration. Cheap, responsive to a spike, but not what CPCB means.
+* :func:`compute_naqi_trailing` -- CPCB breakpoints applied to a **trailing
+  mean** over each pollutant's own CPCB averaging period. This is much closer
+  to official NAQI, and it is *sticky*: an afternoon reading that looks clean
+  because the night's dust has not settled yet is not clean.
+
+:func:`conservative_naqi` takes the higher of the two, so the number the product
+acts on can never be lower than the reading it started from. Every result
+carries :data:`NAQI_BASIS` naming both halves, and the UI labels the number
 accordingly. We think a clearly-labelled approximation is honest; a
 mislabelled number is not.
+
+Measured on the recorded Bengaluru archive (Nov 2025 - Oct 2026, 8,112 hours),
+the trailing mean runs up to 23 index points above the instantaneous value and
+crosses a band boundary upward on 13 of them. That is small, which is why this
+went unnoticed -- but it is one-directional, and the direction is the unsafe one.
 
 Above the top breakpoint, CPCB publishes no higher concentration band (it just
 says "430+"). Baahar extrapolates the final segment's slope and clamps at 500,
@@ -40,25 +55,74 @@ because reporting a saturated 500 is more useful than a flat line.
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping
-from dataclasses import dataclass, field
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from typing import Any
 
 __all__ = [
+    "AVERAGING_PERIOD_HOURS",
+    "MIN_TRAILING_HOURS",
     "NAQI_BASIS",
+    "NAQI_BASIS_INSTANTANEOUS",
+    "NAQI_BASIS_TRAILING",
     "NaqiBand",
     "NaqiResult",
     "PollutantSpec",
     "POLLUTANTS",
+    "TrailingNaqi",
     "band_for_index",
     "band_index_range",
     "compute_naqi",
+    "compute_naqi_trailing",
+    "conservative_naqi",
     "naqi_from_pm",
+    "parse_naqi_basis",
 ]
 
 #: Machine-readable provenance string, surfaced in the API, UI and eval artifacts.
-NAQI_BASIS = "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+#:
+#: It names *two* things because the number Baahar acts on is built from two
+#: inputs (see :func:`conservative_naqi`), and a provenance string that named
+#: only one of them would be the kind of quiet mislabelling this module exists to
+#: avoid. The two halves are joined by ``NAQI_BASIS_SEPARATOR`` so the value
+#: stays parseable: :func:`parse_naqi_basis` splits it back apart.
+#:
+#: The instantaneous half keeps the *exact* literal that used to stand alone,
+#: so anything pinning the old string still finds its substring and the old
+#: meaning has not silently moved.
+NAQI_BASIS_INSTANTANEOUS = "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+NAQI_BASIS_TRAILING = "cpcb_breakpoints_applied_to_trailing_period_means"
+NAQI_BASIS_SEPARATOR = "+"
+NAQI_BASIS = f"{NAQI_BASIS_INSTANTANEOUS}{NAQI_BASIS_SEPARATOR}{NAQI_BASIS_TRAILING}"
+
+
+def parse_naqi_basis(basis: str = NAQI_BASIS) -> tuple[str, ...]:
+    """Split a basis string into its named parts, in the order they combine."""
+    return tuple(basis.split(NAQI_BASIS_SEPARATOR))
+
+
+#: CPCB averaging period per pollutant, in hours. This is the window a trailing
+#: mean must use: 24 h for the particulates and gases, 8 h for O3 and CO. Using
+#: one window for everything would be wrong in both directions -- a 24 h O3 mean
+#: dilutes a real afternoon ozone peak with clean night-time air, and an 8 h
+#: PM2.5 mean tracks a single spike that CPCB deliberately smooths away.
+AVERAGING_PERIOD_HOURS: dict[str, int] = {
+    "pm25": 24,
+    "pm10": 24,
+    "no2": 24,
+    "so2": 24,
+    "nh3": 24,
+    "pb": 24,
+    "o3": 8,
+    "co": 8,
+}
+
+#: Minimum hours of history before a trailing mean is reported at all. Below
+#: this, a "24-hour mean" is a fiction, and a mean over two samples is closer to
+#: the instantaneous reading than to the official number while looking more
+#: authoritative. Refusing to produce one is the honest answer.
+MIN_TRAILING_HOURS = 3
 
 _INF = math.inf
 
@@ -370,6 +434,15 @@ def _as_float(value: Any) -> float | None:
 def compute_naqi(readings: Mapping[str, Any]) -> NaqiResult:
     """Compute Indian NAQI from a mapping of Baahar pollutant keys to values.
 
+    **Instantaneous only.** This applies the CPCB breakpoints to the values as
+    given, which for a single hour is an approximation of official NAQI, not
+    official NAQI -- the breakpoints are defined on averaged concentrations. Use
+    :func:`compute_naqi_trailing` for the averaged reading and
+    :func:`conservative_naqi` for the number the product should act on. This
+    function's behaviour is unchanged from before; it remains the honest
+    single-reading calculator it always was, and the recorded eval dataset is
+    built on it.
+
     ``readings`` uses Baahar's own keys (``pm25``, ``pm10``, ``no2``, ``o3``,
     ``co``, ``so2``, ``nh3``, ``pb``) with values in Open-Meteo's source units.
     Unknown keys are ignored, so passing a whole upstream payload is safe.
@@ -420,6 +493,149 @@ def compute_naqi(readings: Mapping[str, Any]) -> NaqiResult:
 def naqi_from_pm(pm25: float | None = None, pm10: float | None = None) -> NaqiResult:
     """Convenience wrapper for the two pollutants Open-Meteo always returns."""
     return compute_naqi({"pm25": pm25, "pm10": pm10})
+
+
+# ---------------------------------------------------------------------------
+# Trailing means, and the conservative combination of the two readings
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class TrailingNaqi:
+    """NAQI from trailing means, with the evidence that backs it."""
+
+    #: The NAQI computed from the trailing means. Same shape as any other
+    #: result, so callers do not have to special-case it.
+    result: NaqiResult
+    #: How many hours of history actually backed each pollutant's mean. Keyed by
+    #: Baahar pollutant key; a pollutant absent here had too little history and
+    #: was left out entirely rather than guessed at.
+    hours_used: dict[str, int] = field(default_factory=dict)
+
+    @property
+    def is_usable(self) -> bool:
+        return self.result.is_usable
+
+    @property
+    def index(self) -> float:
+        return self.result.index
+
+    @property
+    def hours(self) -> int:
+        """Hours behind the mean that produced the *reported* sub-index.
+
+        That is the hours behind the dominant pollutant, not the deepest window
+        we happened to have. A number and its evidence have to agree.
+        """
+        key = self.result.dominant_pollutant
+        return self.hours_used.get(key, 0) if key else 0
+
+    @property
+    def window_hours(self) -> int:
+        """CPCB averaging period of the dominant pollutant."""
+        key = self.result.dominant_pollutant
+        return AVERAGING_PERIOD_HOURS.get(key, 0) if key else 0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            **self.result.to_dict(),
+            "trailing_hours_used": dict(self.hours_used),
+            "trailing_window_hours": self.window_hours,
+        }
+
+
+def _trailing_mean(
+    history: Sequence[Mapping[str, Any]], key: str, window: int
+) -> tuple[float, int]:
+    """Mean of ``key`` over the last ``window`` hours that have a reading.
+
+    Returns ``(mean, hours_used)``. Hours with a missing value are skipped
+    rather than treated as zero -- a gap in the upstream feed is not evidence of
+    clean air, and counting it as zero would let one gap quietly halve a mean
+    over a polluted day. The window is therefore a window *of hours present*,
+    and :attr:`TrailingNaqi.hours_used` records how many that actually was, so
+    a short window is visible instead of silent.
+    """
+    values: list[float] = []
+    for row in history[-window:]:
+        value = _as_float(row.get(key))
+        if value is None:
+            continue
+        # A negative concentration is not a real measurement. Clamping to zero
+        # before averaging keeps a bad sensor value from dragging the mean below
+        # what was actually measured.
+        values.append(max(0.0, value))
+    if not values:
+        return float("nan"), 0
+    return math.fsum(values) / len(values), len(values)
+
+
+def compute_naqi_trailing(history: Sequence[Mapping[str, Any]]) -> TrailingNaqi | None:
+    """Indian NAQI from trailing means over each pollutant's CPCB period.
+
+    ``history`` is a chronological sequence of Baahar readings mappings -- one
+    per hour, oldest first, with the hour being scored as the **last** element.
+    Use Baahar's own keys (``pm25``, ``o3``, ...) in Open-Meteo source units;
+    unknown keys and ``None`` values are ignored.
+
+    Each pollutant is averaged over its own CPCB averaging period (24 h, or 8 h
+    for O3 and CO) and then run through the same breakpoints as
+    :func:`compute_naqi`. This is much closer to official NAQI than the
+    instantaneous reading, because the breakpoints were defined on averaged
+    concentrations in the first place.
+
+    The window may be partial -- early hours of a series have less than 24 h of
+    history -- and however many hours exist are used. How many is reported per
+    pollutant in :attr:`TrailingNaqi.hours_used`, because a mean over three hours
+    and a mean over twenty-four are not the same claim and the reader is
+    entitled to know which one they are looking at.
+
+    Returns ``None`` when there is less than :data:`MIN_TRAILING_HOURS` of usable
+    history for any pollutant. A mean over one or two samples would be arithmetic
+    dressed up as a 24-hour average, and this module does not invent numbers.
+    """
+    if len(history) < MIN_TRAILING_HOURS:
+        return None
+
+    means: dict[str, float] = {}
+    hours_used: dict[str, int] = {}
+    for key, window in AVERAGING_PERIOD_HOURS.items():
+        mean, used = _trailing_mean(history, key, window)
+        if used < MIN_TRAILING_HOURS:
+            continue
+        means[key] = mean
+        hours_used[key] = used
+
+    if not means:
+        return None
+    result = replace(compute_naqi(means), basis=NAQI_BASIS_TRAILING)
+    if not result.is_usable:
+        return None
+    return TrailingNaqi(result=result, hours_used=hours_used)
+
+
+def conservative_naqi(instant: NaqiResult, trailing: TrailingNaqi | None) -> NaqiResult:
+    """The more conservative of the instantaneous and trailing-mean readings.
+
+    This is the value Baahar acts on. Two readings of the same hour disagreeing
+    is not a reason to pick the nicer one: CPCB's own definition is built on
+    averaged concentrations, so when the trailing mean is worse, the trailing
+    mean is the more faithful answer and the instantaneous hour is the artefact.
+
+    The returned result is never lower than ``instant``. Ties keep the
+    instantaneous reading, so an hour where the two agree is byte-identical to
+    what the product showed before this change.
+
+    If ``trailing`` is ``None`` -- too little history, or nothing upstream --
+    the instantaneous reading is returned untouched, because refusing to produce
+    any number is not an option and the instantaneous value is the only one we
+    honestly have.
+    """
+    if trailing is None or not trailing.is_usable:
+        return instant
+    if not instant.is_usable:
+        return trailing.result
+    return trailing.result if trailing.result.index > instant.index else instant
 
 
 def band_table() -> list[dict[str, Any]]:

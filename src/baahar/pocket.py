@@ -71,7 +71,7 @@ def _cues_for(plan: OutdoorPlan) -> list[Cue]:
     air = slot.air if slot else None
     weather = slot.weather if slot else None
 
-    if air is not None and air.naqi is not None and air.naqi >= 200:
+    if air is not None and air.naqi_effective is not None and air.naqi_effective >= 200:
         return [Cue(t, "air") for t in _CUES_POOR_AIR]
 
     if weather is not None:
@@ -164,9 +164,9 @@ def _subline_for(plan: OutdoorPlan) -> str:
         return "No usable hours in this window."
     air, weather = slot.air, slot.weather
     parts: list[str] = []
-    if air.naqi is not None:
+    if air.naqi_effective is not None:
         band = (air.naqi_band or "").capitalize()
-        parts.append(f"NAQI {air.naqi:.0f} ({band})")
+        parts.append(f"NAQI {air.naqi_effective:.0f} ({band})")
     if weather.temp_c is not None:
         feels = (
             f", feels {weather.apparent_c:.0f}"
@@ -183,9 +183,9 @@ def _safety_note(plan: OutdoorPlan) -> str:
         return "No air reading for this hour."
     air, weather = slot.air, slot.weather
     notes: list[str] = []
-    if air.naqi is not None and air.naqi >= 200:
-        notes.append(f"Air is {air.naqi_band} today (NAQI {air.naqi:.0f})")
-    elif air.naqi is not None and air.naqi >= 100:
+    if air.naqi_effective is not None and air.naqi_effective >= 200:
+        notes.append(f"Air is {air.naqi_band} today (NAQI {air.naqi_effective:.0f})")
+    elif air.naqi_effective is not None and air.naqi_effective >= 100:
         notes.append("Air is moderate")
     if weather.apparent_c is not None and weather.apparent_c >= 35:
         notes.append(f"feels like {weather.apparent_c:.0f}°C")

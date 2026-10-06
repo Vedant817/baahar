@@ -11,6 +11,14 @@ This module is where Baahar earns its honesty claim. Two things are deliberate:
 * **Missing is missing.** If PM2.5 is ``null`` for an hour, that hour's NAQI is
   ``None`` and the scorer is told the hour is unusable. It does not get filled
   with a cheerful 0.
+* **Two readings, one conservative decision.** CPCB's breakpoints are defined on
+  24-hour mean concentrations (8-hour for O3 and CO), but this module is handed
+  hourly values. Applying the breakpoints to a single hour can only ever
+  understate a polluted day -- the CPCB bands are piecewise-linear and steeper at
+  low concentrations, so a calm afternoon hour reads "Good" while the day it
+  belongs to is Poor. So every hour gets both an instantaneous reading and a
+  trailing-mean reading, and the product acts on the higher of the two.
+  See :func:`baahar.naqi.conservative_naqi`.
 """
 
 from __future__ import annotations
@@ -22,7 +30,12 @@ from typing import Any
 from .config import get_settings
 from .http_client import UpstreamError, get_json, load_sample
 from .models import DataSource, HourlyAir, slice_from_now
-from .naqi import NAQI_BASIS, compute_naqi
+from .naqi import (
+    NAQI_BASIS,
+    compute_naqi,
+    compute_naqi_trailing,
+    conservative_naqi,
+)
 
 log = logging.getLogger(__name__)
 
@@ -64,13 +77,36 @@ def _num(series: Any, i: int) -> float | None:
 
 
 def parse_air(payload: dict[str, Any]) -> list[HourlyAir]:
-    """Turn a raw Open-Meteo air-quality payload into NAQI-bearing hours."""
+    """Turn a raw Open-Meteo air-quality payload into NAQI-bearing hours.
+
+    Each hour carries **two** NAQI readings and the product acts on the more
+    conservative of them:
+
+    * ``naqi`` -- CPCB breakpoints applied to the hour's own instantaneous
+      concentrations. Kept for provenance and because the recorded eval dataset
+      is shaped around it.
+    * ``naqi_trailing`` -- CPCB breakpoints applied to a trailing mean over each
+      pollutant's own CPCB averaging period, which is what the breakpoints were
+      defined against in the first place.
+
+    :attr:`HourlyAir.naqi_effective` is their maximum, and it is what the scorer
+    reads. ``naqi_trailing_hours`` records how many hours actually backed the
+    trailing value, so a short window is visible instead of being passed off as a
+    full 24-hour mean.
+
+    This needs no extra network request: the caller already asks for
+    ``past_days=1``, so the series carries a day of history ahead of "now".
+    """
     hourly = payload.get("hourly") or {}
     times = hourly.get("time") or []
     us_aqi = hourly.get("us_aqi")
 
-    out: list[HourlyAir] = []
-    for i, raw_time in enumerate(times):
+    # Two passes, because the trailing mean needs the hours *before* the hour
+    # being scored. Collecting the readings first turns the second pass into a
+    # slice rather than a nested re-parse of the payload per hour.
+    history: list[dict[str, Any]] = []
+    all_values: list[dict[str, float | None]] = []
+    for i in range(len(times)):
         readings: dict[str, Any] = {}
         values: dict[str, float | None] = {}
         for var, key in VAR_TO_KEY.items():
@@ -78,19 +114,30 @@ def parse_air(payload: dict[str, Any]) -> list[HourlyAir]:
             values[key] = val
             if val is not None:
                 readings[key] = val
+        history.append(readings)
+        all_values.append(values)
 
-        naqi = compute_naqi(readings) if readings else compute_naqi({})
+    out: list[HourlyAir] = []
+    for i, raw_time in enumerate(times):
+        # An hour with no readings at all still gets an (unusable) instantaneous
+        # result and no trailing value: `compute_naqi({})` is exactly the
+        # "we measured nothing" answer, not a cheerful zero.
+        instant = compute_naqi(history[i])
+        trailing = compute_naqi_trailing(history[: i + 1])
+        effective = conservative_naqi(instant, trailing)
 
         out.append(
             HourlyAir(
                 time=datetime.fromisoformat(raw_time),
-                **values,
-                naqi=None if not naqi.is_usable else round(naqi.index, 1),
-                naqi_band=naqi.band.value if naqi.band else None,
-                naqi_band_label=naqi.band_label if naqi.is_usable else None,
-                naqi_health_impact=naqi.health_impact if naqi.is_usable else None,
-                dominant_pollutant=naqi.dominant_pollutant if naqi.is_usable else None,
-                dominant_label=naqi.dominant_label if naqi.is_usable else None,
+                **all_values[i],
+                naqi=None if not instant.is_usable else round(instant.index, 1),
+                naqi_trailing=None if trailing is None else round(trailing.index, 1),
+                naqi_trailing_hours=trailing.hours if trailing else 0,
+                naqi_band=effective.band.value if effective.band else None,
+                naqi_band_label=effective.band_label if effective.is_usable else None,
+                naqi_health_impact=effective.health_impact if effective.is_usable else None,
+                dominant_pollutant=effective.dominant_pollutant if effective.is_usable else None,
+                dominant_label=effective.dominant_label if effective.is_usable else None,
                 naqi_basis=NAQI_BASIS,
                 us_aqi_reference=_num(us_aqi, i),
             )
