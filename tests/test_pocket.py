@@ -10,13 +10,20 @@ Pins the behavioural contracts introduced in WP3:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-import pytest
-
-from baahar.models import Decision, DataSource, HourlyAir, HourlyWeather, HourSlot, OutdoorPlan, Park, SlotScore
+from baahar.models import (
+    DataSource,
+    Decision,
+    HourlyAir,
+    HourlyWeather,
+    HourSlot,
+    OutdoorPlan,
+    Park,
+    SlotScore,
+)
 from baahar.parks import park_by_id
-from baahar.pocket import _headline_for, _next_hint, build_pocket
+from baahar.pocket import _next_hint, build_pocket
 
 
 def _make_slot_score(dt: datetime, decision: Decision, comfort: float = 85.0) -> SlotScore:
@@ -70,7 +77,7 @@ def _make_plan(
     best_slot = _make_hour_slot(best_time) if best_time else None
     return OutdoorPlan(
         city="Bengaluru",
-        generated_at=datetime(2026, 10, 6, 8, 0, tzinfo=timezone.utc),
+        generated_at=datetime(2026, 10, 6, 8, 0, tzinfo=UTC),
         window_hours=len(slots),
         overall=overall,
         best_slot=best_slot,
@@ -119,7 +126,7 @@ class TestPocketHonesty:
 
         assert pocket.active is True
         assert pocket.headline == "Not yet."
-        assert "Rest until 12:00. Then outside." == pocket.subline
+        assert pocket.subline == "Rest until 12:00. Then outside."
 
     def test_go_plan_is_active_with_park_invitation(self) -> None:
         t0 = datetime(2026, 10, 6, 10, 0)
