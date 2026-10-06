@@ -1,18 +1,22 @@
 #!/usr/bin/env python
 """Ensemble model and research feature pipeline for 6h-ahead NAQI band forecasting.
 
+Iteration 2: Feature Disentanglement & GBDT Optimization
 Research recommendations implemented:
-1. Full domain feature pipeline:
-   - Thermodynamic: Magnus-Tetens VPD, Dew point depression (T - Td)
-   - Ventilation: VIP (convective ventilation proxy = max(temp, 5.0) * wind),
-     Stagnation (RH/100 / max(wind, 1.0))
-   - Combustion PM ratio: clip(pm25 / max(pm10, 1.0), 0.0, 1.0)
-   - NAQI memory gap: naqi - naqi_instant
-   - Diurnal & target diurnal phase: (hour+6)%24 sin/cos, current hour sin/cos, month sin/cos
-2. Multi-model consensus soft-voting blend:
-   - 0.45 * LightGBM + 0.40 * HistGradientBoosting + 0.15 * RandomForest
-3. Cost-sensitive decision rule calibration for Moderate band (tau_mod in [0.28, 0.34]).
-4. Safety & decision accuracy verification (skip_as_go_count == 0).
+1. Compact 17-feature High-Signal Architecture:
+   - Eliminates degenerate diurnal duplicates (target_hour_sin/cos)
+   - Eliminates collinear thermodynamic and ventilation proxies (apparent_c, dew_depression, vip)
+   - Eliminates dead NaN columns (uv_index, precip_prob)
+   - Retains high-signal physics & memory indicators: Magnus-Tetens VPD, Stagnation,
+     combustion PM ratio, NAQI velocity gap (naqi - naqi_instant), and circular hour/month encodings.
+2. Tuned GBDT architectures:
+   - Constrained LightGBM (num_leaves=18, max_depth=6, lr=0.025, min_child_samples=30, L1/L2 reg)
+   - HistGradientBoosting with damped sqrt class weighting (max_iter=300, lr=0.04, max_leaf_nodes=22)
+   - Tuned RandomForest (n_estimators=300, max_depth=14, min_samples_leaf=3)
+3. Calibrated consensus soft-voting blend:
+   - 0.50 * LightGBM + 0.35 * HistGradientBoosting + 0.15 * RandomForest
+4. Cost-sensitive decision rule calibration for Moderate band (tau_mod in [0.28, 0.34]).
+5. Safety assertion: skip_as_go == 0 across all operating points.
 """
 
 from __future__ import annotations
@@ -35,20 +39,25 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent))
 from experiment_tabular import BAND_ORDINALS, BANDS, evaluate, impute, load_rows
 
-BASE_FEATURE_NAMES = [
+# 17-feature Compact High-Signal Architecture
+COMPACT_FEATURE_NAMES = [
     "naqi",
     "pm25",
     "pm10",
     "temp_c",
-    "apparent_c",
     "precip_mm",
-    "precip_prob",
     "humidity",
     "wind_kmh",
-    "uv_index",
     "is_day",
-    "hour",
     "month",
+    "vpd",
+    "stagnation",
+    "pm_ratio",
+    "naqi_gap",
+    "hour_sin",
+    "hour_cos",
+    "month_sin",
+    "month_cos",
 ]
 
 
@@ -61,39 +70,30 @@ def _f(v) -> float:
         return float("nan")
 
 
-def extract_features(row: dict) -> list[float]:
-    """Extract baseline features plus full physical and diurnal engineering."""
-    base = [_f(row.get(c)) for c in BASE_FEATURE_NAMES]
-
-    hour = _f(row.get("hour"))
-    month = _f(row.get("month"))
+def extract_compact_features(row: dict) -> list[float]:
+    """Extract 17 compact high-signal orthogonal features for 6h forecasting."""
+    naqi = _f(row.get("naqi"))
     pm25 = _f(row.get("pm25"))
     pm10 = _f(row.get("pm10"))
-    naqi = _f(row.get("naqi"))
-    naqi_instant = _f(row.get("naqi_instant"))
-    wind = _f(row.get("wind_kmh"))
     temp = _f(row.get("temp_c"))
+    precip_mm = _f(row.get("precip_mm"))
     humidity = _f(row.get("humidity"))
+    wind = _f(row.get("wind_kmh"))
+    is_day = _f(row.get("is_day"))
+    month = _f(row.get("month"))
+    hour = _f(row.get("hour"))
+    naqi_instant = _f(row.get("naqi_instant"))
 
-    # 1. Thermodynamic: Magnus-Tetens VPD, Dew point depression (T - Td)
+    # 1. Magnus-Tetens Vapor Pressure Deficit (kPa)
     if not math.isnan(temp) and not math.isnan(humidity):
         rh_clamped = max(min(humidity, 100.0), 0.01)
-        # Saturation vapor pressure (kPa)
         es = 0.61078 * math.exp((17.27 * temp) / (temp + 237.3))
         ea = es * (rh_clamped / 100.0)
         vpd = es - ea
-        alpha = (17.27 * temp) / (temp + 237.3) + math.log(rh_clamped / 100.0)
-        td = (237.3 * alpha) / (17.27 - alpha)
-        dew_depression = temp - td
     else:
         vpd = float("nan")
-        dew_depression = float("nan")
 
-    # 2. Ventilation proxies:
-    # VIP (convective ventilation proxy = max(temp, 5.0) * wind)
-    vip = max(temp, 5.0) * wind if not (math.isnan(temp) or math.isnan(wind)) else float("nan")
-
-    # Stagnation = (RH/100) / max(wind, 1.0)
+    # 2. Atmospheric Stagnation Index: (RH / 100) / max(wind, 1.0)
     stagnation = (
         (humidity / 100.0) / max(wind, 1.0)
         if not (math.isnan(humidity) or math.isnan(wind))
@@ -106,43 +106,50 @@ def extract_features(row: dict) -> list[float]:
     else:
         pm_ratio = float("nan")
 
-    # 4. NAQI memory gap: naqi - naqi_instant
+    # 4. NAQI velocity gap: naqi - naqi_instant
     if not math.isnan(naqi) and not math.isnan(naqi_instant):
         naqi_gap = naqi - naqi_instant
     else:
         naqi_gap = float("nan")
 
-    # 5. Diurnal and target diurnal phase (hour + 6) % 24
+    # 5. Cyclical diurnal encoding (sin/cos of hour)
     if not math.isnan(hour):
         hour_sin = math.sin(2.0 * math.pi * hour / 24.0)
         hour_cos = math.cos(2.0 * math.pi * hour / 24.0)
-        target_hour = (hour + 6.0) % 24.0
-        target_hour_sin = math.sin(2.0 * math.pi * target_hour / 24.0)
-        target_hour_cos = math.cos(2.0 * math.pi * target_hour / 24.0)
     else:
-        hour_sin = hour_cos = target_hour_sin = target_hour_cos = float("nan")
+        hour_sin = hour_cos = float("nan")
 
+    # 6. Cyclical seasonal encoding (sin/cos of month)
     if not math.isnan(month):
         month_sin = math.sin(2.0 * math.pi * month / 12.0)
         month_cos = math.cos(2.0 * math.pi * month / 12.0)
     else:
         month_sin = month_cos = float("nan")
 
-    extras = [
+    return [
+        naqi,
+        pm25,
+        pm10,
+        temp,
+        precip_mm,
+        humidity,
+        wind,
+        is_day,
+        month,
         vpd,
-        dew_depression,
-        vip,
         stagnation,
         pm_ratio,
         naqi_gap,
         hour_sin,
         hour_cos,
-        target_hour_sin,
-        target_hour_cos,
         month_sin,
         month_cos,
     ]
-    return base + extras
+
+
+def extract_features(row: dict) -> list[float]:
+    """Compatibility alias for compact feature extraction."""
+    return extract_compact_features(row)
 
 
 def expand_probs(p: np.ndarray, classes: np.ndarray, n_classes: int = 6) -> np.ndarray:
@@ -186,25 +193,27 @@ def run_experiment():
     print(f"Total dataset: {len(rows)} rows | Train: {len(train_rows)} | Holdout: {len(test_rows)}")
     assert len(test_rows) == 1626, f"Expected 1626 holdout rows, got {len(test_rows)}"
 
-    x_tr = np.array([extract_features(r) for r in train_rows], dtype="float64")
-    x_te = np.array([extract_features(r) for r in test_rows], dtype="float64")
+    x_tr = np.array([extract_compact_features(r) for r in train_rows], dtype="float64")
+    x_te = np.array([extract_compact_features(r) for r in test_rows], dtype="float64")
     x_tr, medians = impute(x_tr)
     x_te, _ = impute(x_te, medians)
 
     n_features = x_tr.shape[1]
-    print(f"Engineered feature count: {n_features}")
+    print(f"Compact high-signal feature count: {n_features} features")
+    assert n_features == 17, f"Expected 17 features, got {n_features}"
+    assert len(COMPACT_FEATURE_NAMES) == 17, f"Expected 17 names, got {len(COMPACT_FEATURE_NAMES)}"
 
-    # 1. Train LightGBM
-    print("\n[1/3] Training LightGBM (optimal hyperparameters)...")
+    # 1. Train LightGBM (Tuned Regularized Architecture)
+    print("\n[1/3] Training LightGBM (n_estimators=380, lr=0.025, leaves=18, depth=6)...")
     lgb_clf = lgb.LGBMClassifier(
         random_state=42,
-        n_estimators=450,
-        learning_rate=0.04,
-        num_leaves=28,
-        subsample=0.85,
-        colsample_bytree=0.85,
-        reg_alpha=0.5,
-        reg_lambda=1.0,
+        n_estimators=380,
+        learning_rate=0.025,
+        num_leaves=18,
+        max_depth=6,
+        min_child_samples=30,
+        reg_alpha=0.8,
+        reg_lambda=3.5,
         verbosity=-1,
     )
     lgb_clf.fit(x_tr, y_train)
@@ -213,34 +222,38 @@ def run_experiment():
     print(
         f"  LightGBM alone:        Acc={res_lgb['accuracy']:.4f} | Macro-F1={res_lgb['macro_f1']:.4f} | "
         f"DecAcc={res_lgb['decision_acc']:.4f} | ModF1={res_lgb['per_class']['moderate']['f1']:.4f} "
-        f"(Rec={res_lgb['per_class']['moderate']['recall']:.4f})"
+        f"(Rec={res_lgb['per_class']['moderate']['recall']:.4f}, Prec={res_lgb['per_class']['moderate']['precision']:.4f})"
     )
 
-    # 2. Train HistGradientBoosting
-    print("\n[2/3] Training HistGradientBoosting (balanced weights)...")
-    sw = compute_sample_weight("balanced", y_train)
+    # 2. Train HistGradientBoosting (Damped SQRT Sample Weighting)
+    print(
+        "\n[2/3] Training HistGradientBoosting (max_iter=300, lr=0.04, leaves=22, damped sqrt weights)..."
+    )
+    sw_bal = compute_sample_weight("balanced", y_train)
+    sw_damped = np.sqrt(sw_bal)
     hgb_clf = HistGradientBoostingClassifier(
         random_state=42,
-        max_iter=350,
-        learning_rate=0.06,
-        min_samples_leaf=20,
-        l2_regularization=1.0,
+        max_iter=300,
+        learning_rate=0.04,
+        max_leaf_nodes=22,
+        min_samples_leaf=25,
+        l2_regularization=3.0,
     )
-    hgb_clf.fit(x_tr, y_train, sample_weight=sw)
+    hgb_clf.fit(x_tr, y_train, sample_weight=sw_damped)
     p_hgb = expand_probs(hgb_clf.predict_proba(x_te), hgb_clf.classes_)
     res_hgb = evaluate(y_test, np.argmax(p_hgb, axis=1), test_rows)
     print(
         f"  HistGB alone:          Acc={res_hgb['accuracy']:.4f} | Macro-F1={res_hgb['macro_f1']:.4f} | "
         f"DecAcc={res_hgb['decision_acc']:.4f} | ModF1={res_hgb['per_class']['moderate']['f1']:.4f} "
-        f"(Rec={res_hgb['per_class']['moderate']['recall']:.4f})"
+        f"(Rec={res_hgb['per_class']['moderate']['recall']:.4f}, Prec={res_hgb['per_class']['moderate']['precision']:.4f})"
     )
 
-    # 3. Train Random Forest
-    print("\n[3/3] Training RandomForest...")
+    # 3. Train Random Forest (Tuned Hyperparameters)
+    print("\n[3/3] Training RandomForest (n_estimators=300, depth=14, min_samples_leaf=3)...")
     rf_clf = RandomForestClassifier(
-        n_estimators=250,
-        max_depth=16,
-        min_samples_leaf=2,
+        n_estimators=300,
+        max_depth=14,
+        min_samples_leaf=3,
         random_state=42,
         n_jobs=-1,
     )
@@ -250,14 +263,14 @@ def run_experiment():
     print(
         f"  RandomForest alone:    Acc={res_rf['accuracy']:.4f} | Macro-F1={res_rf['macro_f1']:.4f} | "
         f"DecAcc={res_rf['decision_acc']:.4f} | ModF1={res_rf['per_class']['moderate']['f1']:.4f} "
-        f"(Rec={res_rf['per_class']['moderate']['recall']:.4f})"
+        f"(Rec={res_rf['per_class']['moderate']['recall']:.4f}, Prec={res_rf['per_class']['moderate']['precision']:.4f})"
     )
 
-    # 4. Consensus Soft-Voting Blend (0.45 * LGBM + 0.40 * HistGB + 0.15 * RF)
+    # 4. Consensus Soft-Voting Blend (0.50 * LGBM + 0.35 * HistGB + 0.15 * RF)
     print("\n" + "=" * 70)
-    print("CONSENSUS SOFT-VOTING BLEND: 0.45 * LightGBM + 0.40 * HistGB + 0.15 * RF")
+    print("CONSENSUS SOFT-VOTING BLEND: 0.50 * LightGBM + 0.35 * HistGB + 0.15 * RF")
     print("=" * 70)
-    p_blend = 0.45 * p_lgb + 0.40 * p_hgb + 0.15 * p_rf
+    p_blend = 0.50 * p_lgb + 0.35 * p_hgb + 0.15 * p_rf
 
     # Raw Argmax Blend
     preds_raw = apply_decision_rule(p_blend, tau_mod=None)
@@ -265,7 +278,7 @@ def run_experiment():
     print(
         f"Blend (Raw Argmax):    Acc={res_raw['accuracy']:.4f} | Macro-F1={res_raw['macro_f1']:.4f} | "
         f"DecAcc={res_raw['decision_acc']:.4f} | ModF1={res_raw['per_class']['moderate']['f1']:.4f} "
-        f"(Rec={res_raw['per_class']['moderate']['recall']:.4f})"
+        f"(Rec={res_raw['per_class']['moderate']['recall']:.4f}, Prec={res_raw['per_class']['moderate']['precision']:.4f})"
     )
     assert res_raw["skip_as_go"] == 0, f"Safety violation: skip_as_go={res_raw['skip_as_go']}"
 
@@ -293,7 +306,7 @@ def run_experiment():
             f"Safety violation at tau={tau}: skip_as_go={res_tau['skip_as_go']}"
         )
 
-    # Select optimal tau_mod (e.g. balancing Macro-F1 and Moderate Recall)
+    # Select optimal tau_mod (maximizing Macro-F1 and Moderate F1)
     best_tau = max(
         thresholds,
         key=lambda t: (
