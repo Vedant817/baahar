@@ -108,7 +108,9 @@ def brief(
     ] = "auto",
     voice: Annotated[bool, typer.Option(help="Also speak the briefing (ElevenLabs).")] = False,
     walk_minutes: Annotated[int | None, typer.Option(help="Pocket Mode walk length.")] = None,
-    scorer: Annotated[str, typer.Option(help="Scorer: auto | heuristic | tabpfn.")] = "auto",
+    scorer: Annotated[
+        str, typer.Option(help="Scorer: auto | heuristic | tabpfn | lgbm | ensemble.")
+    ] = "auto",
     park: Annotated[str | None, typer.Option(help="Force a park by id.")] = None,
 ) -> None:
     """Print the full brief: decision, hour table, park, and briefing."""
@@ -222,7 +224,9 @@ def score(
     lon: Annotated[float | None, typer.Option()] = None,
     hours: Annotated[int | None, typer.Option()] = None,
     offline: Annotated[bool, typer.Option()] = False,
-    scorer: Annotated[str, typer.Option(help="auto | heuristic | tabpfn")] = "auto",
+    scorer: Annotated[
+        str, typer.Option(help="auto | heuristic | tabpfn | lgbm | ensemble")
+    ] = "auto",
     as_json: Annotated[bool, typer.Option("--json")] = False,
 ) -> None:
     """Print only the GO/WAIT/SKIP table."""

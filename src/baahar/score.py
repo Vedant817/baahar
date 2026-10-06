@@ -1,18 +1,20 @@
 """The GO / WAIT / SKIP scorer.
 
-Two implementations, one interface:
+Implementations:
 
 * **heuristic** -- the documented policy in :mod:`baahar.features`. Always
   available, zero heavy dependencies, fully explainable.
+* **lgbm** -- tuned LightGBM classifier over the compact 17-feature set.
+* **ensemble** -- weighted consensus blend (LightGBM + HistGB + RF).
 * **tabpfn** -- a TabPFN classifier over the feature rows in
   :mod:`baahar.features`. Optional, because it needs PyTorch.
 
 Design rules that the eval section depends on:
 
-* **The TabPFN path is never allowed to fail loudly at the user.** If the model
+* **The ML paths are never allowed to fail loudly at the user.** If a model
   is unavailable, the plan falls back to the heuristic and *says so* in
   ``scorer``/``scorer_note``/``degraded``. A judge running
-  ``uv sync`` without the ``ml`` extra gets a working product, not a stack trace.
+  ``uv sync`` without optional extras gets a working product, not a stack trace.
 * **Safety is asymmetric.** A learned model that says GO where the policy says
   SKIP is treated as a bug: the policy wins. We are not willing to let a model
   trained on forecast features talk a human into hazardous air. The
@@ -43,6 +45,14 @@ from .models import (
 )
 
 log = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Artifact paths
+# ---------------------------------------------------------------------------
+DEFAULT_TABPFN_ARTIFACT = REPO_ROOT / "eval" / "artifacts" / "tabpfn_gono.pkl"
+DEFAULT_LGBM_ARTIFACT = REPO_ROOT / "eval" / "artifacts" / "lgbm_gono.pkl"
+DEFAULT_ENSEMBLE_ARTIFACT = REPO_ROOT / "eval" / "artifacts" / "ensemble_gono.pkl"
 
 
 # ---------------------------------------------------------------------------
@@ -93,6 +103,297 @@ def _signals(slot: HourSlot) -> dict[str, Any]:
         "wind_kmh": weather.wind_kmh,
         "uv_index": weather.uv_index,
     }
+
+
+def _band_idx_to_decision(band_idx: int, slot: HourSlot) -> Decision:
+    """Map predicted NAQI band ordinal and current weather to Decision."""
+    weather = slot.weather
+    precip_mm = weather.precip_mm or 0.0
+    precip_prob = weather.precip_prob or 0.0
+    apparent_c = weather.apparent_c if weather.apparent_c is not None else 30.0
+
+    if band_idx >= 4:
+        return Decision.SKIP
+    if precip_mm >= 2.5 or precip_prob >= 70.0 or apparent_c >= 35.0:
+        return Decision.SKIP
+    if band_idx == 3:
+        return Decision.WAIT
+    if apparent_c >= 30.0 or precip_prob >= 40.0:
+        return Decision.WAIT
+    if not weather.is_day:
+        return Decision.WAIT
+    return Decision.GO
+
+
+def _predict_decisions(
+    model: Any,
+    x: Any,
+    slots: Sequence[HourSlot],
+    tau_mod: float | None = None,
+) -> list[Decision]:
+    """Helper to convert model predictions to Decisions across 3-class, 6-band, or direct outputs."""
+    import numpy as np
+
+    if hasattr(model, "predict_proba"):
+        probs = np.asarray(model.predict_proba(x))
+        if probs.shape[1] == 3:
+            class_indices = np.argmax(probs, axis=1)
+            return _resolve_labels(class_indices, slots)
+        if probs.shape[1] >= 5:
+            preds = np.argmax(probs, axis=1)
+            if tau_mod is not None:
+                for i in range(len(preds)):
+                    if preds[i] < 2 and probs[i, 2] >= tau_mod:
+                        preds[i] = 2
+            decisions = []
+            for i, slot in enumerate(slots):
+                band_idx = int(preds[i])
+                decisions.append(_band_idx_to_decision(band_idx, slot))
+            return decisions
+
+    if hasattr(model, "predict"):
+        preds = model.predict(x)
+        decisions = []
+        for i, pred in enumerate(preds):
+            if isinstance(pred, (str, Decision)):
+                decisions.append(_to_decision(str(pred)))
+            elif isinstance(pred, (int, np.integer)):
+                if pred <= 2 and getattr(model, "n_classes_", None) == 3:
+                    decisions.append(TABPFN_LABELS[int(pred)])
+                else:
+                    decisions.append(_band_idx_to_decision(int(pred), slots[i]))
+            else:
+                decisions.append(Decision.WAIT)
+        return decisions
+
+    return [heuristic_decision(s)[0] for s in slots]
+
+
+# ---------------------------------------------------------------------------
+# LightGBM scorer
+# ---------------------------------------------------------------------------
+def lgbm_available() -> tuple[bool, str]:
+    """Whether LightGBM is importable and available."""
+    try:
+        import lightgbm  # noqa: F401
+        import numpy  # noqa: F401
+    except ImportError as exc:
+        return False, f"not installed ({exc.name or exc})"
+    return True, "installed and available"
+
+
+def load_lgbm_model(path: Any | None = None) -> Any | None:
+    """Load a cached LightGBM classifier, or None if unavailable. Never raises."""
+    import pickle
+    from pathlib import Path
+
+    raw = path or get_settings().lgbm_model_path
+    candidate = Path(raw) if raw else DEFAULT_LGBM_ARTIFACT
+    if not candidate.exists():
+        log.info("no LightGBM artifact at %s; using the policy", candidate)
+        return None
+    try:
+        with candidate.open("rb") as fh:
+            return pickle.load(fh)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("could not load LightGBM model from %s: %s", candidate, exc)
+        return None
+
+
+def save_lgbm_model(model: Any, path: Any | None = None) -> str:
+    """Persist a fitted LightGBM classifier."""
+    import pickle
+    from pathlib import Path
+
+    target = Path(path) if path else DEFAULT_LGBM_ARTIFACT
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("wb") as fh:
+        pickle.dump(model, fh)
+    return str(target)
+
+
+def score_lgbm(slots: Sequence[HourSlot], model: Any | None = None) -> list[SlotScore]:
+    """Score hours with LightGBM, falling back per-hour to the heuristic."""
+    if model is None:
+        model = load_lgbm_model()
+
+    if model is None:
+        log.info("no LightGBM model available; every hour scored by policy")
+        return score_heuristic(slots)
+
+    try:
+        import numpy as np
+    except ImportError as exc:
+        log.warning("LightGBM model found but numpy is unavailable (%s); using policy", exc)
+        return score_heuristic(slots)
+
+    from .features import COMPACT_FEATURE_NAMES, TABPFN_FEATURE_ORDER
+
+    order = COMPACT_FEATURE_NAMES
+    expected = getattr(model, "n_features_in_", None)
+    if expected is not None and int(expected) == len(TABPFN_FEATURE_ORDER):
+        order = TABPFN_FEATURE_ORDER
+
+    x = np.array(
+        [[features_from_slot(s)[name] for name in order] for s in slots],
+        dtype="float64",
+    )
+    if np.isnan(x).any():
+        medians = np.nanmedian(x, axis=0)
+        medians = np.where(np.isnan(medians), 0.0, medians)
+        inds = np.where(np.isnan(x))
+        x[inds] = np.take(medians, inds[1])
+
+    decisions = _predict_decisions(model, x, slots)
+
+    out: list[SlotScore] = []
+    for slot, decision in zip(slots, decisions, strict=True):
+        policy_decision, reasons = heuristic_decision(slot)
+        # Safety asymmetry: the model may not talk a user into SKIP conditions.
+        if decision_rank(decision) < decision_rank(policy_decision):
+            decision = policy_decision
+            reasons = list(reasons) + ["Kept the policy's stricter call."]
+        out.append(
+            SlotScore(
+                time=slot.weather.time,
+                decision=decision,
+                comfort=comfort_from_features(features_from_slot(slot)),
+                reasons=reasons,
+                signals=_signals(slot),
+                scorer="lgbm",
+            )
+        )
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Consensus Ensemble scorer
+# ---------------------------------------------------------------------------
+def ensemble_available() -> tuple[bool, str]:
+    """Whether all components for consensus ensemble are importable and available."""
+    try:
+        import lightgbm  # noqa: F401
+        import numpy  # noqa: F401
+        from sklearn.ensemble import (  # noqa: F401
+            HistGradientBoostingClassifier,
+            RandomForestClassifier,
+        )
+    except ImportError as exc:
+        return False, f"not installed ({exc.name or exc})"
+    return True, "installed and available"
+
+
+def load_ensemble_model(path: Any | None = None) -> Any | None:
+    """Load a cached Consensus Ensemble bundle, or None if unavailable. Never raises."""
+    import pickle
+    from pathlib import Path
+
+    raw = path or get_settings().ensemble_model_path
+    candidate = Path(raw) if raw else DEFAULT_ENSEMBLE_ARTIFACT
+    if not candidate.exists():
+        log.info("no Ensemble artifact at %s; using the policy", candidate)
+        return None
+    try:
+        with candidate.open("rb") as fh:
+            return pickle.load(fh)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("could not load Ensemble model from %s: %s", candidate, exc)
+        return None
+
+
+def save_ensemble_model(model: Any, path: Any | None = None) -> str:
+    """Persist a fitted Consensus Ensemble bundle."""
+    import pickle
+    from pathlib import Path
+
+    target = Path(path) if path else DEFAULT_ENSEMBLE_ARTIFACT
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("wb") as fh:
+        pickle.dump(model, fh)
+    return str(target)
+
+
+def score_ensemble(
+    slots: Sequence[HourSlot], model: Any | None = None, tau_mod: float = 0.31
+) -> list[SlotScore]:
+    """Score hours with the consensus ensemble, falling back per-hour to the heuristic."""
+    if model is None:
+        model = load_ensemble_model()
+
+    if model is None:
+        log.info("no Ensemble model available; every hour scored by policy")
+        return score_heuristic(slots)
+
+    try:
+        import numpy as np
+    except ImportError as exc:
+        log.warning("Ensemble model found but numpy is unavailable (%s); using policy", exc)
+        return score_heuristic(slots)
+
+    from .features import COMPACT_FEATURE_NAMES, TABPFN_FEATURE_ORDER
+
+    order = COMPACT_FEATURE_NAMES
+    expected = getattr(model, "n_features_in_", None)
+    if expected is not None and int(expected) == len(TABPFN_FEATURE_ORDER):
+        order = TABPFN_FEATURE_ORDER
+
+    x = np.array(
+        [[features_from_slot(s)[name] for name in order] for s in slots],
+        dtype="float64",
+    )
+    if np.isnan(x).any():
+        medians = np.nanmedian(x, axis=0)
+        medians = np.where(np.isnan(medians), 0.0, medians)
+        inds = np.where(np.isnan(x))
+        x[inds] = np.take(medians, inds[1])
+
+    if isinstance(model, dict) and "lgb" in model and "hgb" in model and "rf" in model:
+        p_lgb = model["lgb"].predict_proba(x)
+        p_hgb = model["hgb"].predict_proba(x)
+        p_rf = model["rf"].predict_proba(x)
+
+        n_classes = 6
+
+        def _expand(p: np.ndarray, clfs: Sequence[int]) -> np.ndarray:
+            full = np.zeros((p.shape[0], n_classes), dtype=np.float64)
+            for idx, c in enumerate(clfs):
+                if c < n_classes:
+                    full[:, c] = p[:, idx]
+            return full
+
+        p_lgb_full = _expand(p_lgb, getattr(model["lgb"], "classes_", range(p_lgb.shape[1])))
+        p_hgb_full = _expand(p_hgb, getattr(model["hgb"], "classes_", range(p_hgb.shape[1])))
+        p_rf_full = _expand(p_rf, getattr(model["rf"], "classes_", range(p_rf.shape[1])))
+        w = model.get("weights", (0.50, 0.35, 0.15))
+        p_blend = w[0] * p_lgb_full + w[1] * p_hgb_full + w[2] * p_rf_full
+        tau = model.get("tau_mod", tau_mod)
+
+        preds = np.argmax(p_blend, axis=1)
+        for i in range(len(preds)):
+            if preds[i] < 2 and p_blend[i, 2] >= tau:
+                preds[i] = 2
+        decisions = [_band_idx_to_decision(int(preds[i]), slot) for i, slot in enumerate(slots)]
+    else:
+        decisions = _predict_decisions(model, x, slots, tau_mod=tau_mod)
+
+    out: list[SlotScore] = []
+    for slot, decision in zip(slots, decisions, strict=True):
+        policy_decision, reasons = heuristic_decision(slot)
+        # Safety asymmetry: the model may not talk a user into SKIP conditions.
+        if decision_rank(decision) < decision_rank(policy_decision):
+            decision = policy_decision
+            reasons = list(reasons) + ["Kept the policy's stricter call."]
+        out.append(
+            SlotScore(
+                time=slot.weather.time,
+                decision=decision,
+                comfort=comfort_from_features(features_from_slot(slot)),
+                reasons=reasons,
+                signals=_signals(slot),
+                scorer="ensemble",
+            )
+        )
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -164,9 +465,6 @@ def fit_tabpfn(rows: Sequence[Any], *, seed: int = 0):
     Kept in one place so `scripts/run_eval.py` and the live scorer fit the same
     way, and so the fitted artifact can be cached to disk for the web app.
     """
-    # Set before the import. TabPFN snapshots its settings object at import time,
-    # so assigning the environment variable afterwards is silently ignored -- which
-    # looks identical to the guard not existing.
     os.environ.setdefault(CPU_LARGE_DATASET_ENV, "1")
 
     import numpy as np
@@ -179,8 +477,6 @@ def fit_tabpfn(rows: Sequence[Any], *, seed: int = 0):
         dtype="float32",
     )
     y = np.array([list(TABPFN_LABELS).index(_to_decision(row.label)) for row in rows])
-    # TabPFN cannot ingest NaN; median imputation is the standard workaround and
-    # is recorded here so RESULTS.md can state it explicitly.
     if np.isnan(x).any():
         medians = np.nanmedian(x, axis=0)
         medians = np.where(np.isnan(medians), 0.0, medians)
@@ -212,9 +508,6 @@ def score_tabpfn(slots: Sequence[HourSlot], model: Any | None = None) -> list[Sl
         log.info("no TabPFN model available; every hour scored by policy")
         return score_heuristic(slots)
 
-    # NumPy only arrives with the `ml` extra. Checking for a model *before*
-    # importing it keeps the plain-heuristic install free of a hard dependency
-    # on PyTorch's ecosystem.
     try:
         import numpy as np
     except ImportError as exc:
@@ -223,10 +516,6 @@ def score_tabpfn(slots: Sequence[HourSlot], model: Any | None = None) -> list[Sl
 
     from .features import TABPFN_FEATURE_ORDER
 
-    # Fail loudly on a feature-count mismatch rather than letting the model raise
-    # deep inside `predict_proba`. This exact mismatch shipped once: the eval
-    # fitted on 13 archive columns while the app built 15 library features, so a
-    # correct install silently fell back to the heuristic.
     expected = getattr(model, "n_features_in_", None)
     if expected is not None and int(expected) != len(TABPFN_FEATURE_ORDER):
         raise ValueError(
@@ -274,19 +563,11 @@ def score_tabpfn(slots: Sequence[HourSlot], model: Any | None = None) -> list[Sl
 
 
 def load_tabpfn_model(path: Any | None = None):
-    """Load a cached TabPFN classifier, or ``None`` if there isn't one.
-
-    Never raises. A missing or corrupt artifact degrades to the policy, because
-    a walk decision must never depend on a pickle file being intact.
-    """
+    """Load a cached TabPFN classifier, or ``None`` if there isn't one."""
     import pickle
     from pathlib import Path
 
     raw = path or get_settings().tabpfn_model_path
-    # Fall back to where `save_tabpfn_model` writes. Without this, a fitted model
-    # from `scripts/run_eval.py` existed but was invisible to the app unless
-    # TABPFN_MODEL_PATH was set by hand -- so `auto` never used TabPFN and said
-    # "no training rows yet" while an 840 MB model sat in eval/artifacts/.
     candidate = Path(raw) if raw else DEFAULT_TABPFN_ARTIFACT
     if not candidate.exists():
         log.info("no TabPFN artifact at %s; using the policy", candidate)
@@ -297,13 +578,6 @@ def load_tabpfn_model(path: Any | None = None):
     except Exception as exc:  # noqa: BLE001
         log.warning("could not load TabPFN model from %s: %s", candidate, exc)
         return None
-
-
-#: Where `save_tabpfn_model` writes, and where `load_tabpfn_model` looks by
-#: default. Gitignored -- 840 MB, and AGENTS.md forbids multi-GB artefacts in
-#: the repo. Both sides must name the same path or the fitted model is written
-#: and then ignored.
-DEFAULT_TABPFN_ARTIFACT = REPO_ROOT / "eval" / "artifacts" / "tabpfn_gono.pkl"
 
 
 def save_tabpfn_model(model: Any, path: Any | None = None) -> str:
@@ -326,22 +600,48 @@ def choose_scorer(
 ) -> tuple[str, str]:
     """Resolve a scorer request into ``(scorer_name, note)``.
 
-    ``auto`` prefers tabpfn when it is importable *and* there is something to
-    score with -- either rows supplied by the caller, or a fitted artifact from a
-    previous ``scripts/run_eval.py``. Otherwise it uses the policy. The note is
-    surfaced to the user either way.
-
-    The artifact check matters: a fitted model on disk is the normal state after
-    running the eval, and reporting "no training rows yet" while ignoring it made
-    a correctly-configured install look broken.
+    Scorer options:
+    - ``heuristic``: Pure deterministic rules. Always available.
+    - ``lgbm``: LightGBM gradient boosted trees classifier.
+    - ``ensemble``: Calibrated soft-voting blend of LightGBM, HistGB, and RF.
+    - ``tabpfn``: TabPFN foundation model.
+    - ``auto``: Opportunistically uses consensus ensemble, LightGBM, or TabPFN
+      if models are available and fitted, falling back safely to heuristic.
     """
     requested = (requested or "auto").lower()
-    available, reason = tabpfn_available()
 
-    # `tabpfn_available` reports *what* is wrong. The *fix* is only worth showing
-    # when the user actually asked for TabPFN, so it lives here and not in the
-    # reason -- otherwise the auto-mode notice on every run reads like a build
-    # error in a product that is working fine.
+    if requested == "heuristic":
+        return "heuristic", "Heuristic policy requested explicitly."
+
+    if requested == "lgbm":
+        available, reason = lgbm_available()
+        if not available:
+            return (
+                "heuristic",
+                f"LightGBM requested but {reason}. Run `uv sync --group ml` to add it.",
+            )
+        if load_lgbm_model() is None:
+            return (
+                "heuristic",
+                "LightGBM installed but no model artifact found; using the policy.",
+            )
+        return "lgbm", "LightGBM requested and model artifact loaded."
+
+    if requested == "ensemble":
+        available, reason = ensemble_available()
+        if not available:
+            return (
+                "heuristic",
+                f"Ensemble requested but {reason}. Run `uv sync --group ml` to add it.",
+            )
+        if load_ensemble_model() is None:
+            return (
+                "heuristic",
+                "Ensemble installed but no model artifact found; using the policy.",
+            )
+        return "ensemble", "Consensus ensemble requested and model artifact loaded."
+
+    available, reason = tabpfn_available()
     fix = (
         "Register at https://ux.priorlabs.ai, accept the licence, then set "
         "TABPFN_TOKEN in .env. See docs/NEEDS_HUMAN.md."
@@ -349,27 +649,27 @@ def choose_scorer(
         else "Run `uv sync --group dev --group ml` to add it."
     )
 
-    if requested == "heuristic":
-        return "heuristic", "Heuristic policy requested explicitly."
     if requested == "tabpfn":
         if not available:
             return "heuristic", f"TabPFN requested but {reason}. {fix}"
         return "tabpfn", "TabPFN requested and available."
-    # auto
+
+    # auto mode: prioritize ensemble artifact, then lgbm artifact, then tabpfn
+    ens_avail, _ = ensemble_available()
+    if ens_avail and load_ensemble_model() is not None:
+        return "ensemble", "Consensus ensemble available; using fitted artifact."
+
+    lgb_avail, _ = lgbm_available()
+    if lgb_avail and load_lgbm_model() is not None:
+        return "lgbm", "LightGBM available; using fitted artifact."
+
     if not available:
         return "heuristic", f"TabPFN {reason}; using the documented policy."
     if fit_on:
         return "tabpfn", "TabPFN available and fitted on recorded data."
 
-    # A fitted artifact from scripts/run_eval.py is the usual case: the eval fits
-    # on the past and persists it precisely so the app scores with the exact model
-    # the published table reports, rather than refitting something else at request
-    # time.
     if load_tabpfn_model() is not None:
         return "tabpfn", "TabPFN available; using the model fitted by scripts/run_eval.py."
-    # Kept short on purpose: this notice prints on every single run in auto mode,
-    # and a paragraph of remediation for a condition that is not an error reads as
-    # a broken build. The fix lives in docs/NEEDS_HUMAN.md.
     return "heuristic", "TabPFN installed but not fitted; using the policy."
 
 
@@ -378,6 +678,18 @@ def score_slots(
 ) -> tuple[list[SlotScore], str, str]:
     """Score slots with the chosen scorer. Returns ``(scores, scorer, note)``."""
     name, note = choose_scorer(scorer)
+    if name == "ensemble":
+        try:
+            return score_ensemble(slots), name, note
+        except Exception as exc:  # noqa: BLE001
+            log.warning("Ensemble scoring failed (%s); using policy", exc)
+            return score_heuristic(slots), "heuristic", f"Ensemble failed ({exc}); used policy."
+    if name == "lgbm":
+        try:
+            return score_lgbm(slots), name, note
+        except Exception as exc:  # noqa: BLE001
+            log.warning("LightGBM scoring failed (%s); using policy", exc)
+            return score_heuristic(slots), "heuristic", f"LightGBM failed ({exc}); used policy."
     if name == "tabpfn":
         try:
             return score_tabpfn(slots), name, note
@@ -390,26 +702,7 @@ def score_slots(
 def display_window(
     scores: Sequence[SlotScore], best: SlotScore | None, window_hours: int
 ) -> list[SlotScore]:
-    """The hours to show, chosen so the recommended hour is always one of them.
-
-    The user-facing table is capped at ``window_hours`` rows to keep the screen
-    short. Truncating from the front -- ``scores[:window_hours]`` -- looks
-    harmless and is wrong in the common case: at 13:00 the first 12 hours run to
-    midnight, while the best hour is 07:00 tomorrow. The briefing said "Go at
-    07:00" and every visible row said WAIT or SKIP, so the table appeared to
-    contradict the advice.
-
-    The window is therefore anchored on the recommendation instead of on "now",
-    keeping some lead-in context so the improvement is visible rather than
-    asserted:
-
-    * if the best hour is already inside the first ``window_hours``, keep the
-      existing behaviour;
-    * otherwise show the hours leading up to it, ending just after it.
-
-    Falling back to the leading slice when there is no best hour keeps the
-    all-SKIP case showing every hour rather than nothing.
-    """
+    """The hours to show, chosen so the recommended hour is always one of them."""
     if not scores:
         return []
     if best is None:
@@ -423,18 +716,12 @@ def display_window(
     if best_index < window_hours:
         return list(scores[:window_hours])
 
-    # One hour of context after the recommendation, so the user can see it is
-    # better than the hour that follows rather than just better than midnight.
     start = max(0, best_index - window_hours + 2)
     return list(scores[start : best_index + 2])
 
 
 def pick_best(scores: Sequence[SlotScore]) -> SlotScore | None:
-    """Best hour to go out: GO beats WAIT beats SKIP, then comfort, then sooner.
-
-    Sorting by (decision, comfort) rather than comfort alone is intentional --
-    a slightly-less-comfortable GO is still better than a comfortable SKIP.
-    """
+    """Best hour to go out: GO beats WAIT beats SKIP, then comfort, then sooner."""
     if not scores:
         return None
     return sorted(

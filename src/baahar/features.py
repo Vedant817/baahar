@@ -4,7 +4,7 @@ Design notes (the eval discipline starts here, not in the write-up):
 
 * **No target leakage.** Features are built from hour *t* only. The label for
   hour *t* is assigned at *t* too. Nothing downstream of the split may read
-  hour *t+1*.
+  hour *t+1* .
 * **Time-based split, never shuffled.** Air quality is strongly autocorrelated;
   a random shuffle puts neighbouring hours on both sides of the split and
   inflates every metric. :func:`time_split` cuts chronologically.
@@ -60,6 +60,28 @@ FEATURE_NAMES: tuple[str, ...] = (
 #: "every feature this module can compute".
 TABPFN_FEATURE_ORDER: tuple[str, ...] = FEATURE_NAMES
 
+#: Compact 17-feature architecture for 6h-ahead NAQI forecasting.
+#: Prunes collinear thermodynamic variables, dead NaN columns, and degenerate diurnal duplicates.
+COMPACT_FEATURE_NAMES: tuple[str, ...] = (
+    "naqi",
+    "pm25",
+    "pm10",
+    "temp_c",
+    "precip_mm",
+    "humidity",
+    "wind_kmh",
+    "is_day",
+    "month",
+    "vpd",
+    "stagnation",
+    "pm_ratio",
+    "naqi_gap",
+    "hour_sin",
+    "hour_cos",
+    "month_sin",
+    "month_cos",
+)
+
 #: Ordinal encoding of NAQI bands, worst last.
 BAND_ORDINALS: dict[str, int] = {
     "good": 0,
@@ -94,43 +116,94 @@ def _f(value: float | None) -> float:
 def features_from_slot(slot: HourSlot) -> dict[str, float]:
     """Build one feature row from a joined hour.
 
-    Keys are exactly :data:`FEATURE_NAMES`, so the dict can be fed to a fitted
-    TabPFN model without reordering. Derived extras that the heuristic and the UI
-    find useful are included too -- a missing key here raises ``KeyError`` at
-    predict time, which is a much better failure than silently misaligned columns.
+    Keys include both :data:`FEATURE_NAMES` and :data:`COMPACT_FEATURE_NAMES`,
+    so the dict can feed TabPFN, LightGBM, or the consensus ensemble without reordering.
+    Derived extras that the heuristic and the UI find useful are included too.
 
     The ``naqi`` column is the **effective** reading
     (:attr:`~baahar.models.HourlyAir.naqi_effective`): the higher of the hour's
     instantaneous value and its trailing-mean value. Not the instantaneous one,
     because a model trained on optimistic air is a model that learns to send
-    people out on the hours the CPCB day average says to stay in. See the
-    policy block below -- the thresholds are unchanged, only the number they
-    are applied to.
+    people out on the hours the CPCB day average says to stay in.
     """
     air = slot.air
     weather = slot.weather
     hour = weather.time.hour
+    month = float(weather.time.month)
     band = air.naqi_effective_band or ""
+
+    temp = _f(weather.temp_c)
+    humidity = _f(weather.humidity)
+    wind = _f(weather.wind_kmh)
+    pm25 = _f(air.pm25)
+    pm10 = _f(air.pm10)
+    naqi_effective = _f(air.naqi_effective)
+    naqi_instant = _f(air.naqi)
+
+    # 1. Magnus-Tetens Vapor Pressure Deficit (kPa)
+    if not math.isnan(temp) and not math.isnan(humidity):
+        rh_clamped = max(min(humidity, 100.0), 0.01)
+        es = 0.61078 * math.exp((17.27 * temp) / (temp + 237.3))
+        ea = es * (rh_clamped / 100.0)
+        vpd = es - ea
+    else:
+        vpd = float("nan")
+
+    # 2. Atmospheric Stagnation Index: (RH / 100) / max(wind, 1.0)
+    stagnation = (
+        (humidity / 100.0) / max(wind, 1.0)
+        if not (math.isnan(humidity) or math.isnan(wind))
+        else float("nan")
+    )
+
+    # 3. Combustion PM ratio: clip(pm25 / max(pm10, 1.0), 0.0, 1.0)
+    if not math.isnan(pm25) and not math.isnan(pm10):
+        pm_ratio = min(max(pm25 / max(pm10, 1.0), 0.0), 1.0)
+    else:
+        pm_ratio = float("nan")
+
+    # 4. NAQI velocity gap: effective minus instantaneous reading
+    naqi_gap = (
+        naqi_effective - naqi_instant
+        if not (math.isnan(naqi_effective) or math.isnan(naqi_instant))
+        else 0.0
+    )
+
+    # 5. Month cyclical encoding
+    month_sin = math.sin(2.0 * math.pi * month / 12.0)
+    month_cos = math.cos(2.0 * math.pi * month / 12.0)
+
+    # 6. Hour cyclical encoding
+    hour_sin = math.sin(2.0 * math.pi * hour / 24.0)
+    hour_cos = math.cos(2.0 * math.pi * hour / 24.0)
+
     return {
         # -- model columns, in FEATURE_NAMES order -----------------------------
-        "naqi": _f(air.naqi_effective),
-        "pm25": _f(air.pm25),
-        "pm10": _f(air.pm10),
-        "temp_c": _f(weather.temp_c),
+        "naqi": naqi_effective,
+        "pm25": pm25,
+        "pm10": pm10,
+        "temp_c": temp,
         "apparent_c": _f(weather.apparent_c),
         "precip_mm": _f(weather.precip_mm),
         "precip_prob": _f(weather.precip_prob),
-        "humidity": _f(weather.humidity),
-        "wind_kmh": _f(weather.wind_kmh),
+        "humidity": humidity,
+        "wind_kmh": wind,
         "uv_index": _f(weather.uv_index),
         "is_day": float(weather.is_day or 0),
         "hour": float(hour),
-        "month": float(weather.time.month),
-        # -- derived, for the policy and the UI, not for the model --------------
+        "month": month,
+        # -- compact 17-feature set additions ----------------------------------
+        "vpd": vpd,
+        "stagnation": stagnation,
+        "pm_ratio": pm_ratio,
+        "naqi_gap": naqi_gap,
+        "hour_sin": hour_sin,
+        "hour_cos": hour_cos,
+        "month_sin": month_sin,
+        "month_cos": month_cos,
+        # -- derived, for the policy and the UI, not for the model -------------
         "naqi_band_ordinal": float(BAND_ORDINALS.get(band, -1)),
         "heat_index_flag": heat_index_flag(weather.apparent_c),
-        "hour_sin": math.sin(2 * math.pi * hour / 24.0),
-        "hour_cos": math.cos(2 * math.pi * hour / 24.0),
     }
 
 

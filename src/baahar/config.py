@@ -107,6 +107,10 @@ class Settings:
     #: `scripts/run_eval.py`. Optional: with no artifact, the scorer uses the
     #: documented policy.
     tabpfn_model_path: str | None = None
+    #: Optional path to a pickled LightGBM classifier artifact.
+    lgbm_model_path: str | None = None
+    #: Optional path to a pickled multi-model consensus ensemble artifact.
+    ensemble_model_path: str | None = None
     elevenlabs_api_key: str | None = None
     elevenlabs_voice_id: str | None = None
     elevenlabs_model: str = "eleven_flash_v2_5"
@@ -115,7 +119,7 @@ class Settings:
     # --- model selection defaults ---------------------------------------
     #: "auto" | "gemma" | "tinker" | "template"
     default_brief_model: str = "auto"
-    #: "auto" | "tabpfn" | "heuristic"
+    #: "auto" | "tabpfn" | "heuristic" | "lgbm" | "ensemble"
     default_scorer: str = "auto"
 
     extra: dict[str, str] = field(default_factory=dict)
@@ -187,6 +191,8 @@ def get_settings() -> Settings:
         tabpfn_base_url=os.getenv("TABPFN_BASE_URL", "https://api.priorlabs.ai"),
         tabpfn_token=_secret("TABPFN_TOKEN"),
         tabpfn_model_path=_secret("TABPFN_MODEL_PATH"),
+        lgbm_model_path=_secret("LGBM_MODEL_PATH"),
+        ensemble_model_path=_secret("ENSEMBLE_MODEL_PATH"),
         elevenlabs_api_key=_secret("ELEVENLABS_API_KEY"),
         elevenlabs_voice_id=_secret("ELEVENLABS_VOICE_ID"),
         elevenlabs_model=os.getenv("ELEVENLABS_MODEL", "eleven_flash_v2_5"),

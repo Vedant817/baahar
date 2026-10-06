@@ -71,7 +71,7 @@ def api_brief(
     city: str | None = None,
     hours: Annotated[int | None, Query(ge=1, le=48)] = None,
     model: Annotated[str, Query(pattern="^(auto|gemma|tinker|template)$")] = "auto",
-    scorer: Annotated[str, Query(pattern="^(auto|heuristic|tabpfn)$")] = "auto",
+    scorer: Annotated[str, Query(pattern="^(auto|heuristic|tabpfn|lgbm|ensemble)$")] = "auto",
     walk_minutes: Annotated[int | None, Query(ge=5, le=180)] = None,
     park: str | None = None,
     voice: bool = False,
@@ -143,7 +143,7 @@ def api_score(
     lat: Annotated[float | None, Query(ge=-90, le=90)] = None,
     lon: Annotated[float | None, Query(ge=-180, le=180)] = None,
     hours: Annotated[int | None, Query(ge=1, le=48)] = None,
-    scorer: Annotated[str, Query(pattern="^(auto|heuristic|tabpfn)$")] = "auto",
+    scorer: Annotated[str, Query(pattern="^(auto|heuristic|tabpfn|lgbm|ensemble)$")] = "auto",
 ) -> dict[str, object]:
     """Scores only, no briefing. Used by the CLI-equivalent path and by tests."""
     settings = get_settings()
