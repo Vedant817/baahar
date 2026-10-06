@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-"""Fine-tuned tabular research optimization and consensus ensemble.
+"""Ensemble model and research feature pipeline for 6h-ahead NAQI band forecasting.
 
-Implements research recommendations for resolving the Moderate band classification bottleneck:
-1. Feature pipeline:
+Research recommendations implemented:
+1. Full domain feature pipeline:
    - Thermodynamic: Magnus-Tetens VPD, Dew point depression (T - Td)
    - Ventilation: VIP (convective ventilation proxy = max(temp, 5.0) * wind),
      Stagnation (RH/100 / max(wind, 1.0))
    - Combustion PM ratio: clip(pm25 / max(pm10, 1.0), 0.0, 1.0)
    - NAQI memory gap: naqi - naqi_instant
-   - Target diurnal phase: (hour + 6) % 24 sin/cos, current hour sin/cos, month sin/cos
-2. Consensus soft-voting blend:
+   - Diurnal & target diurnal phase: (hour+6)%24 sin/cos, current hour sin/cos, month sin/cos
+2. Multi-model consensus soft-voting blend:
    - 0.45 * LightGBM + 0.40 * HistGradientBoosting + 0.15 * RandomForest
 3. Cost-sensitive decision rule calibration for Moderate band (tau_mod in [0.28, 0.34]).
-4. Strict safety evaluation on 20% holdout (1,626 rows) asserting skip_as_go == 0.
+4. Safety & decision accuracy verification (skip_as_go_count == 0).
 """
 
 from __future__ import annotations
@@ -62,7 +62,7 @@ def _f(v) -> float:
 
 
 def extract_features(row: dict) -> list[float]:
-    """Extract baseline features plus domain thermodynamic, ventilation, and diurnal features."""
+    """Extract baseline features plus full physical and diurnal engineering."""
     base = [_f(row.get(c)) for c in BASE_FEATURE_NAMES]
 
     hour = _f(row.get("hour"))
@@ -78,7 +78,7 @@ def extract_features(row: dict) -> list[float]:
     # 1. Thermodynamic: Magnus-Tetens VPD, Dew point depression (T - Td)
     if not math.isnan(temp) and not math.isnan(humidity):
         rh_clamped = max(min(humidity, 100.0), 0.01)
-        # Saturation vapor pressure (kPa) via Magnus-Tetens formula
+        # Saturation vapor pressure (kPa)
         es = 0.61078 * math.exp((17.27 * temp) / (temp + 237.3))
         ea = es * (rh_clamped / 100.0)
         vpd = es - ea
@@ -122,7 +122,6 @@ def extract_features(row: dict) -> list[float]:
     else:
         hour_sin = hour_cos = target_hour_sin = target_hour_cos = float("nan")
 
-    # Seasonality
     if not math.isnan(month):
         month_sin = math.sin(2.0 * math.pi * month / 12.0)
         month_cos = math.cos(2.0 * math.pi * month / 12.0)
@@ -175,7 +174,7 @@ def apply_decision_rule(p_matrix: np.ndarray, tau_mod: float | None = None) -> n
     return calibrated
 
 
-def main():
+def run_experiment():
     repo_root = Path(__file__).resolve().parents[1]
     rows = load_rows(repo_root / "data" / "eval" / "gono_rows.jsonl")
     cut = int(len(rows) * 0.8)
@@ -193,7 +192,7 @@ def main():
     x_te, _ = impute(x_te, medians)
 
     n_features = x_tr.shape[1]
-    print(f"Engineered feature count: {n_features} features")
+    print(f"Engineered feature count: {n_features}")
 
     # 1. Train LightGBM
     print("\n[1/3] Training LightGBM (optimal hyperparameters)...")
@@ -218,7 +217,7 @@ def main():
     )
 
     # 2. Train HistGradientBoosting
-    print("\n[2/3] Training HistGradientBoosting (balanced sample weights)...")
+    print("\n[2/3] Training HistGradientBoosting (balanced weights)...")
     sw = compute_sample_weight("balanced", y_train)
     hgb_clf = HistGradientBoostingClassifier(
         random_state=42,
@@ -266,7 +265,7 @@ def main():
     print(
         f"Blend (Raw Argmax):    Acc={res_raw['accuracy']:.4f} | Macro-F1={res_raw['macro_f1']:.4f} | "
         f"DecAcc={res_raw['decision_acc']:.4f} | ModF1={res_raw['per_class']['moderate']['f1']:.4f} "
-        f"(Rec={res_raw['per_class']['moderate']['recall']:.4f}, Prec={res_raw['per_class']['moderate']['precision']:.4f})"
+        f"(Rec={res_raw['per_class']['moderate']['recall']:.4f})"
     )
     assert res_raw["skip_as_go"] == 0, f"Safety violation: skip_as_go={res_raw['skip_as_go']}"
 
@@ -279,21 +278,22 @@ def main():
         preds_tau = apply_decision_rule(p_blend, tau_mod=tau)
         res_tau = evaluate(y_test, preds_tau, test_rows)
         results_by_tau[tau] = res_tau
-        mod_m = res_tau["per_class"]["moderate"]
+        mod_metrics = res_tau["per_class"]["moderate"]
         print(
             f"tau_mod = {tau:.2f} -> "
             f"Accuracy: {res_tau['accuracy']:.4f} | "
             f"Macro-F1: {res_tau['macro_f1']:.4f} | "
             f"DecAcc: {res_tau['decision_acc']:.4f} | "
-            f"Mod Recall: {mod_m['recall']:.4f} | "
-            f"Mod Prec: {mod_m['precision']:.4f} | "
-            f"Mod F1: {mod_m['f1']:.4f} | "
+            f"Mod Recall: {mod_metrics['recall']:.4f} | "
+            f"Mod Prec: {mod_metrics['precision']:.4f} | "
+            f"Mod F1: {mod_metrics['f1']:.4f} | "
             f"skip_as_go: {res_tau['skip_as_go']}"
         )
         assert res_tau["skip_as_go"] == 0, (
             f"Safety violation at tau={tau}: skip_as_go={res_tau['skip_as_go']}"
         )
 
+    # Select optimal tau_mod (e.g. balancing Macro-F1 and Moderate Recall)
     best_tau = max(
         thresholds,
         key=lambda t: (
@@ -323,6 +323,16 @@ def main():
     for i, row in enumerate(best_res["cm"]):
         print(f"{BANDS[i][:5]:5s} " + " ".join(f"{c:5d}" for c in row))
 
+    return {
+        "results_by_tau": results_by_tau,
+        "best_tau": best_tau,
+        "best_res": best_res,
+        "lgb_res": res_lgb,
+        "hgb_res": res_hgb,
+        "rf_res": res_rf,
+        "raw_res": res_raw,
+    }
+
 
 if __name__ == "__main__":
-    main()
+    run_experiment()
