@@ -293,10 +293,11 @@ Holdout: last 20% chronologically — 1,626 rows, 2026-07-30 → 2026-10-05.
 | model | accuracy | macro-F1 | skip_as_go | n(SKIP) | fit time |
 |---|---|---|---|---|---|
 | majority class | 0.4047 | 0.1441 | 0.0 | 24 | <0.1 s |
-| persistence (band at *t*) | 0.4760 | 0.3106 | 0.0 | 24 | <0.1 s |
-| logistic regression | 0.7306 | 0.4845 | 0.0 | 24 | 4.8 s |
-| random forest | 0.8272 | 0.5685 | 0.0 | 24 | 1.9 s |
-| gradient boosting | 0.8395 | 0.5897 | 0.0 | 24 | 9.2 s |
+| persistence (band at *t*) | 0.3647 | 0.2492 | 0.0 | 24 | <0.1 s |
+| logistic regression | 0.7294 | 0.4850 | 0.0 | 24 | 3.4 s |
+| random forest | 0.8296 | 0.5642 | 0.0 | 24 | 2.2 s |
+| gradient boosting | 0.8383 | 0.5874 | 0.0 | 24 | 10.3 s |
+| lightgbm | 0.8432 | 0.5825 | 0.0 | 24 | 3.0 s |
 | **TabPFN 9.1.0 (cpu)** | **0.8512** | **0.6040** | **0.0** | **24** | **339 s** |
 
 **TabPFN wins. By an amount I do not think means anything.** +0.012 accuracy and
