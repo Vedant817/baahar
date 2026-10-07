@@ -196,6 +196,22 @@ def main(argv: list[str] | None = None) -> int:
 
     jsonl_path = out_dir / "baahar_briefings.jsonl"
     examples = []
+
+    # Bucket on the decision the briefing will actually carry, not on the
+    # band-only policy. Bucketing on the latter while labelling from the former
+    # is what produced the contradictory dataset, and it also silently unbalances
+    # the mix: after the fix the true distribution is GO 44 / WAIT 116 / SKIP 59
+    # at this per-decision cap, so balancing has to happen here to stay meaningful.
+    corrected: dict[str, list[dict]] = defaultdict(list)
+    for r in rows:
+        park_name = rng.choice(park_names)
+        plan, _ = plan_for_row(r, park_name)
+        r = dict(r)
+        r["decision"] = plan.overall.value
+        r["_park_name"] = park_name
+        corrected[plan.overall.value].append(r)
+    buckets = corrected
+
     for decision, pool in sorted(buckets.items()):
         pool.sort(key=lambda r: r["time"])
         rng.shuffle(pool)
@@ -211,8 +227,24 @@ def main(argv: list[str] | None = None) -> int:
             chosen.append(r)
 
         for idx, row in enumerate(chosen):
-            park_name = rng.choice(park_names)
+            park_name = row.get("_park_name") or rng.choice(park_names)
             plan, park = plan_for_row(row, park_name)
+            # Label from the decision that actually produced this text.
+            #
+            # The bucket key came from apply_band_policy (band + rain + heat only)
+            # while the briefing is rendered from the full policy in
+            # score_heuristic, which also applies park-gate hours. Those two
+            # disagree on 45% of the corpus, nearly all of them night hours where
+            # the band policy says GO and the gates say WAIT. Using the bucket key
+            # as the label therefore shipped 29 of 219 examples whose meta.decision
+            # contradicted their own target text: 26 labelled GO whose briefing
+            # said "Hold off", and 3 labelled WAIT whose briefing read like a GO.
+            #
+            # A fine-tune on that data learns to contradict its own label, and in
+            # the direction that matters: the model would be trained to write
+            # encouraging copy for an hour the policy held off for.
+            park_name = row.get("_park_name") or rng.choice(park_names)
+            decision = plan.overall.value
             ending = ENDINGS[decision][idx % len(ENDINGS[decision])]
             target = _tidy(write_template(plan, park=park), ending, decision)
             from baahar.brief import build_context
