@@ -1,0 +1,99 @@
+{
+  "run_at": "2026-10-07T18:38:42+0530",
+  "task": "paired significance test on the chronological holdout",
+  "seed": 0,
+  "n_train": 6504,
+  "n_test": 1626,
+  "n_features": 28,
+  "fitted_by": "scripts/run_eval.py::fit_predict (imported, not re-declared)",
+  "holdout_accuracy": {
+    "consensus_ensemble": 0.862239,
+    "_moderate_recall_ensemble": 0.661972
+  },
+  "binomial_se_at_p_0_85": 0.008855,
+  "comparisons": {
+    "lgbm": {
+      "holdout_accuracy": 0.859779,
+      "mcnemar": {
+        "only_challenger_right": 25,
+        "only_reference_right": 29,
+        "n_discordant": 54,
+        "p_value_exact_two_sided": 0.683489
+      },
+      "paired_bootstrap": {
+        "delta_accuracy": -0.00246,
+        "ci95_low": -0.01107,
+        "ci95_high": 0.00615,
+        "n_boot": 4000,
+        "bootstrap_seed": 12345
+      },
+      "moderate_recall": 0.5
+    },
+    "histgb": {
+      "holdout_accuracy": 0.856704,
+      "mcnemar": {
+        "only_challenger_right": 40,
+        "only_reference_right": 49,
+        "n_discordant": 89,
+        "p_value_exact_two_sided": 0.39657
+      },
+      "paired_bootstrap": {
+        "delta_accuracy": -0.005535,
+        "ci95_low": -0.016605,
+        "ci95_high": 0.00615,
+        "n_boot": 4000,
+        "bootstrap_seed": 12345
+      },
+      "moderate_recall": 0.478873
+    },
+    "rf": {
+      "holdout_accuracy": 0.828413,
+      "mcnemar": {
+        "only_challenger_right": 33,
+        "only_reference_right": 88,
+        "n_discordant": 121,
+        "p_value_exact_two_sided": 1e-06
+      },
+      "paired_bootstrap": {
+        "delta_accuracy": -0.033825,
+        "ci95_low": -0.04674,
+        "ci95_high": -0.02091,
+        "n_boot": 4000,
+        "bootstrap_seed": 12345
+      },
+      "moderate_recall": 0.514085
+    },
+    "tabpfn": {
+      "holdout_accuracy": 0.869004,
+      "mcnemar": {
+        "only_challenger_right": 43,
+        "only_reference_right": 32,
+        "n_discordant": 75,
+        "p_value_exact_two_sided": 0.248046
+      },
+      "paired_bootstrap": {
+        "delta_accuracy": 0.006765,
+        "ci95_low": -0.00369,
+        "ci95_high": 0.017835,
+        "n_boot": 4000,
+        "bootstrap_seed": 12345
+      },
+      "moderate_recall": 0.584507
+    }
+  },
+  "notes": {
+    "ensemble": "Consensus Ensemble (LGBM+HistGB+RF)",
+    "lgbm": "LightGBM 4.7.0",
+    "histgb": "HistGradientBoostingClassifier",
+    "rf": "RandomForestClassifier(300)",
+    "tabpfn": "TabPFN 9.1.0, cpu"
+  },
+  "skipped": {},
+  "not_tested": {},
+  "caveats": [
+    "Single seed (0). The published table is a five-seed mean; this is one fitted model per candidate.",
+    "tau_mod was tuned against this same holdout, so treat the p-values as descriptive rather than as independent validation.",
+    "McNemar counts discordant rows only; the bootstrap resamples rows and so assumes those rows are exchangeable."
+  ],
+  "elapsed_seconds": 504.6
+}

@@ -10,6 +10,7 @@ be fooled is worse than no gate, so its own failure modes need tests too.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -131,3 +132,78 @@ def test_metrics_honesty_fails_if_disclosure_missing(recorded_run, omission):
     out = check_results.Problem()
     check_results.check_metrics_honesty(md, path, out)
     assert any(line.startswith("!!") for line in out)
+
+
+def test_significance_passes_on_current_results():
+    md = check_results.RESULTS.read_text(encoding="utf-8")
+    citation = check_results.CITED_SIGNIFICANCE_RE.search(md)
+    assert citation, "RESULTS.md does not cite a significance artifact"
+    sig_path = check_results.RAW / f"{citation.group(1)}.json"
+    assert sig_path.exists()
+    out = check_results.Problem()
+    check_results.check_significance(md, sig_path, out)
+    assert not [line for line in out if line.startswith("!!")]
+
+
+def test_significance_gate_fails_if_claim_removed_while_artifact_remains():
+    """Gate must notice a dropped disclosure if section is removed while artifact remains."""
+    md = check_results.RESULTS.read_text(encoding="utf-8")
+    citation = check_results.CITED_SIGNIFICANCE_RE.search(md)
+    assert citation
+    sig_path = check_results.RAW / f"{citation.group(1)}.json"
+    stripped_md = re.sub(
+        r"### Paired significance on the holdout.*?(?=\n### |\Z)",
+        "",
+        md,
+        flags=re.DOTALL,
+    )
+    out = check_results.Problem()
+    check_results.check_significance(stripped_md, sig_path, out)
+    assert any(
+        "significance: RESULTS.md has no 'Paired significance' section" in line for line in out
+    )
+
+
+@pytest.mark.parametrize(
+    "omission,expected_error",
+    [
+        ("drop_tabpfn", "TabPFN"),
+        ("drop_mcnemar", "McNemar"),
+        ("drop_binomial_se", "binomial standard error"),
+        ("drop_seed_0", "single-seed"),
+        ("drop_tau_mod", "tau_mod"),
+        ("wrong_p_value", "McNemar p-value"),
+        ("wrong_accuracy", "holdout accuracy"),
+        ("wrong_moderate_recall", "moderate recall"),
+    ],
+)
+def test_significance_gate_notices_dropped_disclosure_or_wrong_number(omission, expected_error):
+    md = check_results.RESULTS.read_text(encoding="utf-8")
+    citation = check_results.CITED_SIGNIFICANCE_RE.search(md)
+    sig_path = check_results.RAW / f"{citation.group(1)}.json"
+    if omission == "drop_tabpfn":
+        match = re.search(r"^#+\s*Paired significance[^\n]*", md, re.MULTILINE | re.IGNORECASE)
+        tail = md[match.end() :]
+        nxt = re.search(r"^#+\s", tail, re.MULTILINE)
+        section = tail[: nxt.start()] if nxt else tail
+        rest = tail[nxt.start() :] if nxt else ""
+        replaced_section = re.sub(r"(?i)tabpfn", "OtherModel", section)
+        md = md[: match.end()] + replaced_section + rest
+    elif omission == "drop_mcnemar":
+        md = md.replace("McNemar", "ChiSquared").replace("mcnemar", "chisquared")
+    elif omission == "drop_binomial_se":
+        md = md.replace("binomial standard error", "standard error")
+    elif omission == "drop_seed_0":
+        md = re.sub(r"(?i)seed[- ]?0", "run 1", md)
+    elif omission == "drop_tau_mod":
+        md = md.replace("tau_mod", "threshold")
+    elif omission == "wrong_p_value":
+        md = md.replace("0.6835", "0.0100")
+    elif omission == "wrong_accuracy":
+        md = md.replace("0.8622", "0.8999")
+    elif omission == "wrong_moderate_recall":
+        md = md.replace("0.6620", "0.7500")
+
+    out = check_results.Problem()
+    check_results.check_significance(md, sig_path, out)
+    assert any(line.startswith("!!") and expected_error in line for line in out)

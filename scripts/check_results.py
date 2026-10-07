@@ -17,6 +17,9 @@ What it checks
 3. That classes absent from the holdout are *named* in RESULTS.md.
 4. That the SKIP-cause breakdown in RESULTS.md matches the artifact, including
    the disclosure that no SKIP hour was caused by air quality.
+5. Paired significance figures (holdout accuracy, McNemar p-values, moderate recall,
+   discordant pair counts) and mandatory disclosures (TabPFN exclusion, single seed,
+   binomial standard error vs seed spread, tau_mod tuning).
 
 What it deliberately does NOT do
 --------------------------------
@@ -93,6 +96,7 @@ def newest_excluding(pattern: str, skip_fragments: set[str]) -> Path | None:
 #: name lets the checker verify a document against the run that produced it rather
 #: than against whichever run happened to finish most recently.
 CITED_TABULAR_RE = re.compile(r"`(gono_[0-9A-Za-z_+\-]+)\.json`")
+CITED_SIGNIFICANCE_RE = re.compile(r"`(significance_[0-9A-Za-z_+\-]+)\.json`")
 
 
 def parse_tables(text: str) -> list[list[list[str]]]:
@@ -510,10 +514,138 @@ def check_briefings(md: str, raw_path: Path | None, out: Problem) -> None:
         out.add(f"briefings: verified {checked} figures against {raw_path.name}", ok=True)
 
 
+def check_significance(md: str, raw_path: Path | None, out: Problem) -> None:
+    """Verify that paired significance figures and required disclosures match the artifact."""
+    if raw_path is None or not raw_path.exists():
+        out.add("significance: artifact does not exist")
+        return
+
+    payload = json.loads(raw_path.read_text(encoding="utf-8"))
+    checked = 0
+
+    # 1. Consensus ensemble holdout accuracy & moderate recall
+    ens_acc = payload.get("holdout_accuracy", {}).get("consensus_ensemble")
+    if ens_acc is not None:
+        token = f"{ens_acc:.4f}"
+        if token in md:
+            checked += 1
+        else:
+            out.add(
+                f"significance ensemble: holdout accuracy {token} does not appear in RESULTS.md"
+            )
+
+    ens_modr = payload.get("holdout_accuracy", {}).get("_moderate_recall_ensemble")
+    if ens_modr is not None:
+        token = f"{ens_modr:.4f}"
+        if token in md:
+            checked += 1
+        else:
+            out.add(f"significance ensemble: moderate recall {token} does not appear in RESULTS.md")
+
+    # 2. Challenger models
+    comparisons = payload.get("comparisons", {})
+    for name, comp in comparisons.items():
+        # Accuracy
+        acc = comp.get("holdout_accuracy")
+        if acc is not None:
+            token = f"{acc:.4f}"
+            if token in md:
+                checked += 1
+            else:
+                out.add(
+                    f"significance {name}: holdout accuracy {token} does not appear in RESULTS.md"
+                )
+
+        # McNemar p-value
+        p = comp.get("mcnemar", {}).get("p_value_exact_two_sided")
+        if p is not None:
+            token = f"{p:.4f}"
+            if token in md:
+                checked += 1
+            else:
+                out.add(
+                    f"significance {name}: McNemar p-value {token} does not appear in RESULTS.md"
+                )
+
+        # Moderate recall
+        mr = comp.get("moderate_recall")
+        if mr is not None:
+            token = f"{mr:.4f}"
+            if token in md:
+                checked += 1
+            else:
+                out.add(
+                    f"significance {name}: moderate recall {token} does not appear in RESULTS.md"
+                )
+
+        # Discordant counts
+        mcnemar = comp.get("mcnemar", {})
+        c_right = mcnemar.get("only_challenger_right")
+        r_right = mcnemar.get("only_reference_right")
+        if c_right is not None and r_right is not None:
+            if str(c_right) in md and str(r_right) in md:
+                checked += 2
+            else:
+                out.add(
+                    f"significance {name}: discordant counts {c_right}/{r_right} do not appear in RESULTS.md"
+                )
+
+    # 3. Disclosures
+    match = re.search(r"^#+\s*Paired significance[^\n]*", md, re.MULTILINE | re.IGNORECASE)
+    if not match:
+        out.add("significance: RESULTS.md has no 'Paired significance' section")
+        return
+
+    tail = md[match.end() :]
+    nxt = re.search(r"^#+\s", tail, re.MULTILINE)
+    section_text = tail[: nxt.start()].lower() if nxt else tail.lower()
+
+    # TabPFN exclusion
+    if "tabpfn" not in section_text:
+        out.add("significance: RESULTS.md must disclose TabPFN in the paired-significance section")
+    else:
+        checked += 1
+
+    # McNemar disclosure
+    if "mcnemar" not in section_text:
+        out.add("significance: RESULTS.md must describe McNemar's exact test")
+    else:
+        checked += 1
+
+    # Single-seed caveat
+    if (
+        "seed 0" not in section_text
+        and "single seed" not in section_text
+        and "single-seed" not in section_text
+    ):
+        out.add("significance: RESULTS.md must disclose the single-seed (seed 0) refit limitation")
+    else:
+        checked += 1
+
+    # Binomial SE vs seed spread
+    if "binomial standard error" not in section_text:
+        out.add("significance: RESULTS.md must explain binomial standard error vs seed spread")
+    else:
+        checked += 1
+
+    # tau_mod caveat
+    if "tau_mod" not in section_text:
+        out.add("significance: RESULTS.md must disclose the tau_mod tuning caveat")
+    else:
+        checked += 1
+
+    if checked:
+        out.add(
+            f"significance: verified {checked} numbers and disclosures against {raw_path.name}",
+            ok=True,
+        )
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--tabular", default=None, help="explicit gono_*.json file name")
     ap.add_argument("--briefings", default=None, help="explicit briefing_*.json file name")
+    ap.add_argument("--significance", default=None, help="explicit significance_*.json file name")
     ap.add_argument("--md", default=str(RESULTS))
     args = ap.parse_args(argv)
 
@@ -553,6 +685,22 @@ def main(argv: list[str] | None = None) -> int:
         if args.briefings
         else newest_excluding("briefing_*.json", {"050410"})
     )
+
+    if args.significance:
+        sig_path = RAW / Path(args.significance).name
+    else:
+        cited_sig = CITED_SIGNIFICANCE_RE.search(md)
+        candidate_sig = RAW / f"{cited_sig.group(1)}.json" if cited_sig else None
+        if candidate_sig is not None and candidate_sig.exists():
+            sig_path = candidate_sig
+        else:
+            if cited_sig:
+                print(
+                    f"  !! RESULTS.md cites {cited_sig.group(1)}.json, which is not in "
+                    f"eval/raw/. Falling back to newest artifact."
+                )
+            sig_path = newest("significance_*.json")
+
     out = Problem()
     if raw_path is None:
         out.add("no eval/raw/gono_*.json artifact found; run scripts/run_eval.py")
@@ -572,6 +720,22 @@ def main(argv: list[str] | None = None) -> int:
         check_briefings(md, brief_path, out)
     except Exception as exc:  # noqa: BLE001
         out.add(f"check_briefings raised {type(exc).__name__}: {exc}")
+
+    has_sig_artifact = newest("significance_*.json") is not None
+    if has_sig_artifact:
+        cited_sig = CITED_SIGNIFICANCE_RE.search(md)
+        if not cited_sig and not args.significance:
+            out.add(
+                "significance: eval/raw has significance artifacts but RESULTS.md does not cite one"
+            )
+        elif sig_path is None or not sig_path.exists():
+            cited_name = cited_sig.group(1) if cited_sig else "unknown"
+            out.add(f"significance: cited artifact {cited_name}.json does not exist in eval/raw/")
+        else:
+            try:
+                check_significance(md, sig_path, out)
+            except Exception as exc:  # noqa: BLE001
+                out.add(f"check_significance raised {type(exc).__name__}: {exc}")
 
     for _ in ():
         try:

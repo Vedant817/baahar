@@ -37,7 +37,10 @@ key-presence booleans and versions; the checker reads the cited tabular artifact
 uv run python scripts/build_dataset.py --start 2025-11-01 --end 2026-10-05
 uv run python scripts/run_eval.py --repeat 5 --feature-set compact
 uv run python scripts/run_eval.py --repeat 5
-uv run pytest scripts/test_check_results.py
+uv run python scripts/paired_significance.py          # add --with-tabpfn to measure TabPFN
+uv run python scripts/check_results.py
+uv run python scripts/check_docs.py
+uv run pytest tests/test_check_results.py
 uv run python scripts/build_briefing_cases.py
 uv run python scripts/run_briefing_eval.py --writers template,gemma --no-cache
 ```
@@ -178,31 +181,73 @@ In this 28-feature artifact (`gono_20261007T173452+0530.json`):
   $$\frac{\text{Ensemble macro-F1}}{\text{macro3}} = \frac{0.6349}{0.8249} = 0.7697 \quad (76.97\%)$$
 - The ratio has drifted from $0.7500$ ($3/4$) to **0.7697** because across seeds 1–4, slight variations in decision boundaries cause occasional `poor` predictions (reflected in the ensemble's macro-F1 standard deviation of 0.0368 and LightGBM's 0.0524), raising the 5-seed mean macro-F1 above the strict zero-poor floor ($0.6186 \to 0.6349$).
 
-### Paired significance: seed spread vs sampling uncertainty
+### Paired significance on the holdout
 
-The headline table reports sample standard deviations across 5 seeds ($\pm 0.0005$ for ensemble, $\pm 0.0023$ for TabPFN, $\pm 0.0013$ for LightGBM). These numbers measure **training determinism across random initializations**, not sampling uncertainty.
+The seed spreads in section A are **not** significance. A seed standard deviation of
+0.0005 says a fit is reproducible; it says nothing about whether two models differ on the rows
+they were both scored against. At n=1626 the binomial standard error on accuracy is
+**0.0089** - about 18x the ensemble's
+seed spread. Read alone, that column would let a 0.008 gap look decisive when it is not.
 
-To determine whether performance differences between top models are statistically significant or indistinguishable, we evaluate paired classifications on the identical 1,626 holdout rows using McNemar's test:
+[`significance_20261007T183842+0530.json`](raw/significance_20261007T183842+0530.json), produced by `scripts/paired_significance.py`, fits every candidate by
+calling **`run_eval.fit_predict` directly** rather than re-declaring hyper-parameters, scores the
+identical 1626 holdout rows, and reports McNemar's exact two-sided test plus a paired
+bootstrap. The consensus ensemble is the reference model.
 
-1. **Consensus Ensemble vs LightGBM** (seed 4 serving models):
-   - Holdout accuracy: Ensemble **86.16%** (1,401 / 1,626) vs LightGBM **86.04%** (1,399 / 1,626).
-   - Paired outcomes: 1,373 rows both correct, 199 rows both incorrect.
-   - Disagreements: Ensemble correct / LightGBM incorrect ($b$) = **28**; LightGBM correct / Ensemble incorrect ($c$) = **26**.
-   - McNemar's test (with continuity correction):
-     $$\chi^2 = \frac{(|28 - 26| - 1)^2}{28 + 26} = \frac{1}{54} \approx 0.0185 \quad (p = 0.8918)$$
-   - Exact two-sided binomial test: $p = 0.8919$.
-   - **Verdict**: Consensus Ensemble and LightGBM are **statistically indistinguishable** in accuracy ($p = 0.89$).
+| challenger | accuracy | only-challenger right | only-ensemble right | McNemar p | dAccuracy | 95% CI | challenger moderate recall |
+|---|---|---|---|---|---|---|---|
+| lightgbm | 0.8598 | 25 | 29 | 0.6835 | -0.0025 | [-0.0111, +0.0062] | 0.5000 |
+| gradient boosting | 0.8567 | 40 | 49 | 0.3966 | -0.0055 | [-0.0166, +0.0062] | 0.4789 |
+| random forest | 0.8284 | 33 | 88 | 0.0000 | -0.0338 | [-0.0467, -0.0209] | 0.5141 |
+| TabPFN 9.1.0 (cpu) | 0.8690 | 43 | 32 | 0.2480 | +0.0068 | [-0.0037, +0.0178] | 0.5845 |
+| **consensus ensemble** | **0.8622** | - | - | - | - | - | **0.6620** |
 
-2. **Consensus Ensemble vs TabPFN** (seed 4 serving models):
-   - Holdout accuracy: TabPFN **86.84%** (1,412 / 1,626) vs Ensemble **86.16%** (1,401 / 1,626) (nominal delta: +0.68 percentage points).
-   - Paired outcomes: 1,368 rows both correct, 181 rows both incorrect.
-   - Disagreements: TabPFN correct / Ensemble incorrect ($b$) = **44**; Ensemble correct / TabPFN incorrect ($c$) = **33**.
-   - McNemar's test (with continuity correction):
-     $$\chi^2 = \frac{(|44 - 33| - 1)^2}{44 + 33} = \frac{100}{77} \approx 1.2987 \quad (p = 0.2545)$$
-   - Exact two-sided binomial test: $p = 0.2543$.
-   - **Verdict**: TabPFN's apparent accuracy edge is **not statistically significant** ($p = 0.25$). On this 1,626-row holdout sample, TabPFN and Consensus Ensemble are statistically indistinguishable in overall accuracy.
+**What this establishes, and what it does not.** The ensemble beats random forest decisively
+(p=0.0000, CI [-0.0467,
+-0.0209]). Against the two strongest single models it does **not**:
+lightgbm p=0.6835 and gradient boosting
+p=0.3966, both bootstrap intervals straddling zero. The honest
+reading is that **the ensemble's accuracy advantage over lightgbm and gradient boosting is
+consistent but not established** at n=1626. What does separate them is the band that
+matters: `moderate` recall 0.6620 against 0.5000 and 0.4789.
+That is why it ships - not because it won an accuracy contest it did not win.
 
-The narrow seed standard deviations ($\pm 0.0005$ to $\pm 0.0023$) understate sampling uncertainty by more than an order of magnitude (the binomial standard error for $n = 1,626$ at $p = 0.86$ is $\sqrt{0.86 \times 0.14 / 1626} \approx 0.0086$, $\sim 17\times$ larger). The paired test confirms that the top models cannot be separated on accuracy alone; the choice of serving model must be governed by safety asymmetry (`moderate` recall: ensemble **0.6620** vs TabPFN **0.5845**) and serving viability (ensemble **46.4 s** fit and millisecond CPU scoring vs TabPFN **358.1 s** fit and ~5 minutes CPU batch inference).
+**TabPFN's accuracy lead is real but not separable at n=1626.** It posts 0.8690 against the
+ensemble's 0.8622, McNemar p=0.2480 with a CI straddling zero - 43 rows where TabPFN is right
+and the ensemble is not, against 32 the other way. So on this holdout TabPFN's edge is
+directionally consistent with the published five-seed means but **not established**; the honest
+statement is that 1,626 rows cannot separate 0.007. It also loses the band that decides the
+verdict: `moderate` recall is **0.5845** for TabPFN against
+**0.6620** for the ensemble, 83 of the 142 moderate hours caught against 94.
+That is the under-warning boundary, where calling a polluted morning "clean" is the failure that
+reaches a person's lungs. Accuracy rewards the two easy bands; moderate recall measures the one
+that hurts, and it is why the ensemble ships even where TabPFN's accuracy does not.
+
+Three limits, all recorded in the artifact:
+
+* **Seed 0 only.** The published table is a five-seed mean; this is one fitted model per
+  candidate. The check that this refit really is the shipped model: the ensemble scores 0.8622
+  here, inside the published 0.8617 +/- 0.0005. An earlier draft of this script re-declared the
+  hyper-parameters, took the standalone-LightGBM settings by mistake, and produced 0.8469 - a
+  plausible-looking number that was measuring a model the product does not ship.
+* **`tau_mod` was tuned against this same holdout**, so these p-values are descriptive rather than
+  independent validation.
+* **The p-values are marginal by construction.** Only 54 and
+  121 rows are discordant in the two comparisons above. A holdout that
+  small cannot resolve small differences, and saying so is the honest result rather than a
+  disappointing one.
+
+A superseded version of this section reported the ensemble and lightgbm as statistically
+indistinguishable at a much higher p-value, from a seed-4 refit that cited no artifact and used a
+mis-configured model. Those figures were withdrawn, not retained alongside: a results file carrying
+two contradictory verdicts for one comparison is worth less than one carrying one.
+
+Runtime 505 s on CPU with TabPFN included, ~36 s without it, so it is deliberately outside the
+default CI path. `tests/test_paired_significance.py` fails if the script grows its own
+hyper-parameter block, if the seed-0 refit drifts outside the published seed band, if the withdrawn
+figures reappear, or if any p-value or moderate recall here stops matching the artifact.
+
+---
 
 ### TabPFN vs Consensus Ensemble
 
@@ -213,9 +258,12 @@ features and the same five seeds. It has the **highest accuracy**
 macro-F1** (0.6193 vs 0.6349) and is
 worse on the band that decides whether someone is under-warned: `moderate` recall
 0.5845 against the ensemble's
-0.6620. It also costs
-358.0628 s to fit against the ensemble's
-46.4334 s.
+0.6620. It also costs 358 s to fit against the ensemble's 46 s.
+
+The paired test above measures the same comparison at seed 0 and finds the accuracy gap
+**not separable** (p=0.2480), so read the two together: TabPFN's accuracy lead is directionally
+consistent across five seeds but this holdout cannot establish it, while its `moderate`-recall
+deficit is large and consistent.
 
 The honest summary is that TabPFN is the best number here on the metric that ignores
 the band distribution, and the ensemble is the better engine for a product whose
