@@ -128,6 +128,24 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--learning-rate", type=float, default=2e-4)
     ap.add_argument("--batch-size", type=int, default=4)
     ap.add_argument("--max-len", type=int, default=768)
+    ap.add_argument(
+        "--threads",
+        type=int,
+        default=2,
+        help="cap torch CPU threads; the default keeps a laptop usable during a run",
+    )
+    ap.add_argument(
+        "--limit-train",
+        type=int,
+        default=0,
+        help="train on at most N examples (0 = all). Used for a smoke-scale run.",
+    )
+    ap.add_argument(
+        "--limit-eval",
+        type=int,
+        default=0,
+        help="evaluate on at most N examples (0 = all)",
+    )
     ap.add_argument("--out", default=None)
     args = ap.parse_args(argv)
 
@@ -158,7 +176,8 @@ def main(argv: list[str] | None = None) -> int:
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     torch.manual_seed(0)
-    torch.set_num_threads(max(1, (os.cpu_count() or 4)))
+    torch.set_num_threads(max(1, args.threads))
+    print(f"  torch threads       {args.threads} (capped so the machine stays usable)")
 
     t_setup = time.perf_counter()
     tokenizer = AutoTokenizer.from_pretrained(args.base_model)
@@ -171,7 +190,19 @@ def main(argv: list[str] | None = None) -> int:
     encoded_val = [
         e for e in (encode_example(tokenizer, x["messages"], args.max_len) for x in val_ex) if e
     ]
+    scoped = bool(args.limit_train or args.limit_eval)
+    if args.limit_train:
+        encoded_train = encoded_train[: args.limit_train]
+    if args.limit_eval:
+        encoded_val = encoded_val[: args.limit_eval]
+        val_ex = val_ex[: args.limit_eval]
     print(f"  usable examples    {len(encoded_train)} train / {len(encoded_val)} val")
+    if scoped:
+        print(
+            f"  SCOPE LIMIT        train<={args.limit_train or 'all'} "
+            f"eval<={args.limit_eval or 'all'} -- this is a smoke-scale run, not the "
+            "full experiment"
+        )
     if not encoded_train or not encoded_val:
         raise SystemExit(
             f"refusing to run: {len(encoded_train)}/{len(encoded_val)} usable examples. "
@@ -327,6 +358,13 @@ def main(argv: list[str] | None = None) -> int:
         "batch_size": args.batch_size,
         "n_train": len(encoded_train),
         "n_val": len(encoded_val),
+        "scope_limits": {
+            "limit_train": args.limit_train or None,
+            "limit_eval": args.limit_eval or None,
+            "max_len": args.max_len,
+            "torch_threads": args.threads,
+            "smoke_scale": scoped,
+        },
         "loss": "mean token-level cross-entropy, assistant tokens only",
         "baseline": {"train": round(base_train, 6), "val": round(base_val, 6)},
         "fine_tuned": {"train": round(final_train, 6), "val": round(final_val, 6)},
@@ -348,6 +386,18 @@ def main(argv: list[str] | None = None) -> int:
             "few-hundredths move should not be read as decisive.",
             "The holdout here is the 22 briefing examples, a different and much smaller "
             "set than the 1,626-row tabular holdout.",
+            *(
+                [
+                    "SMOKE-SCALE RUN: this was deliberately limited to "
+                    f"{len(encoded_train)} training and {len(encoded_val)} evaluation "
+                    "examples so a full CPU run would not make the machine unusable. "
+                    "The delta below is a real measurement on that subset, not the "
+                    "full-dataset result, and must not be quoted as one. "
+                    "scripts/fine_tune_modal.py runs the full experiment on a GPU."
+                ]
+                if scoped
+                else []
+            ),
         ],
     }
 

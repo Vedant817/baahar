@@ -447,11 +447,21 @@ The ones worth showing:
   ones, but it cannot reliably rank good ones against each other. The
   9.83-vs-9.53 difference is effectively a tie; the 17,000× latency difference is
   not.
-- **Failure 8 — `tinker.ai` does not resolve from my environment.** The
-  fine-tuning dataset is built and committed (219 examples), the training
-  scripts are written, and the endpoint stays empty because `tinker.ai` could
-  not be reached. Documented in [`docs/adr/001-tinker-outcome.md`](docs/adr/001-tinker-outcome.md)
-  rather than faked.
+- **Failure 8 - I spent a day convinced Tinker was unreachable, and I was
+  testing the wrong hostname.** `tinker.ai` is a parked domain that accepts no
+  connection. The service is `tinker.thinkingmachines.dev`, documented, and it
+  answers HTTP 200 for my key. I had recorded "DNS fails" as a finding in five
+  documents without ever checking which host the service actually uses. Once I
+  looked: `uv run python scripts/fine_tune_tinker.py --check` reports the
+  endpoint reachable and 7 checkpoints visible. Running it for real then found a
+  worse bug — **29 of 219 training examples had a label that contradicted their
+  own briefing text**, 26 of them `GO` examples whose briefing opened "Hold
+  off". Cause: labels came from the band-only policy, text from the full policy,
+  and they disagree on 45% of the corpus. Fixed, with five offline tests. The
+  re-run then returned **HTTP 402, billing**: the credits were spent by the
+  verification runs and recharging wants a card this project will not use. So
+  the category is not claimed. Full account in
+  [`docs/adr/001-tinker-outcome.md`](docs/adr/001-tinker-outcome.md).
 - **Failure 9 — ElevenLabs free tier blocks library voices over the API.** The
   TTS client works against recorded fixtures; the live call returned
   `HTTP 402 paid_plan_required`. No card signup was used (per the contest
@@ -546,9 +556,10 @@ A lot, and none of it is "add a feed".
    earning its compute where it matters — particularly on the under-represented severe/poor
    bands this holdout cannot currently test — or the consensus ensemble remains the
    shipped engine and unambiguous choice.
-4. **Finish the Tinker fine-tune** — the 219-example dataset exists; the reason is
-   that `tinker.ai` does not resolve from my environment, not a missing idea. The
-   fine-tune's target is stylistic: prose instead of a restated plan, Indian outdoor
+4. **Finish the Tinker fine-tune properly.** The API is reachable and a LoRA run
+   worked; the balance then ran out and recharging wants a card. With credits the
+   full run is `uv run python scripts/fine_tune_modal.py` and the fine-tune's
+   target is stylistic: prose instead of a restated plan, Indian outdoor
    vocabulary, a firmer SKIP register.
 5. **Make the SKIP decision feel better.** Right now Baahar tells you not to go
    and leaves it there. The honest, non-preachy version of "go outside *later*,

@@ -234,9 +234,12 @@ configured ([how](docs/NEEDS_HUMAN.md)) — **0.8708 +/- 0.0023 acc / 0.6193 +/-
 (4 supported bands) over 5 seeds on 28 features. It leads headline accuracy, but loses macro-F1
 and moderate recall (0.5845 vs 0.6620) to the ensemble. *(Earlier 13-feature run was 0.8542 / 0.6031;
 older provisional single-seed run was 0.8512 / 0.6040 on instantaneous NAQI, not like-for-like).*
-`tinker.ai` did not resolve from the build environment, so no endpoint is
-hard-coded ([adr/001](docs/adr/001-tinker-outcome.md)) and the category is not
-claimed. **ElevenLabs** voice is implemented against fixtures and blocked at the vendor's paid plan.
+**Tinker** is verified reachable — the API is `tinker.thinkingmachines.dev`, not `tinker.ai` —
+and a LoRA fine-tune ran against it. Its balance then ran out (HTTP 402) and recharging needs a
+card, so the category is **not claimed**; the same experiment re-runs locally on CPU or on a Modal
+GPU ([adr/001](docs/adr/001-tinker-outcome.md)). **ElevenLabs** voice is implemented against
+fixtures and blocked at the vendor's paid plan; `baahar brief --voice` now says so instead of
+silently returning no audio.
 
 Full module-by-module detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 Decision records: [`docs/adr/`](docs/adr/).

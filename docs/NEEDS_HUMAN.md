@@ -344,7 +344,7 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 | # | Item | Unblocks | Effort | Agent blocked? | Status |
 |---|---|---|---|---|---|
 | 1 | TabPFN licence | TabPFN category | 3 min | no (token set) | **done** — ran 2026-10-07 on current 28 features over 5 seeds (0.8708 acc / 0.6193 macro-F1); category claimable |
-| 2 | Tinker key + FT run | Tinker category | 20 min + job | partly | blocked: `tinker.ai` does not resolve |
+| 2 | Tinker credit balance | Tinker category | add credit | yes (a card) | **blocked at the vendor**: API verified reachable, a LoRA run completed, then HTTP 402. Recharging needs a payment method `AGENTS.md` forbids |
 | 3 | Gemini key | Gemma category | done | no | **done** — 36 cases judged |
 | 4 | ElevenLabs paid plan | ElevenLabs category | a paid plan | yes | **blocked at the vendor**: free accounts cannot call library voices over the API (HTTP 402) |
 | 5 | WAQI token | nothing | 2 min | no | **done** — found a 1,727 km bug |

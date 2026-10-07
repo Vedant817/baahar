@@ -595,19 +595,27 @@ An early `_strip_to_words` truncated at an arbitrary index, so a 124-word answer
 became `... Head to Cub`. Now it cuts on a sentence boundary and only falls back
 to a hard word cut if that would discard more than half the budget.
 
-### 7. I invented an API endpoint
+### 7. I invented an API endpoint, and then I couldn't find the real one
 
-Tinker's documentation was unreachable from the build environment, and
-`brief.py` contained `https://api.tinker.ai/v1/sampling/generate` — a URL I had
-guessed and never called.
+`brief.py` contained `https://api.tinker.ai/v1/sampling/generate` - a URL I had
+guessed and never called. Shipping it would have been worse than shipping
+nothing: it would 404 in front of a judge, make the repo *look* as though it had
+a Tinker integration that had never run, and contradict the honesty rule
+governing every other number in this document. It is now an empty configuration
+value that refuses loudly.
 
-Shipping it would have been worse than shipping nothing: it would 404 in front of
-a judge, make the repo *look* as though it had a Tinker integration that had
-never run, and contradict the honesty rule governing every other number in this
-document. It is now an empty configuration value that refuses loudly.
+That part was right. The part I got wrong was the conclusion I drew from it: I
+recorded "Tinker's documentation is unreachable" in five documents, having tested
+`tinker.ai`. `tinker.ai` is a parked domain. The service is
+`tinker.thinkingmachines.dev`, and its documented endpoint answers HTTP 200 for
+this key. So the rule against inventing APIs kept a fabricated integration out of
+the repo, and then had the second-order effect of freezing the work while I
+treated a wrong hostname as a finding.
 
-**This cost the Tinker prize category, and it was the right trade.** See
-[`../docs/adr/001-tinker-outcome.md`](../docs/adr/001-tinker-outcome.md).
+Once I checked the real host, running it found a genuine data defect - 29 of 219
+training examples whose label contradicted their own briefing text - and the
+re-run then hit HTTP 402 because the credits were spent. The category is not
+claimed. See [`../docs/adr/001-tinker-outcome.md`](../docs/adr/001-tinker-outcome.md).
 
 ### 9. The rubric was scoring the decision label, not the writing
 
@@ -837,7 +845,7 @@ Stated so the gaps are visible rather than inferred.
 | Air-quality-driven SKIP safety | Every SKIP in the holdout was rain or heat. `skip_as_go_rate` does not test polluted-day safety. |
 | Whether TabPFN beats gradient boosting | Measured across five seeds on the adopted 28 lag features: TabPFN leads gradient boosting in accuracy (0.8708 +/- 0.0023 vs 0.8567 +/- 0.0000). Gradient boosting's macro-F1 jumps to 0.6906 +/- 0.0000 due to a single correctly classified row in the n=3 poor class (see § A), while on the 3 well-supported bands the consensus ensemble leads TabPFN (0.8249 vs 0.8236), leads on 4-band macro-F1 (0.6349 +/- 0.0368 vs 0.6193 +/- 0.0020), and leads on moderate recall (0.6620 vs 0.5845). Paired significance testing shows top models are statistically indistinguishable in holdout accuracy (p=0.25). |
 | TabPFN's behaviour on the bands that matter | `severe` / `hazardous` / `poor` are unvalidated for TabPFN too, for the same reason as every other model here. |
-| Fine-tuned vs baseline briefings | Tinker API unverifiable; endpoint deliberately not invented. |
+| Fine-tuned vs baseline briefings | Measured, at smoke scale and on a CPU. Tinker ran for real before its balance ran out (HTTP 402), which is what surfaced a dataset defect: 29 of 219 examples carried a label contradicting their own briefing text, because labels came from the band-only policy and text from the full policy, which disagree on 45% of the corpus. Fixed, with offline tests. The local re-run is limited to a subset so a CPU run does not make the machine unusable; `scripts/fine_tune_modal.py` runs it in full on a GPU. |
 | Field test | Not performed. No human has walked with Baahar. Not fabricated. |
 | Independent temporal validation | Five-seed variability on one holdout is now measured; variation across independent holdout periods is not. Feature selection used this same holdout. |
 | Rubric discrimination | Scores run 8.92–10.00 across 72 briefings. The rubric catches a broken briefing and does almost nothing to rank good ones. |

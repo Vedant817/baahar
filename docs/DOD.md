@@ -85,7 +85,7 @@ Only categories for tech that **actually ran**, per the challenge rule.
 |---|---|---|
 | **Gemma** | **Yes** | `gemma-4-31b-it` generated and evaluated briefings. Open-weight model at the core of the product. |
 | **TabPFN** | **Yes** | `tabpfn==9.1.0` ran on the real chronological holdout (1,626 rows) on 28 features (13 base + 15 past-hour lags) across 5 seeds: **0.8708 +/- 0.0023 acc / 0.6193 +/- 0.0020 macro-F1** (4 supported bands). Genuine evaluation, no longer provisional or SKIPPED; leads raw accuracy, though the shipped consensus ensemble wins macro-F1 (0.6349 vs 0.6193; 3 bands: 0.8249 vs 0.8236) and moderate recall (0.6620 vs 0.5845). Licence accepted by the human, token set in `.env`. [`eval/RESULTS.md`](../eval/RESULTS.md) § A. *(Earlier 13-feature run was 0.8542 / 0.6031; earlier provisional run on instantaneous NAQI was 0.8512 / 0.6040, not like-for-like).* |
-| **Tinker** | **No** | Dataset built (219 examples), run not performed. Do not claim. |
+| **Tinker** | **No** | API verified reachable and a LoRA run performed; balance then exhausted (HTTP 402) and recharging needs a card. Run happened, category still not claimable. See ADR 001. |
 | **Render** | **No** | Not deployed. |
 | **ElevenLabs** | **No** | Client implemented, never called. Do not claim. |
 | **Overall / completion** | Yes | The submission is a new, working, open-source project. |
