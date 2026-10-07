@@ -319,7 +319,7 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 
 - Everything that needs no key: the whole product, the web UI, Pocket Mode, the
   journal (including the species sighting question), the CLI, the seasonal species
-  cues, and 467 offline tests.
+  cues, and 482 offline tests.
 - **TabPFN ran for real once.** On 2026-10-06 the licence was accepted and it
   scored `0.8512` acc / `0.6040` macro-F1 on the chronological holdout. That run
   predates the conservative-NAQI fix and was not re-fitted, and the current run

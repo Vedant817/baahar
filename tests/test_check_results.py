@@ -1,8 +1,10 @@
-"""Regression suite for omitted or mistranscribed seed variability.
+"""
+Regression suite for omitted or mistranscribed seed variability.
 
-Run explicitly: uv run pytest scripts/test_check_results.py
-Kept separate from the default suite because the frozen submission documents
-quote its test count, and this task must not edit post.md or README.md.
+These guard the honesty gate itself rather than the model: that a mean published
+without a spread is rejected, that a published spread matches the artifact, and
+that the cells the gate used to skip silently are now checked. A gate that can
+be fooled is worse than no gate, so its own failure modes need tests too.
 """
 
 from __future__ import annotations
