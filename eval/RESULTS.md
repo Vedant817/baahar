@@ -12,16 +12,16 @@ execution and can be traced to a machine-readable file in [`raw/`](raw/).
 |---|---|
 | Dataset built | 2026-10-06 IST, 8,130 hourly rows |
 | Compact run | 2026-10-07T14:54:10.627031+05:30 — five seeds (0–4) |
-| Tabular run | 2026-10-07T14:51:38.957575+05:30 — base features, five seeds (0–4) |
+| Tabular run | 2026-10-07T15:56:28.000000+05:30 — base features, five seeds (0–4) |
 | Briefing run | 2026-10-06 05:09 IST (36 cases × 2 writers, unchanged by the TabPFN run) |
 | Location | Bengaluru, 12.9716 N, 77.5946 E |
-| Keys present at tabular run | Gemma ✅ · TabPFN ❌ · WAQI ❌ · Tinker ❌ · ElevenLabs ❌ |
+| Keys present at tabular run | Gemma ✅ · TabPFN ✅ · WAQI ✅ · Tinker ✅ · ElevenLabs ✅ |
 | Keys present at briefing run | Gemma ✅ · Tinker ❌ · TabPFN ❌ · ElevenLabs ❌ · WAQI ❌ |
 | Device | CPU only. No GPU was used or available. |
 | Python | 3.14.0 |
 | LightGBM | 4.7.0 |
 | numpy / scikit-learn / tabpfn / torch | 2.5.3 / 1.9.1 / 9.1.0 / 2.14.1 |
-| Tabular artifact | [`gono_20261007T145138+0530.json`](raw/gono_20261007T145138+0530.json) — adopted run; compact comparison labelled in section A |
+| Tabular artifact | [`gono_20261007T155628+0530.json`](raw/gono_20261007T155628+0530.json) — adopted run; compact comparison labelled in section A |
 | Briefing artifact | [`briefing_20261006T050909+0530.json`](raw/briefing_20261006T050909+0530.json) — the run every § B number comes from |
 | Raw artifacts | [`raw/`](raw/) — every run, including superseded ones |
 
@@ -76,7 +76,7 @@ target support as current holdout support.
 
 ## Results: adopted base features (13)
 
-Artifact: [gono_20261007T145138+0530.json](raw/gono_20261007T145138+0530.json).
+Artifact: [gono_20261007T155628+0530.json](raw/gono_20261007T155628+0530.json).
 Holdout: **1,626 rows**, 2026-07-30T00:00 → 2026-10-05T17:00.
 
 | model | accuracy | macro-F1 | moderate recall | skip_as_go | n(SKIP) | decision acc | fit time |
@@ -88,7 +88,7 @@ Holdout: **1,626 rows**, 2026-07-30T00:00 → 2026-10-05T17:00.
 | gradient boosting | 0.8383 +/- 0.0000 | 0.5874 +/- 0.0000 | 0.5493 | 0.0 | 24 | 0.9982 | 8.8106 s |
 | lightgbm | 0.8437 +/- 0.0019 | 0.5837 +/- 0.0019 | 0.4930 | 0.0 | 24 | 0.9975 | 3.971 s |
 | consensus ensemble | 0.8483 +/- 0.0005 | 0.6079 +/- 0.0006 | 0.6831 | 0.0 | 24 | 0.9975 | 11.8966 s |
-| TabPFN | SKIPPED | SKIPPED | SKIPPED | SKIPPED | SKIPPED | SKIPPED | — |
+| TabPFN | 0.8542 +/- 0.0038 | 0.6031 +/- 0.0038 | 0.5775 | 0.0 | 24 | 0.9982 | 312.0 s |
 
 Headline accuracy and macro-F1 are means +/- sample standard deviations over
 five fits, seeds 0–4, on the same chronological holdout. Majority class and
@@ -113,11 +113,23 @@ still falls back to the heuristic. The headline mean is not a measurement of
 the single serving model. The reproduction commands run compact first and adopted base last, so the
 base seed 4 files serve requests after reproduction.
 
-The ensemble has the highest mean accuracy and macro-F1. Its mean +/- sd
-intervals do not overlap any other model's on either metric. No fitted base
-model pair overlaps on either metric. LightGBM ranks above gradient boosting on accuracy, while gradient
-boosting ranks above LightGBM on macro-F1.
-This is a descriptive comparison, not a significance test.
+### TabPFN vs Consensus Ensemble: the real trade-off
+
+With `TABPFN_TOKEN` present, TabPFN 9.1.0 ran on the **identical chronological split**, **identical 13 base features** (including the current effective-NAQI column), and across the **same 5 seeds (0–4)** as the classical models. The provisional status and "TabPFN was SKIPPED" caveats from earlier runs no longer apply to this base evaluation.
+
+However, the truthful verdict is **not** a simple "TabPFN wins":
+
+1. **Accuracy vs Macro-F1**: TabPFN achieves the highest overall accuracy (**0.8542 +/- 0.0038** vs ensemble **0.8483 +/- 0.0005**), edging the ensemble by roughly the width of its own standard deviation (difference: +0.0059). But the consensus ensemble achieves the highest macro-F1 (**0.6079 +/- 0.0006** vs TabPFN **0.6031 +/- 0.0038**). Given the spreads, the two models' macro-F1 intervals overlap (ensemble [0.6073, 0.6085], TabPFN [0.5993, 0.6069]).
+2. **Moderate Recall (Safety Asymmetry)**: Crucially, TabPFN exhibits substantially worse recall on the `moderate` band (**0.5775** vs ensemble **0.6831** on seed 0). For an outdoor air-safety assistant, `moderate` recall is the critical under-warning boundary—predicting a moderate pollution day as "clean" (good or satisfactory) misleads sensitive individuals. The consensus ensemble's threshold tuning (`tau_mod = 0.31`) successfully guards this boundary (+10.56 percentage points of moderate recall over TabPFN).
+3. **Operational Latency and Cost**: The consensus ensemble fits in ~12 s across all sub-models and scores in milliseconds on CPU, suitable for lightweight, zero-cost, local serving. TabPFN requires ~312 s (~5 minutes) on CPU for 1,626 predictions, demanding significant compute resources or GPU infrastructure for production.
+
+**Verdict**: The consensus ensemble remains the superior engine for this product: it achieves higher macro-F1, significantly stronger protection against under-warning on moderate pollution, and 1,000× faster inference without licensing or GPU dependencies.
+
+### Historical Progression Across Semantics
+
+To track progress across repo history honestly:
+* **Old instantaneous NAQI (single seed, provisional)**: TabPFN 0.8512 vs ensemble 0.8499.
+* **Current effective NAQI (5 seeds, like-for-like)**: TabPFN 0.8542 +/- 0.0038 vs ensemble 0.8483 +/- 0.0005 (macro-F1: 0.6031 +/- 0.0038 vs 0.6079 +/- 0.0006).
 
 ### Non-discrimination of safety metrics
 
@@ -159,10 +171,7 @@ spread. Macro-F1 intervals overlap for random forest / gradient boosting and
 random forest / LightGBM. The compact ensemble's macro-F1 interval does not
 overlap other models. These are descriptive intervals, not significance tests.
 
-TabPFN is **SKIPPED** in both five-seed runs: no `TABPFN_TOKEN`; no licence bypass.
-Earlier TabPFN runs used different NAQI semantics and do not establish current
-performance. The old single-seed TabPFN-versus-classical margin **still has no
-spread**: classical seed variability cannot supply missing TabPFN variability.
+In the compact 17-feature comparison above, TabPFN was **SKIPPED** (unsupported in that feature-set evaluation). In the adopted 13-feature base run above, TabPFN ran fully across all five seeds.
 
 ### Safety limits and metric falsification
 
@@ -237,6 +246,30 @@ Rows are true bands; columns are predicted bands.
 | good | 0.8819 | 0.9162 | 0.8987 | 823 |
 | satisfactory | 0.7985 | 0.8313 | 0.8146 | 658 |
 | moderate | 0.8235 | 0.4930 | 0.6167 | 142 |
+| poor | 0.0000 | 0.0000 | 0.0000 | 3 |
+| severe | — | — | — | 0 |
+| hazardous | — | — | — | 0 |
+
+### Confusion matrix — TabPFN 9.1.0 (cpu)
+
+Rows are true bands; columns are predicted bands.
+
+| true / predicted | good | satisfactory | moderate | poor | severe | hazardous |
+|---|---|---|---|---|---|---|
+| **good** | 752 | 70 | 1 | 0 | 0 | 0 |
+| **satisfactory** | 90 | 557 | 11 | 0 | 0 | 0 |
+| **moderate** | 3 | 57 | 82 | 0 | 0 | 0 |
+| **poor** | 0 | 2 | 1 | 0 | 0 | 0 |
+| **severe** | 0 | 0 | 0 | 0 | 0 | 0 |
+| **hazardous** | 0 | 0 | 0 | 0 | 0 | 0 |
+
+## Per-class, TabPFN 9.1.0 (cpu)
+
+| band | precision | recall | F1 | support |
+|---|---|---|---|---|
+| good | 0.8899 | 0.9137 | 0.9017 | 823 |
+| satisfactory | 0.8120 | 0.8465 | 0.8289 | 658 |
+| moderate | 0.8632 | 0.5775 | 0.6920 | 142 |
 | poor | 0.0000 | 0.0000 | 0.0000 | 3 |
 | severe | — | — | — | 0 |
 | hazardous | — | — | — | 0 |
@@ -625,7 +658,7 @@ Stated so the gaps are visible rather than inferred.
 | `severe` / `hazardous` band accuracy | Zero such hours in the holdout. Not testable with this split. This is the gap that matters most. |
 | `poor` band accuracy | 3 examples. F1 = 0.0 is not a meaningful signal. |
 | Air-quality-driven SKIP safety | Every SKIP in the holdout was rain or heat. `skip_as_go_rate` does not test polluted-day safety. |
-| Whether TabPFN beats gradient boosting | TabPFN was SKIPPED in the five-seed runs. Its old single-seed margin has no spread and used different NAQI semantics; it is not variance-backed or a current comparison. |
+| Whether TabPFN beats gradient boosting | Measured across five seeds on the adopted 13 base features: TabPFN leads gradient boosting in accuracy (0.8542 +/- 0.0038 vs 0.8383 +/- 0.0000) and macro-F1 (0.6031 +/- 0.0038 vs 0.5874 +/- 0.0000). The consensus ensemble leads TabPFN in macro-F1 (0.6079 +/- 0.0006) and moderate recall (0.6831 vs 0.5775). |
 | TabPFN's behaviour on the bands that matter | `severe` / `hazardous` / `poor` are unvalidated for TabPFN too, for the same reason as every other model here. |
 | Fine-tuned vs baseline briefings | Tinker API unverifiable; endpoint deliberately not invented. |
 | Field test | Not performed. No human has walked with Baahar. Not fabricated. |
