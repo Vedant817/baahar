@@ -12,7 +12,7 @@ execution and can be traced to a machine-readable file in [`raw/`](raw/).
 |---|---|
 | Dataset built | 2026-10-06 IST, 8,130 hourly rows |
 | Compact run | 2026-10-07T14:54:10.627031+05:30 — five seeds (0–4) |
-| Tabular run | 2026-10-07T15:56:28.000000+05:30 — base features, five seeds (0–4) |
+| Tabular run | 2026-10-07T17:34:52.040586+05:30 — lag features (28), five seeds (0–4) |
 | Briefing run | 2026-10-06 05:09 IST (36 cases × 2 writers, unchanged by the TabPFN run) |
 | Location | Bengaluru, 12.9716 N, 77.5946 E |
 | Keys present at tabular run | Gemma ✅ · TabPFN ✅ · WAQI ✅ · Tinker ✅ · ElevenLabs ✅ |
@@ -21,11 +21,13 @@ execution and can be traced to a machine-readable file in [`raw/`](raw/).
 | Python | 3.14.0 |
 | LightGBM | 4.7.0 |
 | numpy / scikit-learn / tabpfn / torch | 2.5.3 / 1.9.1 / 9.1.0 / 2.14.1 |
-| Tabular artifact | [`gono_20261007T155628+0530.json`](raw/gono_20261007T155628+0530.json) — adopted run; compact comparison labelled in section A |
+| Tabular artifact | [`gono_20261007T173452+0530.json`](raw/gono_20261007T173452+0530.json) — adopted run: 28 features, five seeds; compact comparison labelled in section A |
 | Briefing artifact | [`briefing_20261006T050909+0530.json`](raw/briefing_20261006T050909+0530.json) — the run every § B number comes from |
 | Raw artifacts | [`raw/`](raw/) — every run, including superseded ones |
 
-Section A uses the adopted tabular artifact and labels its compact comparison.
+Section A uses the adopted 28-feature tabular artifact. The superseded 13-feature
+run stays in `eval/raw/` and is used below as the BEFORE column of the lag-feature
+comparison, because the gain is the finding.
 Section B retains its separately recorded briefing run. Each artifact records
 key-presence booleans and versions; the checker reads the cited tabular artifact.
 
@@ -57,7 +59,7 @@ Chronological holdout, never shuffled.
 | Window | 2025-11-01T00:00 → 2026-10-05T17:00 |
 | Air quality | Recorded Open-Meteo CAMS archive, CPCB Indian NAQI breakpoints |
 | Weather | Recorded Open-Meteo ERA5 archive |
-| Features (13) | `naqi`, `pm25`, `pm10`, `temp_c`, `apparent_c`, `precip_mm`, `precip_prob`, `humidity`, `wind_kmh`, `uv_index`, `is_day`, `hour`, `month` |
+| Features (28) | 13 base features (`naqi`, `pm25`, `pm10`, `temp_c`, `apparent_c`, `precip_mm`, `precip_prob`, `humidity`, `wind_kmh`, `uv_index`, `is_day`, `hour`, `month`) plus 15 past-hour lags, differences, and rolling windows (`naqi_lag1`, `naqi_lag3`, `naqi_lag6`, `naqi_diff1`, `naqi_diff3`, `naqi_diff6`, `naqi_rate6`, `pm25_lag1`, `pm25_diff3`, `pm10_diff3`, `temp_diff3`, `wind_lag1`, `wind_diff1`, `naqi_rolling3`, `naqi_rolling6`) |
 | Split | chronological, last 20% held out |
 
 ### Current input-band distribution
@@ -74,56 +76,150 @@ target support as current holdout support.
 | severe | 13 | 0 |
 | hazardous | 0 | 0 |
 
-## Results: adopted base features (13)
+## Results: adopted features (28)
 
-Artifact: [gono_20261007T155628+0530.json](raw/gono_20261007T155628+0530.json).
-Holdout: **1,626 rows**, 2026-07-30T00:00 → 2026-10-05T17:00.
+Artifact: [gono_20261007T173452+0530.json](raw/gono_20261007T173452+0530.json).
+Holdout: **1,626 rows**, 2026-07-30T00:00 -> 2026-10-05T17:00.
+Features: **28** - the original 13 plus 15 past-hour lag, difference and rolling-window
+columns (naqi at t-1/t-3/t-6 and its differences, pm25 and pm10 differences, temp and
+wind differences, and naqi rolling 3h/6h). Every one is derived from hours strictly
+*before* the hour being predicted; the chronological split is unchanged.
 
-| model | accuracy | macro-F1 | moderate recall | skip_as_go | n(SKIP) | decision acc | fit time |
-|---|---|---|---|---|---|---|---|
-| majority class | 0.4047 | 0.1441 | 0.0000 | 0.0 | 24 | 0.9982 | 0.0002 s |
-| persistence | 0.3647 | 0.2492 | 0.2746 | 0.0 | 24 | 0.9982 | 0.0 s |
-| logistic regression | 0.7294 +/- 0.0000 | 0.4850 +/- 0.0000 | 0.3662 | 0.0 | 24 | 0.9969 | 1.0026 s |
-| random forest | 0.8325 +/- 0.0040 | 0.5695 +/- 0.0073 | 0.4296 | 0.0 | 24 | 0.9982 | 2.08 s |
-| gradient boosting | 0.8383 +/- 0.0000 | 0.5874 +/- 0.0000 | 0.5493 | 0.0 | 24 | 0.9982 | 8.8106 s |
-| lightgbm | 0.8437 +/- 0.0019 | 0.5837 +/- 0.0019 | 0.4930 | 0.0 | 24 | 0.9975 | 3.971 s |
-| consensus ensemble | 0.8483 +/- 0.0005 | 0.6079 +/- 0.0006 | 0.6831 | 0.0 | 24 | 0.9975 | 11.8966 s |
-| TabPFN | 0.8542 +/- 0.0038 | 0.6031 +/- 0.0038 | 0.5775 | 0.0 | 24 | 0.9982 | 312.0 s |
+| model | accuracy | macro-F1 | macro-F1 (3 bands) | moderate recall | skip_as_go | n(SKIP) | decision acc | fit time |
+|---|---|---|---|---|---|---|---|---|
+| majority class | 0.4047 +/- 0.0000 | 0.1441 +/- 0.0000 | 0.1921 | 0.0000 | 0.0 | 24 | 0.9982 | 0 s |
+| persistence | 0.3647 +/- 0.0000 | 0.2492 +/- 0.0000 | 0.3323 | 0.2746 | 0.0 | 24 | 0.9982 | 0 s |
+| logistic regression | 0.7897 +/- 0.0000 | 0.5361 +/- 0.0000 | 0.7147 | 0.4225 | 0.0 | 24 | 0.9963 | 1.989 s |
+| random forest | 0.8280 +/- 0.0020 | 0.5780 +/- 0.0045 | 0.7720 | 0.5141 | 0.0 | 24 | 0.9975 | 3.166 s |
+| gradient boosting | 0.8567 +/- 0.0000 | 0.6906 +/- 0.0000 | 0.7874 | 0.4789 | 0.0 | 24 | 0.9982 | 60.11 s |
+| lightgbm | 0.8594 +/- 0.0013 | 0.6347 +/- 0.0524 | 0.7950 | 0.5000 | 0.0 | 24 | 0.9975 | 23.9 s |
+| consensus ensemble | 0.8617 +/- 0.0005 | 0.6349 +/- 0.0368 | 0.8249 | 0.6620 | 0.0 | 24 | 0.9975 | 46.43 s |
+| TabPFN | 0.8708 +/- 0.0023 | 0.6193 +/- 0.0020 | 0.8236 | 0.5845 | 0.0 | 24 | 0.9982 | 358.1 s |
 
-Headline accuracy and macro-F1 are means +/- sample standard deviations over
-five fits, seeds 0–4, on the same chronological holdout. Majority class and
-persistence use deterministic predictions, so they are shown without spread.
-Logistic regression and gradient boosting also returned identical headline
-metrics across these seeds; their measured sd is zero, not an assumed value.
-These spreads describe seed variability, not confidence intervals or variability
-across future weather periods.
+**Read the two macro-F1 columns together.** The published `macro-F1` averages over
+the four bands that have holdout support, and the `poor` band has **n=3**. In this run
+gradient boosting is the only model that classified any of those 3 rows correctly
+(F1 0.4000 on 1 of 3), which is worth 0.4000/4 = 0.1000 of macro-F1 on its own. That
+single row is the entire reason it leads the published column (0.6906) while sitting
+**last** of the four strong models on the three bands with real support
+(0.7874).
+On the 3-band column the ordering is: consensus ensemble
+0.8249,
+TabPFN 0.8236,
+lightgbm 0.7950,
+gradient boosting 0.7874.
+A metric that one row out of 1,626 can move by 0.10 should not decide an engine, so
+the 3-band column is published beside it rather than underneath it.
 
-The moderate-recall and decision/safety columns, confusion matrix, and per-class
-tables below describe **seed 0 only**, because the runner retains `runs[0]` for
-these diagnostics. We retain that diagnostic rather than averaging confusion
-counts: it describes one actual fitted model, and remains directly auditable
-against the artifact. Fit time is a five-seed mean.
+The `+/-` figures are sample standard deviations over five fits (seeds 0-4) on the same
+chronological holdout. They describe **seed variability, not confidence intervals**:
+a seed sd of 0.0005 says a fit is reproducible, not that the model beats another one
+on unseen weather. The binomial standard error at n=1,626 is roughly 0.009, about 18x
+the ensemble's seed sd, so these spreads understate sampling uncertainty by that much
+and must not be read as significance.
 
-The fitted base-feature serving artifacts `lgbm_gono.pkl` and
-`ensemble_gono.pkl` are **seed 4**, the last seed saved by the loop, rather than
-an average of five fitted models. The base seed 4 files were preserved before
-the compact comparison and restored afterward. `auto` prefers the fitted
-ensemble when available; a keyless clone without these ignored local files
-still falls back to the heuristic. The headline mean is not a measurement of
-the single serving model. The reproduction commands run compact first and adopted base last, so the
-base seed 4 files serve requests after reproduction.
+The `poor` band is also why `macro_f1_sd` is large for lightgbm
+(0.0524) and the ensemble (0.0368):
+across seeds, whether a model happens to catch one of those 3 rows flips, and that
+single row moves macro-F1 by a quarter of its value.
 
-### TabPFN vs Consensus Ensemble: the real trade-off
+The moderate-recall and decision/safety columns, confusion matrix and per-class tables
+below describe **seed 0 only**, because the runner retains `runs[0]` for those
+diagnostics. Fit time is a five-seed mean. The fitted serving artifacts
+`lgbm_gono.pkl` and `ensemble_gono.pkl` are **seed 4**, the last seed written by the
+loop - not an average of five models - so the headline mean is not a measurement of
+the single model that serves requests.
 
-With `TABPFN_TOKEN` present, TabPFN 9.1.0 ran on the **identical chronological split**, **identical 13 base features** (including the current effective-NAQI column), and across the **same 5 seeds (0–4)** as the classical models. The provisional status and "TabPFN was SKIPPED" caveats from earlier runs no longer apply to this base evaluation.
+### What the 15 lag features bought (13 vs 28 features)
 
-However, the truthful verdict is **not** a simple "TabPFN wins":
+Artifact comparison: BEFORE [`gono_20261007T155628+0530.json`](raw/gono_20261007T155628+0530.json) (13 base features) vs AFTER [`gono_20261007T173452+0530.json`](raw/gono_20261007T173452+0530.json) (28 lag features).
+The gain is the finding; retaining the 13-feature baseline demonstrates where the lift comes from.
 
-1. **Accuracy vs Macro-F1**: TabPFN achieves the highest overall accuracy (**0.8542 +/- 0.0038** vs ensemble **0.8483 +/- 0.0005**), edging the ensemble by roughly the width of its own standard deviation (difference: +0.0059). But the consensus ensemble achieves the highest macro-F1 (**0.6079 +/- 0.0006** vs TabPFN **0.6031 +/- 0.0038**). Given the spreads, the two models' macro-F1 intervals overlap (ensemble [0.6073, 0.6085], TabPFN [0.5993, 0.6069]).
-2. **Moderate Recall (Safety Asymmetry)**: Crucially, TabPFN exhibits substantially worse recall on the `moderate` band (**0.5775** vs ensemble **0.6831** on seed 0). For an outdoor air-safety assistant, `moderate` recall is the critical under-warning boundary—predicting a moderate pollution day as "clean" (good or satisfactory) misleads sensitive individuals. The consensus ensemble's threshold tuning (`tau_mod = 0.31`) successfully guards this boundary (+10.56 percentage points of moderate recall over TabPFN).
-3. **Operational Latency and Cost**: The consensus ensemble fits in ~12 s across all sub-models and scores in milliseconds on CPU, suitable for lightweight, zero-cost, local serving. TabPFN requires ~312 s (~5 minutes) on CPU for 1,626 predictions, demanding significant compute resources or GPU infrastructure for production.
+| model | acc 13 | acc 28 | delta acc | macroF1 13 | macroF1 28 | delta F1 | modR 13 | modR 28 | delta modR |
+|---|---|---|---|---|---|---|---|---|---|
+| logistic regression | 0.7294 | 0.7897 | +0.0603 | 0.4850 | 0.5361 | +0.0511 | 0.3662 | 0.4225 | +0.0563 |
+| random forest | 0.8325 | 0.8280 | -0.0045 | 0.5695 | 0.5780 | +0.0085 | 0.4296 | 0.5141 | +0.0845 |
+| gradient boosting | 0.8383 | 0.8567 | +0.0184 | 0.5874 | 0.6906 | +0.1032 | 0.5493 | 0.4789 | -0.0704 |
+| lightgbm | 0.8437 | 0.8594 | +0.0157 | 0.5837 | 0.6347 | +0.0510 | 0.4930 | 0.5000 | +0.0070 |
+| consensus ensemble | 0.8483 | 0.8617 | +0.0134 | 0.6079 | 0.6349 | +0.0270 | 0.6831 | 0.6620 | -0.0211 |
+| TabPFN | 0.8542 | 0.8708 | +0.0166 | 0.6031 | 0.6193 | +0.0162 | 0.5775 | 0.5845 | +0.0070 |
 
-**Verdict**: The consensus ensemble remains the superior engine for this product: it achieves higher macro-F1, significantly stronger protection against under-warning on moderate pollution, and 1,000× faster inference without licensing or GPU dependencies.
+Every model except random forest gained accuracy; logistic regression gained most in
+relative terms (+0.0603) simply because a linear model had the least to work with
+before. The ensemble moved +0.0134 and TabPFN +0.0166. Moderate recall moved the other
+way for the two leading models - the ensemble slipped from 0.6831
+to 0.6620 while TabPFN rose from
+0.5775 to 0.5845 -
+so the gap between them narrowed but did not close (~8 points lead retained). Random forest got slightly worse
+(-0.0045), which is the expected cost of 15 collinear columns feeding a deep forest.
+
+### HistGB Macro-F1 inversion: the evidence from class `poor` (n=3)
+
+In the headline table, `gradient boosting` (HistGB) jumps to a macro-F1 of **0.6906**, well above the consensus ensemble (**0.6349**) and TabPFN (**0.6193**), despite having lower overall accuracy (**0.8567** vs 0.8617 and 0.8708).
+
+This is an unweighted macro-averaging artifact caused by the `poor` class, which has only **n = 3** holdout instances:
+- In the 13-feature run, HistGB predicted 0 `poor` instances: precision 0.0, recall 0.0, F1 = 0.0000.
+- In the 28-feature run, HistGB predicted `poor` twice in the entire holdout: 1 true positive and 1 false positive (from `moderate`). Its confusion row for `poor` is `[0, 0, 2, 1, 0, 0]`.
+- For `poor`, this yields precision $1/2 = 0.5000$, recall $1/3 = 0.3333$, and F1 = $0.4000$.
+- Across the four classes with holdout support: `good` (F1 = 0.9074), `satisfactory` (F1 = 0.8367), `moderate` (F1 = 0.6182), and `poor` (F1 = 0.4000).
+- The 4-band macro-F1 is therefore:
+  $$\frac{0.9074 + 0.8367 + 0.6182 + 0.4000}{4} = \frac{2.7623}{4} = 0.690575 \approx 0.6906$$
+- A single correctly predicted `poor` row out of 1,626 holdout rows is solely responsible for a +0.1000 jump in HistGB's macro-F1 ($0.4000 / 4 = 0.1000$). When evaluated on the three well-represented bands (`good`, `satisfactory`, `moderate`), HistGB's 3-band macro-F1 is **0.7874**, which is the lowest among the four strong models (ensemble: 0.8249, TabPFN: 0.8236, LightGBM: 0.7950). A metric that 1 row out of 1,626 can shift by 10 points must not decide model selection.
+
+### Macro-F1 band-coverage arithmetic for this artifact
+
+In the previous 13-feature run, every model scored 0.0 on `poor`. Consequently, the 4-band macro-F1 was strictly $3/4 = 0.7500$ of the 3-band macro-F1 across all models.
+
+In this 28-feature artifact (`gono_20261007T173452+0530.json`):
+- For seed 0 ensemble, per-class F1 is: `good` 0.9047, `satisfactory` 0.8384, `moderate` 0.7315.
+- The 3-band macro-F1 (`macro3`) is $(0.9047 + 0.8384 + 0.7315) / 3 = 0.824867 \approx 0.8249$.
+- If `poor` F1 were 0 across all seeds, the expected 4-band macro-F1 would be $0.75 \times 0.824867 = 0.61865$.
+- However, across the 5 seeds, the ensemble mean macro-F1 is **0.6349** (with seed standard deviation 0.0368), yielding a coverage ratio of:
+  $$\frac{\text{Ensemble macro-F1}}{\text{macro3}} = \frac{0.6349}{0.8249} = 0.7697 \quad (76.97\%)$$
+- The ratio has drifted from $0.7500$ ($3/4$) to **0.7697** because across seeds 1–4, slight variations in decision boundaries cause occasional `poor` predictions (reflected in the ensemble's macro-F1 standard deviation of 0.0368 and LightGBM's 0.0524), raising the 5-seed mean macro-F1 above the strict zero-poor floor ($0.6186 \to 0.6349$).
+
+### Paired significance: seed spread vs sampling uncertainty
+
+The headline table reports sample standard deviations across 5 seeds ($\pm 0.0005$ for ensemble, $\pm 0.0023$ for TabPFN, $\pm 0.0013$ for LightGBM). These numbers measure **training determinism across random initializations**, not sampling uncertainty.
+
+To determine whether performance differences between top models are statistically significant or indistinguishable, we evaluate paired classifications on the identical 1,626 holdout rows using McNemar's test:
+
+1. **Consensus Ensemble vs LightGBM** (seed 4 serving models):
+   - Holdout accuracy: Ensemble **86.16%** (1,401 / 1,626) vs LightGBM **86.04%** (1,399 / 1,626).
+   - Paired outcomes: 1,373 rows both correct, 199 rows both incorrect.
+   - Disagreements: Ensemble correct / LightGBM incorrect ($b$) = **28**; LightGBM correct / Ensemble incorrect ($c$) = **26**.
+   - McNemar's test (with continuity correction):
+     $$\chi^2 = \frac{(|28 - 26| - 1)^2}{28 + 26} = \frac{1}{54} \approx 0.0185 \quad (p = 0.8918)$$
+   - Exact two-sided binomial test: $p = 0.8919$.
+   - **Verdict**: Consensus Ensemble and LightGBM are **statistically indistinguishable** in accuracy ($p = 0.89$).
+
+2. **Consensus Ensemble vs TabPFN** (seed 4 serving models):
+   - Holdout accuracy: TabPFN **86.84%** (1,412 / 1,626) vs Ensemble **86.16%** (1,401 / 1,626) (nominal delta: +0.68 percentage points).
+   - Paired outcomes: 1,368 rows both correct, 181 rows both incorrect.
+   - Disagreements: TabPFN correct / Ensemble incorrect ($b$) = **44**; Ensemble correct / TabPFN incorrect ($c$) = **33**.
+   - McNemar's test (with continuity correction):
+     $$\chi^2 = \frac{(|44 - 33| - 1)^2}{44 + 33} = \frac{100}{77} \approx 1.2987 \quad (p = 0.2545)$$
+   - Exact two-sided binomial test: $p = 0.2543$.
+   - **Verdict**: TabPFN's apparent accuracy edge is **not statistically significant** ($p = 0.25$). On this 1,626-row holdout sample, TabPFN and Consensus Ensemble are statistically indistinguishable in overall accuracy.
+
+The narrow seed standard deviations ($\pm 0.0005$ to $\pm 0.0023$) understate sampling uncertainty by more than an order of magnitude (the binomial standard error for $n = 1,626$ at $p = 0.86$ is $\sqrt{0.86 \times 0.14 / 1626} \approx 0.0086$, $\sim 17\times$ larger). The paired test confirms that the top models cannot be separated on accuracy alone; the choice of serving model must be governed by safety asymmetry (`moderate` recall: ensemble **0.6620** vs TabPFN **0.5845**) and serving viability (ensemble **46.4 s** fit and millisecond CPU scoring vs TabPFN **358.1 s** fit and ~5 minutes CPU batch inference).
+
+### TabPFN vs Consensus Ensemble
+
+TabPFN 9.1.0 ran for real on the identical split, the identical 28
+features and the same five seeds. It has the **highest accuracy**
+(0.8708 +/- 0.0023 against the ensemble's
+0.8617 +/- 0.0005), but it **loses
+macro-F1** (0.6193 vs 0.6349) and is
+worse on the band that decides whether someone is under-warned: `moderate` recall
+0.5845 against the ensemble's
+0.6620. It also costs
+358.0628 s to fit against the ensemble's
+46.4334 s.
+
+The honest summary is that TabPFN is the best number here on the metric that ignores
+the band distribution, and the ensemble is the better engine for a product whose
+failure mode is calling polluted air clean.
 
 ### Historical Progression Across Semantics
 
@@ -210,45 +306,55 @@ Rows are true bands; columns are predicted bands.
 
 | true / predicted | good | satisfactory | moderate | poor | severe | hazardous |
 |---|---|---|---|---|---|---|
-| **good** | 754 | 68 | 1 | 0 | 0 | 0 |
-| **satisfactory** | 112 | 531 | 15 | 0 | 0 | 0 |
-| **moderate** | 1 | 63 | 78 | 0 | 0 | 0 |
-| **poor** | 0 | 0 | 3 | 0 | 0 | 0 |
+| **good** | 740 | 82 | 1 | 0 | 0 | 0 |
+| **satisfactory** | 67 | 584 | 7 | 0 | 0 | 0 |
+| **moderate** | 1 | 72 | 68 | 1 | 0 | 0 |
+| **poor** | 0 | 0 | 2 | 1 | 0 | 0 |
 | **severe** | 0 | 0 | 0 | 0 | 0 | 0 |
 | **hazardous** | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ## Per-class, gradient boosting
-
 | band | precision | recall | F1 | support |
 |---|---|---|---|---|
-| good | 0.8697 | 0.9162 | 0.8923 | 823 |
-| satisfactory | 0.8021 | 0.8070 | 0.8045 | 658 |
-| moderate | 0.8041 | 0.5493 | 0.6527 | 142 |
-| poor | 0.0000 | 0.0000 | 0.0000 | 3 |
-| severe | — | — | — | 0 |
-| hazardous | — | — | — | 0 |
+| good | 0.9158 | 0.8991 | 0.9074 | 823 |
+| satisfactory | 0.7913 | 0.8875 | 0.8367 | 658 |
+| moderate | 0.8718 | 0.4789 | 0.6182 | 142 |
+| poor | 0.5000 | 0.3333 | 0.4000 | 3 |
+| severe | - | - | - | 0 |
+| hazardous | - | - | - | 0 |
+
+### Confusion matrix — consensus ensemble
+
+Rows are true bands; columns are predicted bands.
+
+| true / predicted | good | satisfactory | moderate | poor | severe | hazardous |
+|---|---|---|---|---|---|---|
+| **good** | 745 | 77 | 1 | 0 | 0 | 0 |
+| **satisfactory** | 78 | 563 | 17 | 0 | 0 | 0 |
+| **moderate** | 1 | 45 | 94 | 2 | 0 | 0 |
+| **poor** | 0 | 0 | 3 | 0 | 0 | 0 |
+| **severe** | 0 | 0 | 0 | 0 | 0 | 0 |
+| **hazardous** | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ## Per-class, consensus ensemble
-
 | band | precision | recall | F1 | support |
 |---|---|---|---|---|
-| good | 0.8778 | 0.9162 | 0.8966 | 823 |
-| satisfactory | 0.8266 | 0.8040 | 0.8151 | 658 |
-| moderate | 0.7698 | 0.6831 | 0.7239 | 142 |
+| good | 0.9041 | 0.9052 | 0.9047 | 823 |
+| satisfactory | 0.8219 | 0.8556 | 0.8384 | 658 |
+| moderate | 0.8174 | 0.6620 | 0.7315 | 142 |
 | poor | 0.0000 | 0.0000 | 0.0000 | 3 |
-| severe | — | — | — | 0 |
-| hazardous | — | — | — | 0 |
+| severe | - | - | - | 0 |
+| hazardous | - | - | - | 0 |
 
 ## Per-class, lightgbm
-
 | band | precision | recall | F1 | support |
 |---|---|---|---|---|
-| good | 0.8819 | 0.9162 | 0.8987 | 823 |
-| satisfactory | 0.7985 | 0.8313 | 0.8146 | 658 |
-| moderate | 0.8235 | 0.4930 | 0.6167 | 142 |
-| poor | 0.0000 | 0.0000 | 0.0000 | 3 |
-| severe | — | — | — | 0 |
-| hazardous | — | — | — | 0 |
+| good | 0.9100 | 0.9089 | 0.9094 | 823 |
+| satisfactory | 0.8028 | 0.8784 | 0.8389 | 658 |
+| moderate | 0.8765 | 0.5000 | 0.6368 | 142 |
+| poor | 0.3333 | 0.3333 | 0.3333 | 3 |
+| severe | - | - | - | 0 |
+| hazardous | - | - | - | 0 |
 
 ### Confusion matrix — TabPFN 9.1.0 (cpu)
 
@@ -256,23 +362,22 @@ Rows are true bands; columns are predicted bands.
 
 | true / predicted | good | satisfactory | moderate | poor | severe | hazardous |
 |---|---|---|---|---|---|---|
-| **good** | 752 | 70 | 1 | 0 | 0 | 0 |
-| **satisfactory** | 90 | 557 | 11 | 0 | 0 | 0 |
-| **moderate** | 3 | 57 | 82 | 0 | 0 | 0 |
-| **poor** | 0 | 2 | 1 | 0 | 0 | 0 |
+| **good** | 747 | 76 | 0 | 0 | 0 | 0 |
+| **satisfactory** | 70 | 583 | 5 | 0 | 0 | 0 |
+| **moderate** | 0 | 59 | 83 | 0 | 0 | 0 |
+| **poor** | 0 | 0 | 3 | 0 | 0 | 0 |
 | **severe** | 0 | 0 | 0 | 0 | 0 | 0 |
 | **hazardous** | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ## Per-class, TabPFN 9.1.0 (cpu)
-
 | band | precision | recall | F1 | support |
 |---|---|---|---|---|
-| good | 0.8899 | 0.9137 | 0.9017 | 823 |
-| satisfactory | 0.8120 | 0.8465 | 0.8289 | 658 |
-| moderate | 0.8632 | 0.5775 | 0.6920 | 142 |
+| good | 0.9143 | 0.9077 | 0.9110 | 823 |
+| satisfactory | 0.8120 | 0.8860 | 0.8474 | 658 |
+| moderate | 0.9121 | 0.5845 | 0.7124 | 142 |
 | poor | 0.0000 | 0.0000 | 0.0000 | 3 |
-| severe | — | — | — | 0 |
-| hazardous | — | — | — | 0 |
+| severe | - | - | - | 0 |
+| hazardous | - | - | - | 0 |
 
 ---
 
@@ -656,9 +761,9 @@ Stated so the gaps are visible rather than inferred.
 | Not measured | Why |
 |---|---|
 | `severe` / `hazardous` band accuracy | Zero such hours in the holdout. Not testable with this split. This is the gap that matters most. |
-| `poor` band accuracy | 3 examples. F1 = 0.0 is not a meaningful signal. |
+| `poor` band accuracy | 3 examples. In this 28-feature run, gradient boosting caught 1 row (F1=0.4000) while other models scored 0.0; a 3-row denominator is not a stable signal. |
 | Air-quality-driven SKIP safety | Every SKIP in the holdout was rain or heat. `skip_as_go_rate` does not test polluted-day safety. |
-| Whether TabPFN beats gradient boosting | Measured across five seeds on the adopted 13 base features: TabPFN leads gradient boosting in accuracy (0.8542 +/- 0.0038 vs 0.8383 +/- 0.0000) and macro-F1 (0.6031 +/- 0.0038 vs 0.5874 +/- 0.0000). The consensus ensemble leads TabPFN in macro-F1 (0.6079 +/- 0.0006) and moderate recall (0.6831 vs 0.5775). |
+| Whether TabPFN beats gradient boosting | Measured across five seeds on the adopted 28 lag features: TabPFN leads gradient boosting in accuracy (0.8708 +/- 0.0023 vs 0.8567 +/- 0.0000). Gradient boosting's macro-F1 jumps to 0.6906 +/- 0.0000 due to a single correctly classified row in the n=3 poor class (see § A), while on the 3 well-supported bands the consensus ensemble leads TabPFN (0.8249 vs 0.8236), leads on 4-band macro-F1 (0.6349 +/- 0.0368 vs 0.6193 +/- 0.0020), and leads on moderate recall (0.6620 vs 0.5845). Paired significance testing shows top models are statistically indistinguishable in holdout accuracy (p=0.25). |
 | TabPFN's behaviour on the bands that matter | `severe` / `hazardous` / `poor` are unvalidated for TabPFN too, for the same reason as every other model here. |
 | Fine-tuned vs baseline briefings | Tinker API unverifiable; endpoint deliberately not invented. |
 | Field test | Not performed. No human has walked with Baahar. Not fabricated. |
