@@ -271,9 +271,18 @@ failure mode is calling polluted air clean.
 
 ### Historical Progression Across Semantics
 
-To track progress across repo history honestly:
-* **Old instantaneous NAQI (single seed, provisional)**: TabPFN 0.8512 vs ensemble 0.8499.
-* **Current effective NAQI (5 seeds, like-for-like)**: TabPFN 0.8542 +/- 0.0038 vs ensemble 0.8483 +/- 0.0005 (macro-F1: 0.6031 +/- 0.0038 vs 0.6079 +/- 0.0006).
+Three distinct measurements, each on the effective-NAQI pipeline unless noted. They are **not**
+like-for-like with each other and must not be read as a trend line:
+* **Instantaneous NAQI, single seed, provisional** (pre conservative-NAQI fix): TabPFN 0.8512 vs
+  ensemble 0.8499. Measured on features the product no longer uses; recorded for history only.
+* **13 base features, 5 seeds** (the previous adopted run): TabPFN 0.8542 +/- 0.0038 vs ensemble
+  0.8483 +/- 0.0005 (macro-F1 0.6031 +/- 0.0038 vs 0.6079 +/- 0.0006).
+* **28 features (13 base + 15 lag), 5 seeds** - the adopted run in section A: TabPFN 0.8708 +/- 0.0023
+  vs ensemble 0.8617 +/- 0.0005 (macro-F1 0.6193 +/- 0.0020 vs 0.6349 +/- 0.0368).
+
+TabPFN led accuracy in all three, but the ensemble led macro-F1 in the last two and leads
+`moderate` recall in all of them - which is the reason it ships. See section A and the paired test
+above for the comparisons that hold up under scrutiny.
 
 ### Non-discrimination of safety metrics
 
@@ -300,11 +309,12 @@ Derived columns use `baahar.features.compact_features_from_row` in eval and serv
 
 The compact seed 0 moderate-recall result reproduces officially:
 78.17%. This diagnostic is not a five-seed mean.
-We retain 13 features: ensemble accuracy 0.8483 +/- 0.0005 versus
-0.8188 +/- 0.0008, and macro-F1 0.6079 +/- 0.0006
+Against the 13-feature base run that preceded it: ensemble accuracy 0.8483 +/- 0.0005
+versus 0.8188 +/- 0.0008, and macro-F1 0.6079 +/- 0.0006
 versus 0.5944 +/- 0.0011. Neither metric's mean +/- sd intervals overlap
 between the base and compact ensemble. Compact seed 0 moderate recall
-(0.7817 versus 0.6831) remains higher.
+(0.7817 versus 0.6831) remains higher. Compact was **not** adopted: the 28-feature run in section A
+beat both, and it is the shipped configuration.
 Selection used this holdout; the five-seed comparison is not independent
 validation of the feature choice.
 
@@ -315,7 +325,7 @@ spread. Macro-F1 intervals overlap for random forest / gradient boosting and
 random forest / LightGBM. The compact ensemble's macro-F1 interval does not
 overlap other models. These are descriptive intervals, not significance tests.
 
-In the compact 17-feature comparison above, TabPFN was **SKIPPED** (unsupported in that feature-set evaluation). In the adopted 13-feature base run above, TabPFN ran fully across all five seeds.
+In the compact 17-feature comparison above, TabPFN was **SKIPPED** (unsupported in that feature-set evaluation). In the adopted 28-feature run in section A, TabPFN ran fully across all five seeds and was measured again under the paired test.
 
 ### Safety limits and metric falsification
 

@@ -514,6 +514,62 @@ def check_briefings(md: str, raw_path: Path | None, out: Problem) -> None:
         out.add(f"briefings: verified {checked} figures against {raw_path.name}", ok=True)
 
 
+def check_superseded_runs(md: str, raw_path: Path, out: Problem) -> None:
+    """Reject prose that presents a superseded run as the current one.
+
+    RESULTS.md deliberately keeps its history: the 17-feature compact comparison,
+    the 13-feature base run, and the instantaneous-NAQI numbers are all still in
+    the file because they document how the pipeline moved. The danger is not that
+    old numbers survive; it is that a paragraph calls one of them "current" or
+    "adopted" after a newer run has replaced it.
+
+    That has happened three times in this repo: the 13-feature table survived as
+    the headline after the 28-feature run was adopted, the historical-progression
+    list called the 13-feature run "current (like-for-like)", and a paired test
+    described a mis-configured refit as the ensemble. None of them were numeric
+    transcription errors, which is why check_tabular cannot see them.
+
+    The rule enforced here: exactly one run may be called adopted, and it must be
+    the one RESULTS.md cites as its tabular artifact.
+    """
+    payload = json.loads(raw_path.read_text(encoding="utf-8"))
+    n_features = len(payload["dataset"]["feature_columns"])
+
+    # "adopted 13-feature run" -- the adjective must directly modify the count.
+    # Mere proximity is not enough: "In the adopted 28-feature run in section A"
+    # legitimately sits near a sentence about the 17-feature compact comparison.
+    for match in re.finditer(r"\badopted\s+(\d+)[- ]feature", md, re.IGNORECASE):
+        claimed = int(match.group(1))
+        if claimed != n_features:
+            out.add(
+                f"superseded run: RESULTS.md calls a {claimed}-feature run 'adopted', "
+                f"but the cited artifact ({raw_path.name}) uses {n_features} features"
+            )
+
+    # Same for "current": a feature count described as current must be the adopted one.
+    for match in re.finditer(r"\bcurrent\s+(\d+)[- ]feature", md, re.IGNORECASE):
+        claimed = int(match.group(1))
+        if claimed != n_features:
+            out.add(
+                f"superseded run: RESULTS.md calls a {claimed}-feature run 'current', "
+                f"but the cited artifact ({raw_path.name}) uses {n_features} features"
+            )
+
+    # An affirmative "like-for-like" has to name the two configurations being
+    # compared. A negated one ("not like-for-like") is the disclosure we want, so
+    # it is skipped rather than flagged.
+    for match in re.finditer(r"\blike-for-like\b", md, re.IGNORECASE):
+        before = md[max(0, match.start() - 40) : match.start()].lower()
+        if re.search(r"\bnot\b", before):
+            continue
+        window = md[max(0, match.start() - 220) : match.end() + 220]
+        if not re.search(r"\d+[- ]feature", window, re.IGNORECASE):
+            out.add(
+                "superseded run: an affirmative 'like-for-like' claim does not say "
+                "which two configurations are being compared"
+            )
+
+
 def check_significance(md: str, raw_path: Path | None, out: Problem) -> None:
     """Verify that paired significance figures and required disclosures match the artifact."""
     if raw_path is None or not raw_path.exists():
@@ -714,6 +770,7 @@ def main(argv: list[str] | None = None) -> int:
         check_per_class,
         check_skip_causes,
         check_metrics_honesty,
+        check_superseded_runs,
     ):
         check(md, raw_path, out)
     try:

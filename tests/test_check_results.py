@@ -134,6 +134,67 @@ def test_metrics_honesty_fails_if_disclosure_missing(recorded_run, omission):
     assert any(line.startswith("!!") for line in out)
 
 
+def test_superseded_run_gate_passes_on_current_results(recorded_run):
+    path, _ = recorded_run
+    md = check_results.RESULTS.read_text(encoding="utf-8")
+    out = check_results.Problem()
+    check_results.check_superseded_runs(md, path, out)
+    assert not [line for line in out if line.startswith("!!")]
+
+
+@pytest.mark.parametrize(
+    "corruption,expected",
+    [
+        ("call 13-feature adopted", "13-feature run 'adopted'"),
+        ("call 17-feature adopted", "17-feature run 'adopted'"),
+        ("call 13-feature current", "13-feature run 'current'"),
+        ("bare like-for-like", "does not say which two configurations"),
+    ],
+)
+def test_superseded_run_gate_catches_drift(recorded_run, corruption, expected):
+    """The three historical drifts in this repo were prose, not numbers.
+
+    Each of these is a sentence that has actually existed in RESULTS.md and been
+    wrong at the time it stood: the 13-feature table serving as the headline after
+    the 28-feature run was adopted, the progression list calling the 13-feature run
+    "current (like-for-like)", and a superseded pair described as comparable. None
+    are transcription errors, so check_tabular cannot see them.
+    """
+    path, _ = recorded_run
+    md = check_results.RESULTS.read_text(encoding="utf-8")
+    marker = "### Reproduce"
+
+    if corruption == "call 13-feature adopted":
+        md = md.replace(marker, "The adopted 13-feature run is the baseline.\n\n" + marker, 1)
+    elif corruption == "call 17-feature adopted":
+        md = md.replace(marker, "The adopted 17-feature run is the baseline.\n\n" + marker, 1)
+    elif corruption == "call 13-feature current":
+        md = md.replace(marker, "The current 13-feature run is the baseline.\n\n" + marker, 1)
+    elif corruption == "bare like-for-like":
+        md = md.replace(
+            marker,
+            "These two runs are like-for-line.\n\n" + marker,
+            1,
+        ).replace("like-for-line", "like-for-like")
+
+    out = check_results.Problem()
+    check_results.check_superseded_runs(md, path, out)
+    assert any(expected in line for line in out if line.startswith("!!")), (
+        f"{corruption!r} was not caught; the gate would let a superseded run be "
+        "presented as the current one"
+    )
+
+
+def test_negated_like_for_like_is_not_flagged(recorded_run):
+    """The disclosure we want is "these are NOT like-for-like"."""
+    path, _ = recorded_run
+    md = check_results.RESULTS.read_text(encoding="utf-8")
+    md = md.replace("### Reproduce", "These are not like-for-like.\n\n### Reproduce", 1)
+    out = check_results.Problem()
+    check_results.check_superseded_runs(md, path, out)
+    assert not [line for line in out if "like-for-like" in line]
+
+
 def test_significance_passes_on_current_results():
     md = check_results.RESULTS.read_text(encoding="utf-8")
     citation = check_results.CITED_SIGNIFICANCE_RE.search(md)
