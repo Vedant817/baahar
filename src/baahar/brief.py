@@ -722,6 +722,22 @@ def audio_dir() -> Path:
 def speak(text: str) -> str | None:
     """Return an audio URL via ElevenLabs, or ``None`` if unavailable.
 
+    Thin wrapper over :func:`speak_result` for callers that only want the URL.
+    Prefer ``speak_result`` where the reason matters, because a bare ``None``
+    cannot be told apart from "not configured" and "provider refused".
+    """
+    return speak_result(text)[0]
+
+
+def speak_result(text: str) -> tuple[str | None, str | None]:
+    """Synthesise the briefing. Returns ``(app_relative_url, failure_reason)``.
+
+    The reason matters. ElevenLabs answers HTTP 402 ``paid_plan_required`` on a
+    free plan, which is not a transient fault and not something the reader can
+    guess; returning a bare ``None`` made ``baahar brief --voice`` print nothing
+    at all and exit 0, so asking for a spoken briefing silently produced none.
+    Exactly one of the two returns is ever non-None.
+
     The URL is an app-relative path (``/api/audio/<name>.mp3``), not a
     ``file://`` URI. A file URI reached the public JSON as
     ``file:///C:/Users/<name>/.../brief_123.mp3``, publishing the build layout
@@ -731,7 +747,7 @@ def speak(text: str) -> str | None:
     """
     settings = get_settings()
     if not settings.has_elevenlabs:
-        return None
+        return None, "speech not produced: no provider configured (set ELEVENLABS_API_KEY)"
     try:
         with httpx.Client(timeout=45) as client:
             resp = client.post(
@@ -745,17 +761,22 @@ def speak(text: str) -> str | None:
             )
         if resp.status_code >= 400:
             log.warning("ElevenLabs returned HTTP %s", resp.status_code)
-            return None
+            if resp.status_code == 402:
+                return None, (
+                    "speech not produced: ElevenLabs requires a paid plan for this "
+                    "voice (HTTP 402). Baahar will not sign you up for one."
+                )
+            return None, f"speech not produced: ElevenLabs returned HTTP {resp.status_code}"
     except httpx.HTTPError as exc:
         log.warning("ElevenLabs request failed: %s", exc)
-        return None
+        return None, f"speech not produced: {type(exc).__name__}"
 
     out_dir = audio_dir()
     out_dir.mkdir(parents=True, exist_ok=True)
     digest = abs(hash(text)) % (10**10)
     path = out_dir / f"brief_{digest}.mp3"
     path.write_bytes(resp.content)
-    return f"{AUDIO_ROUTE}/{path.name}"
+    return f"{AUDIO_ROUTE}/{path.name}", None
 
 
 # ---------------------------------------------------------------------------
@@ -865,13 +886,17 @@ def generate(
         repaired = enforce_safety(t, plan, park=park)
         grounded = _ground_park_names(repaired, park)
         final = _complete_last_sentence(_strip_to_words(grounded))
+        audio_url, voice_error = speak_result(final) if voice else (None, None)
         briefing = Briefing(
             text=final,
             model=w,
             writer=w,
             word_count=len(final.split()),
-            note=note,
-            audio_url=speak(final) if voice else None,
+            # A voice failure is reported to the reader, not just logged. The CLI
+            # already prints `note`, and the API already returns it, so surfacing
+            # the reason there covers both without a second channel.
+            note=" ".join(x for x in (note, voice_error) if x),
+            audio_url=audio_url,
             latency_ms=int((time.perf_counter() - started) * 1000),
         )
         if w != "template" and settings.cache_enabled:

@@ -175,6 +175,78 @@ class TestAudioIsServedNotLeaked:
         assert resp.content == b"ID3fake-mp3-bytes"
         assert resp.headers["content-type"].startswith("audio/mpeg")
 
+
+class TestVoiceFailureIsVisible:
+    """Asking for a spoken briefing must never quietly produce none.
+
+    `baahar brief --voice` against a free ElevenLabs plan answers HTTP 402. The
+    original code returned None from that, the CLI printed nothing about it and
+    exited 0, so the run looked successful with no audio in it. Same failure
+    mode this repo has already been bitten by on the briefing writer.
+    """
+
+    def _plan_with_no_provider(self, go_plan, monkeypatch):
+        from baahar import config
+
+        monkeypatch.delenv("ELEVENLABS_API_KEY", raising=False)
+        monkeypatch.delenv("ELEVENLABS_VOICE_ID", raising=False)
+        config.get_settings.cache_clear()
+
+    def test_unconfigured_provider_reports_why(self, go_plan, monkeypatch) -> None:
+        self._plan_with_no_provider(go_plan, monkeypatch)
+        try:
+            briefing = brief_mod.generate(go_plan, writer="template", park=go_plan.park, voice=True)
+        finally:
+            from baahar import config
+
+            config.get_settings.cache_clear()
+        assert briefing.audio_url is None
+        assert briefing.note and "speech not produced" in briefing.note
+
+    def test_paid_plan_wall_names_the_actual_cause(self, go_plan, monkeypatch) -> None:
+        """HTTP 402 is not a transient fault and the reader cannot guess it."""
+        import httpx
+
+        from baahar import config
+
+        monkeypatch.setenv("ELEVENLABS_API_KEY", "test-key-not-a-real-credential")
+        monkeypatch.setenv("ELEVENLABS_VOICE_ID", "voice-id")
+        config.get_settings.cache_clear()
+
+        class Resp:
+            status_code = 402
+            text = '{"detail":{"status":"paid_plan_required"}}'
+            content = b""
+
+        def fake_post(self, *a, **k):
+            return Resp()
+
+        monkeypatch.setattr(httpx.Client, "post", fake_post)
+        try:
+            briefing = brief_mod.generate(go_plan, writer="template", park=go_plan.park, voice=True)
+        finally:
+            config.get_settings.cache_clear()
+        assert briefing.audio_url is None
+        assert briefing.note is not None
+        assert "402" in briefing.note
+        assert "paid plan" in briefing.note
+
+    def test_voice_not_requested_leaves_no_speech_note(self, go_plan) -> None:
+        briefing = brief_mod.generate(go_plan, writer="template", park=go_plan.park, voice=False)
+        assert briefing.audio_url is None
+        assert "speech not produced" not in (briefing.note or "")
+
+    def test_speak_result_returns_exactly_one_of_url_or_reason(self, go_plan, monkeypatch) -> None:
+        self._plan_with_no_provider(go_plan, monkeypatch)
+        try:
+            url, reason = brief_mod.speak_result("Go at six.")
+        finally:
+            from baahar import config
+
+            config.get_settings.cache_clear()
+        assert url is None
+        assert reason and "speech not produced" in reason
+
     @pytest.mark.parametrize(
         "name",
         [
