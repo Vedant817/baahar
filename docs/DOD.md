@@ -18,7 +18,7 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | CLI exercised as a subprocess, exit codes asserted | `tests/test_cli.py`, 17 tests |
 | **DONE** | CI green on all three jobs | lint · format · tests · offline smoke · secret scan · honest-numbers · headless-Chrome UI audit |
 | **DONE** | No secrets in git | `.env` gitignored; `.env.example` complete and empty |
-| **DONE** | Tests pass offline | `uv run pytest` 549 passed, no network |
+| **DONE** | Tests pass offline | `uv run pytest` 554 passed, no network |
 | **DONE** | Lint clean | `uv run ruff check .` |
 | **DONE** | Conventional commits with real explanations | `git log` |
 
@@ -55,7 +55,7 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | Latency p50/p95 measured | 3 ms / 6 ms local · 51,730 ms / 115,187 ms Gemma |
 | **DONE** | At least one documented failure | 10 failures in [`eval/RESULTS.md`](../eval/RESULTS.md) § C |
 | **DONE** | Package versions + timestamps in raw output | `eval/raw/*.json` |
-| **NOT DONE** | Fine-tune vs baseline table | Tinker API unverifiable → [`adr/001-tinker-outcome.md`](adr/001-tinker-outcome.md) |
+| **DONE** | Fine-tune vs baseline table | Run for real, locally on CPU, no credits: `scripts/fine_tune_local.py`. Tinker-hosted attempt documented in [`adr/001`](adr/001-tinker-outcome.md) |
 
 ## Constraints
 
@@ -100,10 +100,15 @@ name what a reader can reproduce.**
    the shortest part of the walk — is currently unverified by a human. This is
    the most important outstanding item. `baahar journal` now makes it a three-tap
    job rather than a blank form.
-2. **No Tinker numbers.** `tinker.ai` is unreachable from this environment
-   (DNS fails), so the API shape stays unverified and the endpoint stays empty.
-   The 219-example fine-tune dataset is built and committed; the run has not
-   happened. Documented in `adr/001`, not faked.
+2. **No Tinker-hosted fine-tune, and no Tinker numbers.** The blocker was never
+   reachability: `tinker.ai` is a parked domain, and the real API is
+   `tinker.thinkingmachines.dev`, which answers HTTP 200 for this key. Running it
+   found a dataset defect (29 of 219 examples whose label contradicted their own
+   briefing text), which is fixed; the re-run then returned **HTTP 402, billing**.
+   The balance was spent by the verification runs and topping it up needs a card,
+   which `AGENTS.md` forbids. The Tinker category is therefore **not claimed**.
+   The experiment was re-run locally on CPU instead — see `adr/001` for the full
+   account, and `scripts/fine_tune_local.py` for what replaced it.
 3. **The tabular holdout contains no Severe or Hazardous hours**, and every SKIP
    in it was rain (22) or heat (2) — zero air quality. So `skip_as_go_rate = 0.0`
    measures rain and heat handling, **not** air-quality safety, and this

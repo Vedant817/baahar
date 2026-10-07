@@ -71,7 +71,10 @@ project's disk budget, which is a hard constraint in `AGENTS.md`).
 
 1. Claim the Tinker promo at <https://hacktoberfest.com/my/promos> while logged
    in. Credits, not a card.
-2. Create a Tinker API key at <https://tinker.ai>.
+2. Create a Tinker API key from the console at
+   <https://tinker.thinkingmachines.ai>. Note: `tinker.ai` is **not** the service
+   — it is a parked domain that accepts no connection, and an earlier version of
+   this document pointed at it.
 3. Put it in `.env`:
    ```
    TINKER_API_KEY=...
@@ -81,20 +84,29 @@ project's disk budget, which is a hard constraint in `AGENTS.md`).
    ```bash
    uv run python scripts/build_ft_dataset.py
    ```
-5. Launch and monitor the run:
+5. Check auth and endpoint reachability — free, spends no credits:
+   ```bash
+   uv run python scripts/fine_tune_tinker.py --check
+   ```
+6. Launch the run — **this spends credits**:
    ```bash
    uv run python scripts/fine_tune_tinker.py --submit
-   uv run python scripts/fine_tune_tinker.py --sample --n 36
    ```
-6. A/B the fine-tune against the Gemma baseline:
+7. A/B the fine-tune against the Gemma baseline:
    ```bash
    uv run python scripts/run_briefing_eval.py --writers gemma,tinker
    ```
-7. Copy the table into `eval/RESULTS.md`.
+8. Copy the table into `eval/RESULTS.md`.
 
-If the run fails or credits do not arrive, the fallback is already written up:
-**ship Gemma-only and say so.** `docs/adr/001-tinker-outcome.md` records the
-decision either way.
+**Current state:** the API is verified reachable and `--check` passes, but
+`--submit` returns **HTTP 402, billing** — the promo credits have been spent and
+recharging needs a payment method this project will not use. So step 6 is
+blocked for a reason that is neither reachability nor a missing idea.
+
+The experiment itself is **not** blocked: `scripts/fine_tune_local.py` runs the
+same fine-tune-vs-baseline measurement on CPU with no account and no credits, and
+its numbers are published. `docs/adr/001-tinker-outcome.md` records the full
+account. Re-running this section needs a Tinker balance, not a different plan.
 
 ---
 
@@ -348,7 +360,7 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 
 - Everything that needs no key: the whole product, the web UI, Pocket Mode, the
   journal (including the species sighting question), the CLI, the seasonal species
-  cues, and 549 offline tests.
+  cues, and 554 offline tests.
 - **TabPFN ran for real across 5 seeds.** With `TABPFN_TOKEN` configured, TabPFN 9.1.0
   was evaluated on the 1,626-row chronological holdout on 28 features (13 base + 15 past-hour lags):
   **0.8708 +/- 0.0023 acc / 0.6193 +/- 0.0020 macro-F1** (4 supported bands).

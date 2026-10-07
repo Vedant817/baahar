@@ -49,6 +49,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from baahar.config import DATA_DIR, get_settings  # noqa: E402
 
@@ -84,27 +85,15 @@ def _require_sdk():
 
 
 def _as_int_list(out) -> list[int]:
-    """Normalise a tokeniser return value to a plain list of ints.
+    """Deprecated shim. The implementation lives in scripts/tokenise_common.py.
 
-    transformers 5.x returns a BatchEncoding from apply_chat_template, not a
-    list. Taking that at face value made every rendered "sequence" a one-key
-    dict, so every example silently failed the length check and the run trained
-    on nothing while reporting a loss of 0.0000. Normalising here is the fix;
-    the guard in main() is what stops it happening quietly again.
+    It was duplicated here once, which is how the same bug existed in two places
+    before anyone noticed. Kept as a name because both fine-tuning scripts
+    tokenise and they must not each own a copy.
     """
-    if isinstance(out, dict):
-        out = out.get("input_ids", out.get("ids"))
-    if out is None:
-        return []
-    if hasattr(out, "tolist"):
-        out = out.tolist()
-    flat: list[int] = []
-    for item in out:
-        if isinstance(item, (list, tuple)):
-            flat.extend(int(x) for x in item)
-        else:
-            flat.append(int(item))
-    return flat
+    from tokenise_common import as_int_list
+
+    return as_int_list(out)
 
 
 def render(tokenizer, messages: list[dict], *, generation_prompt: bool) -> list[int]:
@@ -187,18 +176,15 @@ def _probe_endpoint(api_key: str) -> tuple[bool, str]:
 
 
 def _loss_sum(out) -> float:
-    """Pull the loss out of a ForwardBackwardOutput, strictly.
+    """Pull the summed loss out of a ForwardBackwardOutput, strictly.
 
-    There is no `.loss` attribute. The value lives in `metrics['loss:sum']` and
-    is a *sum* over unmasked tokens. The first version of this script read
-    `getattr(out, "loss", 0.0)`, which returned the default for every batch and
-    published a loss of exactly 0.0000 before and after training -- a number that
-    looked like a result and was pure silence. Missing metrics now raise.
+    Thin wrapper over scripts/tokenise_common.loss_sum, shared with the local
+    fine-tuning script so there is one implementation of "a missing metric must
+    raise, not default to 0.0000".
     """
-    metrics = getattr(out, "metrics", None)
-    if not isinstance(metrics, dict) or "loss:sum" not in metrics:
-        raise ValueError(f"no loss in the response; got metrics={metrics!r}")
-    return float(metrics["loss:sum"])
+    from tokenise_common import loss_sum
+
+    return loss_sum(out)
 
 
 def mean_loss(training_client, data: list, batch_size: int) -> float:

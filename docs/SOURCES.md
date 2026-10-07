@@ -119,7 +119,7 @@ any key. Range used: 2025-11-01 → 2026-10-05, 8130 hourly rows.
 | Google AI Studio keys | <https://ai.google.dev/gemini-api/docs/api-key> | used; free, no card |
 | Billing / free-tier notes | <https://ai.google.dev/gemini-api/docs/billing> | |
 | TabPFN / Prior Labs | <https://priorlabs.ai>, <https://docs.priorlabs.ai/quickstart> | licence-gated, see ADR 001 |
-| Tinker | <https://tinker.ai> | **unverifiable**, see ADR 001 |
+| Tinker | <https://tinker-docs.thinkingmachines.ai/>, API host `tinker.thinkingmachines.dev` | **verified reachable**; balance exhausted (402), see ADR 001. `tinker.ai` is a parked domain and is not the service |
 | ElevenLabs | <https://elevenlabs.io> | optional voice |
 | WAQI token | <https://aqicn.org/data-platform/token/>, <https://aqicn.org/api/> | optional |
 

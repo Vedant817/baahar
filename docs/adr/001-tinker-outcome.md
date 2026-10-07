@@ -1,103 +1,134 @@
 # ADR 001 — Tinker fine-tuning outcome
 
-- **Status:** Blocked — dataset built, API unreachable, no endpoint invented
-- **Date:** 2026-10-06 IST, re-verified 2026-10-07 IST
+- **Status:** Superseded → re-opened → closed without the Tinker run. Endpoint
+  verified reachable; balance exhausted; the category is not claimed.
+- **Date:** 2026-10-06 IST. Re-verified 2026-10-07 IST (twice, see below).
 - **Relates to:** the "Tinker" prize category in the HF26 Week 1 brief
+- **Supersedes:** the first version of this file, which concluded the service
+  was unreachable
 
 ## Decision
 
-Ship the fine-tuning **dataset** and the **evaluation harness**, do not ship a
-fine-tuned model, and do not enter the Tinker prize category.
+Do **not** claim the Tinker category. Run the fine-tune experiment anyway, locally
+and for free, so the "fine-tune vs baseline" question gets a real answer rather
+than being left as a NOT DONE row.
 
-## What was attempted
+## What actually happened
 
-1. `scripts/build_ft_dataset.py` runs successfully and produces **219
-   balanced examples** (80 GO / 80 WAIT / 59 SKIP), built from the archived
-   historical rows so the conditions are real, spanning Indian NAQI 26–302 with
-   a mean target length of 50 words. It excludes everything after 2026-09-05 so
-   the fine-tuning data cannot contaminate the tabular holdout.
-2. `scripts/fine_tune_tinker.py` and `brief.py`'s Tinker writer are implemented
-   against a *configurable* endpoint rather than a hard-coded one.
-3. `scripts/run_briefing_eval.py --writers gemma,tinker` will produce the
-   baseline-vs-fine-tuned table as soon as a trained model is available.
+Three separate things were wrong in the first version of this file, and only the
+third is interesting.
 
-## Why it is blocked
-
-First attempt, 2026-10-06, from the build environment:
+**1. The service was never unreachable.** This ADR, and four other documents,
+recorded that `tinker.ai` could not be reached. That is true and beside the
+point: `tinker.ai` is not the service. It is a parked domain resolving to
+192.64.119.227, which accepts no connection on 443. The actual API lives at
+`tinker.thinkingmachines.dev`, documented, resolving to Cloudflare, serving on
+443:
 
 ```
-https://tinker.ai              -> request timed out
-https://tinker.ai/docs         -> request timed out
-https://docs.tinker.ai         -> no such host
-https://api.tinker.ai/v1/...   -> no such host
+tinker.thinkingmachines.dev   A  104.18.27.102   TCP 443 -> OK
+  GET /v1/models -> HTTP 200, 7 checkpoints visible to the key
 ```
 
-Re-verified 2026-10-07, after a `TINKER_API_KEY` was added to `.env`. The API key
-now exists, so this is no longer "we have no credentials" — it is "we still
-cannot reach the service, and cannot read its documentation to find the endpoint".
-The failure mode is **different**, and the difference matters:
+The blocker was never the network. It was that nobody checked which host the
+service actually uses, and instead treated a guess as a finding.
+
+**2. The rule that stopped us was right, for a reason that has now inverted.**
+`AGENTS.md` forbids inventing APIs. The first draft of `brief.py` hard-coded
+`https://api.tinker.ai/v1/sampling/generate` — a URL that had never been called
+and does not exist. The rule forced that to be deleted, which was correct: it
+would have 404'd in front of a judge while making the repo *look* like it had a
+Tinker integration. But the same rule then had a second effect — it kept the
+endpoint configurable and the project unable to move — because the honest
+response to "I don't know the API" was to refuse to write one, and nobody went
+looking for the real one.
+
+**3. A real bug, found only by running the fine-tune.** Once the correct SDK was
+in use, the first complete run exposed a defect no test had looked for: **29 of
+219 fine-tuning examples carried a `meta.decision` that contradicted their own
+target briefing text** — 26 labelled `GO` whose briefing opened "Hold off", and 3
+labelled `WAIT` whose briefing read like a `GO`.
+
+The cause was two different policy functions. The dataset's labels came from
+`apply_band_policy` (band, rain, heat); the briefing text is rendered from the
+full policy in `score_heuristic`, which also applies park-gate hours. Those two
+disagree on **45% of the 8,130-row corpus**, almost all of them night hours where
+the band policy says GO and the gates say WAIT.
+
+This matters beyond dataset hygiene. A fine-tune on contradictory supervision
+learns to contradict its own label, and in the direction that matters: it would
+have learned to write encouraging copy for an hour the policy held off for. The
+model reproduced the targets faithfully, which is precisely the problem. Fixed in
+`c7e25d4`; guarded by `tests/test_ft_dataset_consistency.py`, which runs offline
+and needs no credits.
+
+Nothing else in the project would have caught this. It was found by running the
+thing, and it is the strongest argument in this repository for doing that.
+
+## The billing wall
+
+After the dataset fix, Tinker answered:
 
 ```
-tinker.ai          A     192.64.119.227    TCP 443 -> connection failed
-api.tinker.ai      A     (none)           DNS     -> no such host
-docs.tinker.ai     A     (none)           DNS     -> no such host
-generativelanguage.googleapis.com  A  ...  TCP 443 -> OK   (control)
+HTTP 402 - Access for <user> is blocked due to billing status.
+Please add payment at https://tinker.thinkingmachines.ai/billing/balance
 ```
 
-Two things follow, and only the second is new:
+The two verification runs consumed the available balance. Topping up requires a
+**payment method**, which `AGENTS.md` rule 1 forbids — the project was built
+around never signing up for anything that wants a card. So the Tinker-hosted
+fine-tune is closed for a reason that is neither "unreachable" nor "no idea",
+but "the free credit ran out and the next step is not one this project takes".
 
-1. `tinker.ai` now **resolves**, where on 2026-10-06 it did not. Resolution alone
-   is not reachability.
-2. It resolves to an address that does not accept a connection on 443, while a
-   control host from the same environment connects immediately. So this is **not**
-   a local network or egress restriction on our side. The endpoint is simply not
-   serving.
+The runs that did complete used the pre-fix dataset, so their numbers are
+superseded. They are not published. `eval/raw/tinker_*.json` is deliberately
+empty.
 
-That distinction is worth recording precisely, because "we could not reach it" and
-"we could not find it" are different claims and a judge may well check. The
-vendor's documentation is unreachable from here by the same mechanism, so the one
-thing that would unblock this — reading the real endpoint out of the real docs — is
-precisely what we cannot do.
+## What replaced it
 
-An earlier version of `brief.py` hard-coded
-`https://api.tinker.ai/v1/sampling/generate`. That URL was a **guess**, and
-`AGENTS.md` explicitly forbids inventing APIs. Shipping it would have been worse
-than shipping nothing:
+`scripts/fine_tune_local.py` runs the same experiment on the same corrected
+dataset, locally, on CPU, against `Qwen/Qwen2.5-0.5B-Instruct`: no account, no
+credits, no card, ~1 GB of weights cached outside the repo. It uses the same
+protocol as the Tinker script — mean token-level cross-entropy over assistant
+tokens only, base vs fine-tuned, on the same held-out split — so the measurement
+means the same thing.
 
-- it would 404 in front of a judge who tried the Tinker path;
-- it would make the repo *look* to have a Tinker integration that was never run;
-- and it would contradict the honesty rule that governs every other number here.
+It does **not** claim the Tinker category. Tinker is a specific hosted service
+and this was not a Tinker run.
 
-So the endpoint is still read from `TINKER_SAMPLE_URL`, empty by default, and
-`write_tinker` raises a clear, actionable error until someone reads the vendor
-docs and sets it. The response parser still tolerates the several shapes the
-vendor documents (plain completion string, sampled token list, OpenAI-style
-`choices[0].text`), so it should work once the real path is supplied.
+## Honest reading of what a low loss does and does not show
 
-## Why the fallback is acceptable
+The targets are generated by the deterministic local writer, and they are
+highly templated by construction. A fine-tuned model reaching a low loss on them
+demonstrates that it learned *that writer's template*. It is a style-transfer
+result. It is **not** evidence that the prose is any good, and the brief
+evaluation in `eval/RESULTS.md` remains the only measurement of whether a
+briefing reads well.
 
-The Gemma baseline is already evaluated on 36 stratified cases with a blind
-rubric, and it scores well on the objective checks. The fine-tune's intended
-benefit was stylistic — prose instead of a restated plan, Indian outdoor
-vocabulary, a firmer SKIP register — not correctness. Those are real gains, but
-they are not worth entering a prize category for code that never ran.
-
-## To unblock
-
-See [`docs/NEEDS_HUMAN.md`](../NEEDS_HUMAN.md) §2:
-
-1. Claim the Tinker promo at <https://hacktoberfest.com/my/promos>.
-2. Create an API key at <https://tinker.ai>.
-3. Read the docs, set `TINKER_API_KEY` and `TINKER_SAMPLE_URL` in `.env`.
-4. `uv run python scripts/fine_tune_tinker.py --submit`
-5. `uv run python scripts/run_briefing_eval.py --writers gemma,tinker`
-6. Copy the table into `eval/RESULTS.md` and update this ADR to Accepted.
+A 0.5B model is also not a substitute for an 8B one. It is used because it trains
+on a CPU with no card, not because it is the better model.
 
 ## Consequences
 
-- **Lost:** the Tinker prize category (Featured, $200) unless unblocked.
-- **Kept:** the Gemma category, and an honest story about a constraint that was
-  discovered rather than papered over.
-- **Cost:** roughly an hour of the five-day budget, spent verifying an API
-  instead of writing features. That was the right trade given the alternative
-  was fabricated integration code.
+- **Lost:** the Tinker prize category (Featured, $200). Not claimed, and the
+  post does not name it.
+- **Kept:** a verified-reachable hosted fine-tuning API, a real fine-tune with
+  real measured numbers, and a dataset defect that would have shipped
+  safety-relevant noise into a model.
+- **Cost:** about two hours of the budget, most of it spent on the wrong host
+  and then on a dataset bug that only a real run could surface.
+
+## If someone picks this up with a balance
+
+1. `uv sync --group tinker`
+2. `uv run python scripts/build_ft_dataset.py --per-decision 80 --out data/ft`
+   (labels now come from the plan that renders the text)
+3. `uv run python scripts/fine_tune_tinker.py --check` — free, verifies endpoint
+   and auth
+4. `uv run python scripts/fine_tune_tinker.py --submit` — spends credits
+5. `uv run python scripts/run_briefing_eval.py --writers gemma,tinker`
+6. Put the table in `eval/RESULTS.md` and flip this ADR to Accepted
+
+Note that Tinker's sampler checkpoints are ephemeral — they do not survive the
+session — so any briefing comparison has to happen inside the same run, which is
+why `fine_tune_local.py` samples inline.

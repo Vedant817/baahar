@@ -91,13 +91,19 @@ ml = [
   "tabpfn>=2.0",
 ]
 
-# Also heavy and opt-in: the Tinker SDK, used only by
-# scripts/fine_tune_tinker.py. It pulls transformers and tokenizers, and reaches
-# the training host rather than doing anything locally. Kept separate from `ml`
-# because a reader who wants to reproduce the tabular evaluation should not have
-# to install a fine-tuning client, and vice versa. Nothing in src/ imports it.
+# Also heavy and opt-in, for the fine-tuning scripts.
+#
+# `tinker` is the hosted fine-tuning SDK: scripts/fine_tune_tinker.py only.
+# `peft` is what scripts/fine_tune_local.py uses to do the same experiment on a
+# CPU, with no account and no credits, after Tinker's balance ran out and
+# topping it up would have required a credit card that AGENTS.md forbids.
+#
+# Both pull transformers, so both stay out of `dev`: a reader reproducing the
+# tabular evaluation should not have to install a training stack. Nothing in
+# src/ imports either.
 tinker = [
   "tinker>=0.32",
+  "peft>=0.21",
 ]
 
 [tool.pytest.ini_options]
