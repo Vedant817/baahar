@@ -162,6 +162,12 @@ def _headline_for(plan: OutdoorPlan, park_name: str | None) -> tuple[str, str]:
 def _next_hint(plan: OutdoorPlan) -> str:
     """Name an explicitly recorded future GO, never guess an opening time.
 
+    `%H:%M` is deliberate and matches every other hour in the product --
+    `score._headline`, `brief.build_context`, `pocket.format_window`, the CLI and
+    `journal.py`. This line sits directly under a brief that renders the same
+    hours the same way, so a second format here would be a visible contradiction
+    rather than a nicety.
+
     `build_plan` ranks every GO above WAIT before truncating the display list,
     so a planner-produced WAIT has no GO anywhere in the full scored window.
     This branch only serves externally constructed plans that explicitly carry
@@ -172,7 +178,7 @@ def _next_hint(plan: OutdoorPlan) -> str:
         candidates = [t for t in candidates if t > plan.best_time]
     if not candidates:
         return ""
-    return min(candidates).strftime("%I:%M %p").lstrip("0").lower()
+    return min(candidates).strftime("%H:%M")
 
 
 def _subline_for(plan: OutdoorPlan) -> str:

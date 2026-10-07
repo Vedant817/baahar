@@ -127,7 +127,7 @@ class TestPocketHonesty:
 
         assert pocket.active is True
         assert pocket.headline == "Not yet."
-        assert pocket.subline == "Rest until 7:20 pm. Then outside."
+        assert pocket.subline == "Rest until 19:20. Then outside."
 
     def test_go_plan_is_active_with_park_invitation(self) -> None:
         t0 = datetime(2026, 10, 6, 10, 0)
@@ -160,7 +160,7 @@ class TestNextHint:
         ]
         plan = _make_plan(Decision.WAIT, slots, best_time=t0)
 
-        assert _next_hint(plan) == "2:00 pm"
+        assert _next_hint(plan) == "14:00"
 
 
 class TestPlannerWaitInvariant:
