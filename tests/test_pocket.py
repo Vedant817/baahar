@@ -4,7 +4,7 @@ Pins the behavioural contracts introduced in WP3:
 1. SKIP plans disable pocket mode (active=False) with an honest subline.
 2. WAIT plans without a future clean hour honestly state no clean hour remains,
    rather than making vague promises ("until the window opens").
-3. WAIT plans with a future clean hour name the exact HH:MM timestamp.
+3. WAIT plans with a future clean hour name the exact human-readable time (constructed plans only).
 4. GO plans enable pocket mode (active=True).
 """
 
@@ -24,6 +24,7 @@ from baahar.models import (
 )
 from baahar.parks import park_by_id
 from baahar.pocket import _next_hint, build_pocket
+from baahar.score import build_plan, score_heuristic
 
 
 def _make_slot_score(dt: datetime, decision: Decision, comfort: float = 85.0) -> SlotScore:
@@ -115,7 +116,7 @@ class TestPocketHonesty:
     def test_wait_plan_with_future_go_names_time(self) -> None:
         t0 = datetime(2026, 10, 6, 10, 0)
         t1 = datetime(2026, 10, 6, 11, 0)
-        t2 = datetime(2026, 10, 6, 12, 0)
+        t2 = datetime(2026, 10, 6, 19, 20)
         slots = [
             _make_slot_score(t0, Decision.WAIT),
             _make_slot_score(t1, Decision.WAIT),
@@ -126,7 +127,7 @@ class TestPocketHonesty:
 
         assert pocket.active is True
         assert pocket.headline == "Not yet."
-        assert pocket.subline == "Rest until 12:00. Then outside."
+        assert pocket.subline == "Rest until 19:20. Then outside."
 
     def test_go_plan_is_active_with_park_invitation(self) -> None:
         t0 = datetime(2026, 10, 6, 10, 0)
@@ -136,7 +137,7 @@ class TestPocketHonesty:
 
         assert pocket.active is True
         assert pocket.headline == "Phone in pocket."
-        assert "Cubbon Park" in pocket.subline
+        assert pocket.subline == "Look up. Walk Cubbon Park"
 
 
 class TestNextHint:
@@ -160,3 +161,31 @@ class TestNextHint:
         plan = _make_plan(Decision.WAIT, slots, best_time=t0)
 
         assert _next_hint(plan) == "14:00"
+
+
+class TestPlannerWaitInvariant:
+    def test_later_go_outside_initial_display_makes_overall_go(self, slot):
+        hours = [slot(i, is_day=0) for i in range(20)]
+        later_go = slot(20, is_day=1)
+        hours.append(later_go)
+        scores = score_heuristic(hours)
+        assert all(s.decision is Decision.WAIT for s in scores[:-1])
+        assert scores[-1].decision is Decision.GO
+
+        plan = build_plan(hours, window_hours=2, scorer="heuristic")
+        assert len(plan.slots) < len(scores)
+        assert plan.overall is Decision.GO
+        assert plan.best_time == later_go.time
+        assert build_pocket(plan).headline == "Phone in pocket."
+
+    def test_real_wait_has_no_go_in_full_scored_window(self, slot):
+        hours = [slot(i, is_day=0) for i in range(24)]
+        scores = score_heuristic(hours)
+        assert all(s.decision is Decision.WAIT for s in scores)
+        plan = build_plan(hours, window_hours=2, scorer="heuristic")
+        assert plan.overall is Decision.WAIT
+        assert len(plan.slots) < len(scores)
+        pocket = build_pocket(plan)
+        assert pocket.headline == "Not yet."
+        assert pocket.subline == "No clean hour left in this window."
+        assert _next_hint(plan) == ""

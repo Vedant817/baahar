@@ -119,7 +119,7 @@ function makeClock() {
  *
  * The script is re-evaluated per test so no state leaks between cases -- the
  * same reason the screenshot audit uses a fresh Chrome profile. */
-function bootApp(briefPayload) {
+function bootApp(briefPayload, location = { search: '', hash: '' }) {
   const clock = makeClock();
   const elements = new Map();
   const get = (id) => {
@@ -149,7 +149,7 @@ function bootApp(briefPayload) {
     document,
     window: {
       scrollTo: () => {},
-      location: { search: '', hash: '' },
+      location,
       addEventListener: () => {},
     },
     localStorage: {
@@ -282,8 +282,7 @@ async function testSkipDoesNotArmTheAutoPocketCountdown() {
 
   assert.equal(app.state.pocketActive, false, 'a SKIP must not mark pocket mode active');
   assert.equal(get('auto-hint').hidden, true, 'no countdown hint on a SKIP');
-  // The walk timer is the only thing that may be running here. Before the fix
-  // this was >=1, because `load()` armed `autoTick` unconditionally.
+  // No walk or countdown timer may run on a SKIP.
   assert.equal(clock.pending(), 0, 'a SKIP must not leave any timer armed');
 
   // And prove the countdown really would have fired, so the assertion above is
@@ -348,7 +347,7 @@ async function testExitDoesNotRearmTheCountdown() {
   assert.equal(clock.pending(), 1, 'precondition: the countdown is armed');
 
   app.enterPocket(false); // the countdown fires
-  app.exitPocket(); // the user backs out
+  get('pocket-exit').click(); // the user backs out through the real handler
 
   assert.equal(clock.pending(), 0, 'exitPocket must cancel the countdown, not restart it');
 }
@@ -374,7 +373,7 @@ async function testExitThenAdvanceDoesNotReenter() {
   await app.load();
 
   app.enterPocket(false);
-  app.exitPocket();
+  get('pocket-exit').click();
 
   const screen = get('screen-pocket');
   assert.equal(screen.hidden, true, 'exit should show the brief screen');
@@ -386,9 +385,44 @@ async function testExitThenAdvanceDoesNotReenter() {
   assert.equal(screen.hidden, true, 'nothing may pull the user back in after they left');
 }
 
+async function testSkipRefusesDirectEntry() {
+  const { app, get, clock } = bootApp(payload({ active: false }));
+  await app.load();
+  app.enterPocket(false);
+  assert.equal(get('screen-pocket').hidden, true);
+  assert.equal(get('screen-brief').hidden, false);
+  assert.equal(clock.pending(), 0);
+}
+
+async function testSkipRefusesDirectCountdown() {
+  const { app, get, clock } = bootApp(payload({ active: false }));
+  await app.load();
+  app.scheduleAutoPocket();
+  assert.equal(get('auto-hint').hidden, true);
+  assert.equal(clock.pending(), 0);
+}
+
+async function testSkipDeepLinksStayOnBrief() {
+  for (const location of [
+    { search: '', hash: '#pocket' },
+    { search: '?journal=1', hash: '' },
+  ]) {
+    const { get, clock } = bootApp(payload({ active: false }), location);
+    // Drain the mocked fetch/json promises and boot's load().then callback.
+    for (let i = 0; i < 20; i++) await Promise.resolve();
+    assert.equal(get('brief-body').hidden, false);
+    assert.equal(get('screen-brief').hidden, false);
+    assert.equal(get('screen-pocket').hidden, true);
+    assert.equal(clock.pending(), 0);
+  }
+}
+
 /* ── runner ──────────────────────────────────────────────────────────────── */
 
 const tests = [
+  ['D2 SKIP refuses direct Pocket Mode entry', testSkipRefusesDirectEntry],
+  ['D2 SKIP refuses direct countdown scheduling', testSkipRefusesDirectCountdown],
+  ['D2 SKIP deep links stay on the brief screen', testSkipDeepLinksStayOnBrief],
   ['D2 SKIP disables the pocket button', testSkipDisablesTheButton],
   ["D2 SKIP shows the payload's own reason", testBlockedReasonIsVisibleAndUsesPayloadCopy],
   ['D2 GO leaves the pocket button usable', testGoLeavesTheButtonUsable],

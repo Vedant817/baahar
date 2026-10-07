@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import httpx
 import pytest
 
 from baahar.air import FIXTURE_NAME as AIR_FIXTURE
@@ -85,6 +86,14 @@ class TestOfflineMode:
 
 
 class TestNetworkFailure:
+    @pytest.fixture(autouse=True)
+    def _unreachable_transport(self, monkeypatch):
+        # A transport failure needs no DNS lookup or actual network request.
+        def fail_get(self, url, **kwargs):
+            raise httpx.ConnectError("upstream unavailable", request=httpx.Request("GET", url))
+
+        monkeypatch.setattr(httpx.Client, "get", fail_get)
+
     def test_unreachable_upstream_raises_rather_than_returning_empty(self) -> None:
         with pytest.raises(UpstreamError):
             get_json(

@@ -13,6 +13,7 @@ exactly the same way `data/samples/` is.
 from __future__ import annotations
 
 import json
+from datetime import datetime
 
 import pytest
 from fastapi.testclient import TestClient
@@ -479,7 +480,9 @@ class TestApiContract:
     def client(self, monkeypatch):
         # Replay the recorded day from its start. Wall-clock slicing can select
         # a rainy afternoon instead, making these morning GO contract tests
-        # fail depending on when pytest runs.
+        # fail depending on when pytest runs. Pinning to the fixture's own first
+        # hour keeps the test honest without hardcoding a date that goes stale
+        # the next time the recorded series is refreshed.
         from baahar import air, weather
         from baahar.models import slice_from_now
 
