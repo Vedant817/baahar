@@ -68,6 +68,19 @@ MAX_WORDS = 120
 GEMINI_TIMEOUT_S = 120.0
 GEMINI_MAX_OUTPUT_TOKENS = 2048
 
+#: Extra attempts for a single model when the failure is transient. Measured
+#: 2026-10-07: gemma-4-31b-it failed ~1 in 3 identical calls with HTTP 500, and
+#: gemma-4-26b-a4b-it failed 0 in 6. One retry would have absorbed most of that.
+GEMINI_RETRIES = 2
+
+#: Base backoff between those attempts, doubled each time.
+GEMINI_RETRY_S = 1.5
+
+#: Test seam. `None` means "use the real HTTP call"; a callable replaces it. The
+#: retry policy is the behaviour worth testing and it cannot be exercised through
+#: a live endpoint without being flaky by construction.
+GEMINI_HTTP_POST_HOOK = None
+
 SYSTEM_PROMPT = """You are Baahar (बाहर, "outside"), a Bengaluru outdoor-planning \
 assistant. You write ONE short park briefing in plain English for a person who has \
 about 120 words of attention before they must pocket their phone and walk.
@@ -389,7 +402,7 @@ def write_gemma(plan: OutdoorPlan, model: str | None = None, **kwargs: Any) -> s
         },
     }
 
-    def _post(model_name: str) -> httpx.Response:
+    def _real_post(model_name: str) -> httpx.Response:
         url = f"{GEMINI_BASE}/{model_name}:generateContent"
         # The key travels in the `x-goog-api-key` header, never as `?key=`.
         # A query parameter lands in every proxy log, CDN access log and crash
@@ -397,6 +410,10 @@ def write_gemma(plan: OutdoorPlan, model: str | None = None, **kwargs: Any) -> s
         # use headers; this call was the odd one out.
         with httpx.Client(timeout=GEMINI_TIMEOUT_S) as client:
             return client.post(url, headers={"x-goog-api-key": key}, json=payload)
+
+    # Indirection so tests can drive status codes without a network. The retry
+    # policy below is the thing under test, and it deserves to be testable.
+    _post = GEMINI_HTTP_POST_HOOK or _real_post
 
     # Try the pinned model, then the fallback. Both HTTP errors *and* transport
     # failures fall through: a retired model returns 404, a cold 31B endpoint
@@ -406,18 +423,40 @@ def write_gemma(plan: OutdoorPlan, model: str | None = None, **kwargs: Any) -> s
     if fb and fb != model:
         candidates.append(fb)
 
+    # A 5xx or a 429 means "not now", not "never": Google returns 503 with an
+    # explicit high-demand message, and gemma-4-31b-it was measured returning 500
+    # on roughly a third of identical requests on 2026-10-07. Swapping models on the
+    # first such failure throws away a working model over a transient, and if both
+    # models blip we lose the briefing entirely. So each candidate gets a couple of
+    # tries before we move on. 4xx is deliberately NOT retried: a bad key or a
+    # retired model id will fail identically forever, and retrying only delays the
+    # honest error.
     last_problem = ""
+    resp: httpx.Response | None = None
     for attempt, name in enumerate(candidates):
-        try:
-            resp = _post(name)
-        except httpx.HTTPError as exc:
-            last_problem = f"request failed: {exc.__class__.__name__}"
-            log.warning("Gemma %s %s", name, last_problem)
-            continue
-        if resp.status_code < 400:
+        for retry in range(GEMINI_RETRIES + 1):
+            try:
+                resp = _post(name)
+            except httpx.HTTPError as exc:
+                last_problem = f"request failed: {exc.__class__.__name__}"
+                log.warning("Gemma %s %s", name, last_problem)
+                # A transport failure has no status to classify; treat it as
+                # transient, since that is what a timeout or reset usually is.
+                if retry < GEMINI_RETRIES:
+                    time.sleep(GEMINI_RETRY_S * (retry + 1))
+                    continue
+                break
+            if resp.status_code < 400:
+                break
+            last_problem = f"HTTP {resp.status_code}: {resp.text[:200]}"
+            transient = resp.status_code == 429 or resp.status_code >= 500
+            log.warning("Gemma %s returned %s", name, last_problem)
+            if transient and retry < GEMINI_RETRIES:
+                time.sleep(GEMINI_RETRY_S * (retry + 1))
+                continue
             break
-        last_problem = f"HTTP {resp.status_code}: {resp.text[:200]}"
-        log.warning("Gemma %s returned %s", name, last_problem)
+        if resp is not None and resp.status_code < 400:
+            break
         if attempt == len(candidates) - 1:
             raise UpstreamError(f"Gemini API failed -- {last_problem}")
     else:  # pragma: no cover - loop always breaks or raises
