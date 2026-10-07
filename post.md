@@ -182,7 +182,7 @@ makes a number quietly wrong:
 Rather than hide that, every single result carries its provenance as data:
 
 ```
-naqi_basis = "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+naqi_basis = "cpcb_24h_breakpoints_applied_to_hourly_concentrations+cpcb_breakpoints_applied_to_trailing_period_means"
 ```
 
 It shows up in the API, in the UI, and in the source of every eval artifact. A
@@ -304,9 +304,12 @@ Holdout: last 20% chronologically — 1,626 rows, 2026-07-30 → 2026-10-05.
 **TabPFN wins. By an amount I do not think means anything.** +0.012 accuracy and
 +0.014 macro-F1 over gradient boosting is about 20 rows out of 1,626, from a single
 seed with no variance recorded. If I ran that comparison ten times the order would
-probably flip. So: TabPFN is the top line because it has the highest number, and I
-am not going to dress that up as "prior-learning transformers beat gradient
-boosting on Indian air quality".
+probably flip. And it is not like-for-like with the rows above it: TabPFN was
+SKIPPED in the current run, and its number comes from an earlier run fitted on
+instantaneous-only NAQI, before the conservative-NAQI fix. That row is provisional.
+So: TabPFN is the top line because it has the highest number, and I am not going to
+dress that up as "prior-learning transformers beat gradient boosting on Indian air
+quality".
 
 Two things I find more interesting than the ranking:
 
@@ -315,10 +318,14 @@ Two things I find more interesting than the ranking:
 examples, `severe` and `hazardous` on zero — are untested for TabPFN exactly as
 they are for everything else in the table.
 
-**It is 37× slower to fit, and on the live window it picks the same hour as the
-heuristic.** All 24 hours, zero disagreements. So for *this product*, TabPFN is
-currently paying 339 seconds for nothing visible. I am shipping the claim because
-it genuinely ran and won the table, not because I think it is the right engine
+**It is 37x slower to fit, and on the live window it appears to pick the same
+hour as the heuristic.** I compared the two by hand on 6 October and did **not**
+record that per-hour comparison as an artifact, so read it as an anecdote rather
+than a measurement - nothing in `eval/raw/` supports it, and I would rather say
+that than publish a precise-sounding "all 24 hours" that no run reproduces. So for
+*this product*, TabPFN may be paying 339 seconds for something I cannot prove. I am
+shipping the claim because it genuinely ran and won the table, not because I think
+it is the right engine
 yet. The honest version of this row is "it works, it is the best number I have,
 and I cannot yet show it is worth it".
 
@@ -350,9 +357,13 @@ judged by an LLM:
 - **Machine checks**: length compliance, concrete time window, correct park named,
   hallucinated park, safety caveat, NAQI figure present, forbidden terms,
   SKIP/GO tone consistency.
-- **Blind rubric**: five subjective dimensions, 0–2 each, judged by
-  `gemini-2.5-flash` — deliberately *not* a Gemma model, so Gemma is not grading
-  its own homework. One briefing per judge call, anonymised and shuffled, so the
+- **Blind rubric**: five subjective dimensions, 0-2 each, judged by
+  `gemini-3.5-flash-lite` - deliberately *not* a Gemma model, so Gemma is not
+  grading its own homework. (`gemini-2.5-flash` was tried first and rejected: its
+  per-model free-tier quota was exhausted, HTTP 429. The harness probes a candidate
+  list and records in the artifact which model *actually* judged, because "the judge
+  I meant to use" is not the same claim as "the judge that ran".)
+  One briefing per judge call, anonymised and shuffled, so the
   judge cannot compare two outputs in the same context.
 
 ### The result I did not expect
@@ -542,7 +553,7 @@ read a briefing should not pay for a model they did not ask for. The heuristic
 scorer is a real fallback with a real test suite, not a stub.
 
 - **MIT licensed.** [`LICENSE`](https://github.com/Vedant817/baahar/blob/main/LICENSE)
-- **291 tests pass offline.** `uv run pytest`
+- **467 tests pass offline.** `uv run pytest`
 - **CI** runs lint, format, tests, an offline CLI smoke test, a secret scan, and a
   headless-Chrome layout audit of all three screens.
 - **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)

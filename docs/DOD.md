@@ -15,10 +15,10 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | New public GitHub repo, started inside the challenge window | [github.com/Vedant817/baahar](https://github.com/Vedant817/baahar), first commit 2026-10-06 |
 | **DONE** | MIT licence | [`LICENSE`](../LICENSE) |
 | **DONE** | Green README: quickstart, architecture, why-open, field test | [`README.md`](../README.md) |
-| **DONE** | CLI exercised as a subprocess, exit codes asserted | `tests/test_cli.py`, 15 tests |
+| **DONE** | CLI exercised as a subprocess, exit codes asserted | `tests/test_cli.py`, 17 tests |
 | **DONE** | CI green on all three jobs | lint · format · tests · offline smoke · secret scan · honest-numbers · headless-Chrome UI audit |
 | **DONE** | No secrets in git | `.env` gitignored; `.env.example` complete and empty |
-| **DONE** | Tests pass offline | `uv run pytest` → 173 passed, no network |
+| **DONE** | Tests pass offline | `uv run pytest` 467 passed, no network |
 | **DONE** | Lint clean | `uv run ruff check .` |
 | **DONE** | Conventional commits with real explanations | `git log` |
 
@@ -29,8 +29,8 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | Weather + air-quality fetch (keyless) | `weather.py`, `air.py`, recorded fixtures in `data/samples/` |
 | **DONE** | Indian NAQI, not US AQI | `naqi.py`; CPCB breakpoints; `naqi_basis` provenance on every result |
 | **DONE** | GO / WAIT / SKIP scorer with documented policy | `features.py`, `score.py` |
-| **DONE** | Heuristic fallback always available | `score_heuristic`, exercised by 12 tests |
-| **DONE** | TabPFN path implemented + evaluated | `tabpfn==9.1.0` on cpu, real holdout: **0.8512 acc / 0.6040 macro-F1**, best in table. `eval/RESULTS.md` § A. Used live at request time after the feature-alignment fix (§ C.14). |
+| **DONE** | Heuristic fallback always available | `score_heuristic`, called directly in `tests/test_score.py` and `tests/test_pocket.py`, and used as the fallback whenever a model is absent |
+| **PARTIAL** | TabPFN path implemented + evaluated | `tabpfn==9.1.0` on cpu ran for real on 2026-10-06: **0.8512 acc / 0.6040 macro-F1**, best in that table. Provisional - that run predates the conservative-NAQI fix, TabPFN was SKIPPED in the current run because `TABPFN_TOKEN` is not set, and it was not re-fitted. `eval/RESULTS.md` A. The request-time path is exercised by test after the feature-alignment fix (C.14) and only runs when a token and the artifact are both present. |
 | **DONE** | Gemma briefing path works | `brief.py`; `gemma-4-31b-it` via AI Studio free tier |
 | **DONE** | ≤120-word safety-aware briefing | `MAX_WORDS`, `enforce_safety` |
 | **DONE** | Pocket Mode | `pocket.py` + `static/`, verified headless |
@@ -84,7 +84,7 @@ Only categories for tech that **actually ran**, per the challenge rule.
 | Category | Claim? | Why |
 |---|---|---|
 | **Gemma** | **Yes** | `gemma-4-31b-it` generated and evaluated briefings. Open-weight model at the core of the product. |
-| **TabPFN** | **Yes** | `tabpfn==9.1.0` ran on a real chronological holdout (1,626 rows): 0.8512 acc / 0.6040 macro-F1. Licence accepted by the human, not bypassed. `eval/RESULTS.md` § A. |
+| **TabPFN** | **Yes** | 	abpfn==9.1.0 ran on a real chronological holdout (1,626 rows): 0.8512 acc / 0.6040 macro-F1. Provisional: that run predates the conservative-NAQI fix and was not re-fitted, so it is not like-for-like with the other rows. Licence accepted by the human, not bypassed. val/RESULTS.md A. |
 | **Tinker** | **No** | Dataset built (219 examples), run not performed. Do not claim. |
 | **Render** | **No** | Not deployed. |
 | **ElevenLabs** | **No** | Client implemented, never called. Do not claim. |

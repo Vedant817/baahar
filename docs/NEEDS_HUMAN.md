@@ -30,9 +30,16 @@ does not patch around it. Everything else about the TabPFN path is done: the
 adapter, the feature matrix, the eval harness, and the safety asymmetry that
 prevents the model from being more permissive than the safety policy.
 
-> **UPDATE 2026-10-06: licence accepted, TabPFN runs.** `TABPFN_TOKEN` is now in
-> `.env` and `TabPFNClassifier(device="cpu").fit(...)` completed against
-> `tabpfn_3_5` weights. The results below are the ones to follow.
+> **UPDATE 2026-10-06: the licence was accepted and TabPFN ran for real.**
+> `TABPFN_TOKEN` was in `.env` at the time and
+> `TabPFNClassifier(device="cpu").fit(...)` completed against `tabpfn_3_5`
+> weights, which is where the 0.8512 acc / 0.6040 macro-F1 numbers quoted
+> throughout came from.
+>
+> **UPDATE 2026-10-07: that token is no longer in `.env`, so the current run
+> SKIPPED TabPFN** (`gono_20261007T142204+0530.json`). The category is therefore
+> *provisional*. Re-adding the token is what makes it real again; nothing in the
+> codebase bypasses the gate in the meantime, by design.
 
 ### Steps (about 3 minutes)
 
@@ -197,6 +204,47 @@ judge, and the challenge explicitly accepts "clear local run + recorded demo".
 2. `render.yaml` is included; Render picks it up automatically.
 3. **Abort cleanly if you hit a credit-card wall** and record that in
    `eval/RESULTS.md`. Do not enter a card.
+4. **Read this before you expose it publicly.** `render.yaml` binds `0.0.0.0`,
+   so the app is reachable by anyone who finds the URL, and `/api/brief` has no
+   authentication and no rate limit. `POST /api/cache/clear` is now restricted to
+   loopback callers, but that only removes the cheap way to force a cache miss -
+   varying `park` or `hours` misses the cache anyway, so an anonymous caller can
+   still spend your Gemini and ElevenLabs quota on ~45 s calls. If you deploy this
+   for the challenge, treat it as a demo with an open door: either accept the
+   quota risk, or put it behind whatever auth your host offers. Nothing in the
+   codebase papers over this.
+---
+
+## 6b. Git history - a removed file is still readable (security, human only)
+
+**Verified 2026-10-07: still true.** An earlier commit included
+`data/journal.jsonl` - the field-test journal. It was removed from `main` and the
+history was rewritten to drop it, but the blob is still served by GitHub to anyone
+who asks for it by SHA, with no authentication:
+
+```
+GET https://api.github.com/repos/Vedant817/baahar/git/blobs/09c74ab9b7289bec1dd34e00b475a92282b12219
+-> 200 OK
+```
+
+No credential was ever in that file - it holds walk notes, and the CI gate confirmed
+`.env` was never committed - so this is a privacy item, not a key exposure. It is
+still worth closing, because "we deleted it" is not the same claim as "nobody can
+read it". Only a human can do this; an agent cannot delete objects from someone
+else's GitHub account.
+
+Options, cheapest first:
+
+1. Leave it and say so. The file holds nothing sensitive, and an honest note in the
+   README is defensible.
+2. Contact [GitHub Support](https://support.github.com/contact) and ask them to
+   garbage-collect the dangling object. This normally works within a few days.
+3. Delete and re-create the repository, then re-push. Guaranteed, but it breaks the
+   star/fork history and any existing links.
+
+The guard against a repeat is already in place: `scripts/check_untracked.py` runs in
+CI and fails if `data/journal.jsonl`, `.env`, `eval/artifacts/*.pkl` or `.env.*` is
+ever tracked again, so this cannot silently come back.
 
 ---
 
@@ -254,7 +302,7 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 
 | # | Item | Unblocks | Effort | Agent blocked? | Status |
 |---|---|---|---|---|---|
-| 1 | TabPFN licence | TabPFN category | 3 min | yes | **done** — 0.8512 acc |
+| 1 | TabPFN licence | TabPFN category | 3 min | yes | **ran 2026-10-06** (0.8512 acc); token no longer set, so the current run SKIPPED it |
 | 2 | Tinker key + FT run | Tinker category | 20 min + job | partly | blocked: `tinker.ai` does not resolve |
 | 3 | Gemini key | Gemma category | done | no | **done** — 36 cases judged |
 | 4 | ElevenLabs key | ElevenLabs category | 5 min | yes | key present, never called |
@@ -263,6 +311,7 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 | 7 | **The walk** | credibility + the species rate | 30 min × 3 | **yes, always** | **not done** |
 | 8 | Publish | everything | 30 min | yes | ready, one optional marker |
 | 4b | Monthly seasonal refresh | nothing (goes stale) | 20 s | no | October snapshot committed |
+| 6b | Purge the dangling journal blob | nothing (privacy) | 10 min + waiting | yes | **open** - blob still served, HTTP 200, verified 2026-10-07 |
 
 ---
 
@@ -270,9 +319,11 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 
 - Everything that needs no key: the whole product, the web UI, Pocket Mode, the
   journal (including the species sighting question), the CLI, the seasonal species
-  cues, and 291 offline tests.
-- **TabPFN, for real.** Licence accepted, `0.8512` acc / `0.6040` macro-F1 on the
-  chronological holdout. `eval/RESULTS.md` § A.
+  cues, and 467 offline tests.
+- **TabPFN ran for real once.** On 2026-10-06 the licence was accepted and it
+  scored `0.8512` acc / `0.6040` macro-F1 on the chronological holdout. That run
+  predates the conservative-NAQI fix and was not re-fitted, and the current run
+  skipped it, so the number is provisional. `eval/RESULTS.md` A.
 - **Gemma.** A key was present in the build environment, so the Gemma path was
   evaluated for real: 36 cases, machine checks plus a blind rubric.
   [`eval/RESULTS.md`](../eval/RESULTS.md) § B.
@@ -283,4 +334,6 @@ notes into `post.md`. Until then both documents say the walk has not happened.
   raw artifacts. It runs in CI.
 
 So the *only* things standing between this repo and a complete submission are
-the five human items above, and three of them are under five minutes each.
+the human items above, and most of them are under five minutes each. One of
+them - the walk - is the only one no amount of engineering can substitute for,
+and one (§6b) is cleanup rather than a feature.

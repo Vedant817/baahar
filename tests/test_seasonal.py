@@ -13,7 +13,6 @@ exactly the same way `data/samples/` is.
 from __future__ import annotations
 
 import json
-from datetime import datetime
 
 import pytest
 from fastapi.testclient import TestClient

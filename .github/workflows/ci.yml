@@ -138,6 +138,14 @@ jobs:
       - name: Check RESULTS.md against the raw artifacts
         run: uv run python scripts/check_results.py
 
+      # The other published prose. post.md, README.md and docs/DOD.md had drifted
+      # four separate ways -- a wrong judge model, two stale test counts, a
+      # naqi_basis literal the code stopped emitting, and a TabPFN row presented
+      # as current when the newest run skipped it. check_results.py only reads
+      # eval/RESULTS.md, so none of that was caught until a human read it.
+      - name: Check the published prose against the repo and the artifacts
+        run: uv run python scripts/check_docs.py
+
   ml:
     name: TabPFN path (PyTorch, slow)
     runs-on: ubuntu-latest
