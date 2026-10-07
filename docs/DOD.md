@@ -18,7 +18,7 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | CLI exercised as a subprocess, exit codes asserted | `tests/test_cli.py`, 17 tests |
 | **DONE** | CI green on all three jobs | lint · format · tests · offline smoke · secret scan · honest-numbers · headless-Chrome UI audit |
 | **DONE** | No secrets in git | `.env` gitignored; `.env.example` complete and empty |
-| **DONE** | Tests pass offline | `uv run pytest` 482 passed, no network |
+| **DONE** | Tests pass offline | `uv run pytest` 505 passed, no network |
 | **DONE** | Lint clean | `uv run ruff check .` |
 | **DONE** | Conventional commits with real explanations | `git log` |
 

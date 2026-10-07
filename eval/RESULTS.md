@@ -119,6 +119,12 @@ model pair overlaps on either metric. LightGBM ranks above gradient boosting on 
 boosting ranks above LightGBM on macro-F1.
 This is a descriptive comparison, not a significance test.
 
+### Non-discrimination of safety metrics
+
+Neither `skip_as_go` nor `decision acc` demonstrates air-quality forecast safety or discriminates a good model from a catastrophic one:
+* **`skip_as_go` (0.0) cannot discriminate a good model from a catastrophic one**: `skip_as_go_rate` is 0.0 for every model, including majority class and catastrophic baselines (a model that blindly predicts `good` achieves 0.0; a model that blindly predicts `hazardous` also achieves 0.0). A non-zero value is structurally unreachable on this holdout: all 24 true-SKIP hours are triggered by rain (22) or heat (2) and zero by air quality. Because the evaluation harness feeds identical weather features to both truth and prediction, `apply_band_policy` returns SKIP for all 24 true-SKIP rows regardless of predicted band, making false-GO impossible. It measures weather-rule pass-through, not model air-quality safety.
+* **`decision acc` (~0.9975–0.9982) cannot discriminate genuine models from catastrophic always-good**: 99.82% of holdout rows (1,623 of 1,626) have target bands in {good, satisfactory, moderate}, all of which map to the identical weather-determined policy decision. An always-good catastrophic model achieves **0.9982** decision accuracy (1623/1626)—higher than the tuned consensus ensemble (**0.9975**)—and the majority baseline also achieves **0.9982**. The metric does discriminate extreme over-cautious models (always-hazardous drops to **0.0148**, always-poor drops to **0.1593**), but cannot discriminate among real models (range 0.9969–0.9982) or catch unsafe under-prediction.
+
 ## Official compact comparison (17)
 
 Artifact: [gono_20261007T145410+0530.json](raw/gono_20261007T145410+0530.json), same split, five seeds (0–4), models and thresholds.
@@ -158,7 +164,7 @@ Earlier TabPFN runs used different NAQI semantics and do not establish current
 performance. The old single-seed TabPFN-versus-classical margin **still has no
 spread**: classical seed variability cannot supply missing TabPFN variability.
 
-### Safety limits
+### Safety limits and metric falsification
 
 `skip_as_go_rate = 0.0` on 24 true SKIP hours,
 Wilson 95% interval [0.0, 0.138]. Every SKIP came from weather:
@@ -174,6 +180,20 @@ This measures rain and heat handling, **not air-quality safety**. No target
 Macro-F1 averages only supported classes. `poor` has 3 target rows.
 The harness applies hour-t weather to predicted future bands because target-hour
 weather is not stored separately; raw results disclose this approximation.
+
+#### Catastrophic baseline measurements (`tests/test_eval_falsification.py`)
+
+A falsification suite evaluates deliberately broken models against the exact same metrics code and holdout slice:
+
+| model | decision acc | skip_as_go | can discriminate? | note |
+|---|---|---|---|---|
+| **always-good** (catastrophic) | 0.9982 | 0.0 | **NO** | Outscores best model on decision acc; blind to all pollution |
+| **majority class** (satisfactory) | 0.9982 | 0.0 | **NO** | Identical decision acc to always-good; ignores weather-air interactions |
+| **consensus ensemble** (best real) | 0.9975 | 0.0 | — | Actual tuned serving model |
+| **always-poor** (catastrophic) | 0.1593 | 0.0 | YES (cautious) | Forces non-SKIP hours to WAIT; skip_as_go still 0.0 |
+| **always-hazardous** (catastrophic) | 0.0148 | 0.0 | YES (cautious) | Forces all 1,626 hours to SKIP; skip_as_go still 0.0 |
+
+`skip_as_go` is 0.0 across all models without exception, because true SKIP hours are 100% weather-driven and weather inputs are identical for truth and prediction. `decision acc` discriminates over-cautious models (0.0148 vs 0.9975), but fails to discriminate unsafe under-cautious models (0.9982 vs 0.9975).
 
 ### Confusion matrix — gradient boosting
 

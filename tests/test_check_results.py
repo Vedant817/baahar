@@ -103,3 +103,31 @@ def test_comparison_table_also_requires_spread(recorded_run):
     out = check_results.Problem()
     check_results.check_additional_tabular(md, path, out)
     assert any("no standard deviation" in line for line in out)
+
+
+def test_metrics_honesty_passes_on_current_results(recorded_run):
+    path, _ = recorded_run
+    md = check_results.RESULTS.read_text(encoding="utf-8")
+    out = check_results.Problem()
+    check_results.check_metrics_honesty(md, path, out)
+    assert not [line for line in out if line.startswith("!!")]
+
+
+@pytest.mark.parametrize(
+    "omission",
+    ["skip_as_go", "decision_acc", "always_good", "always_hazardous"],
+)
+def test_metrics_honesty_fails_if_disclosure_missing(recorded_run, omission):
+    path, _ = recorded_run
+    md = check_results.RESULTS.read_text(encoding="utf-8")
+    if omission == "skip_as_go":
+        md = md.replace("skip_as_go", "skip_metric")
+    elif omission == "decision_acc":
+        md = md.replace("decision acc", "decision_metric")
+    elif omission == "always_good":
+        md = md.replace("0.9982", "0.9900")
+    elif omission == "always_hazardous":
+        md = md.replace("0.0148", "0.0100")
+    out = check_results.Problem()
+    check_results.check_metrics_honesty(md, path, out)
+    assert any(line.startswith("!!") for line in out)

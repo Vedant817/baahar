@@ -403,6 +403,49 @@ def check_skip_causes(md: str, raw_path: Path, out: Problem) -> None:
             )
 
 
+def check_metrics_honesty(md: str, raw_path: Path, out: Problem) -> None:
+    """Verify that RESULTS.md discloses non-discrimination of safety metrics.
+
+    Neither skip_as_go_rate nor decision_accuracy discriminates good air-quality
+    models from catastrophic ones:
+    - skip_as_go_rate is 0.0 for every model (including always-good and always-hazardous)
+      because all true SKIPs are weather-caused and identical weather is fed to
+      the policy.
+    - decision_accuracy cannot discriminate always-good (0.9982) from real models
+      (ensemble 0.9975) because 99.82% of holdout rows have target bands in
+      {good, satisfactory, moderate}, which all map to the same decision.
+    """
+    if not re.search(
+        r"skip_as_go.*(?:cannot discriminate|does not discriminate|unreachable)",
+        md,
+        re.IGNORECASE,
+    ):
+        out.add(
+            "metrics honesty: RESULTS.md must disclose that skip_as_go cannot discriminate "
+            "a good model from a catastrophic one (0.0 for all models, non-zero unreachable)"
+        )
+    elif not re.search(
+        r"decision\s+acc.*(?:cannot discriminate|does not discriminate)", md, re.IGNORECASE
+    ):
+        out.add(
+            "metrics honesty: RESULTS.md must disclose that decision acc cannot discriminate "
+            "genuine models from catastrophic always-good"
+        )
+    elif not (
+        re.search(r"always[- ]good.*0\.9982", md, re.IGNORECASE)
+        and re.search(r"always[- ]hazardous.*0\.0148", md, re.IGNORECASE)
+    ):
+        out.add(
+            "metrics honesty: RESULTS.md must report catastrophic baseline figures "
+            "(always-good: 0.9982, always-hazardous: 0.0148)"
+        )
+    else:
+        out.add(
+            "metrics honesty: verified disclosures on metric non-discrimination and catastrophic baselines",
+            ok=True,
+        )
+
+
 def check_briefings(md: str, raw_path: Path | None, out: Problem) -> None:
     """Cross-check the briefing tables against the briefing artifact."""
     if raw_path is None:
@@ -522,6 +565,7 @@ def main(argv: list[str] | None = None) -> int:
         check_additional_tabular,
         check_per_class,
         check_skip_causes,
+        check_metrics_honesty,
     ):
         check(md, raw_path, out)
     try:
