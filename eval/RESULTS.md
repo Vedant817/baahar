@@ -11,15 +11,17 @@ execution and can be traced to a machine-readable file in [`raw/`](raw/).
 | | |
 |---|---|
 | Dataset built | 2026-10-06 IST, 8,130 hourly rows |
-| Tabular run | 2026-10-07T14:22:04.144159+05:30 — base features after ensemble contract fix |
+| Compact run | 2026-10-07T14:54:10.627031+05:30 — five seeds (0–4) |
+| Tabular run | 2026-10-07T14:51:38.957575+05:30 — base features, five seeds (0–4) |
 | Briefing run | 2026-10-06 05:09 IST (36 cases × 2 writers, unchanged by the TabPFN run) |
 | Location | Bengaluru, 12.9716 N, 77.5946 E |
 | Keys present at tabular run | Gemma ✅ · TabPFN ❌ · WAQI ❌ · Tinker ❌ · ElevenLabs ❌ |
 | Keys present at briefing run | Gemma ✅ · Tinker ❌ · TabPFN ❌ · ElevenLabs ❌ · WAQI ❌ |
 | Device | CPU only. No GPU was used or available. |
 | Python | 3.14.0 |
+| LightGBM | 4.7.0 |
 | numpy / scikit-learn / tabpfn / torch | 2.5.3 / 1.9.1 / 9.1.0 / 2.14.1 |
-| Tabular artifact | [`gono_20261007T142204+0530.json`](raw/gono_20261007T142204+0530.json) — adopted run; compact comparison labelled in section A |
+| Tabular artifact | [`gono_20261007T145138+0530.json`](raw/gono_20261007T145138+0530.json) — adopted run; compact comparison labelled in section A |
 | Briefing artifact | [`briefing_20261006T050909+0530.json`](raw/briefing_20261006T050909+0530.json) — the run every § B number comes from |
 | Raw artifacts | [`raw/`](raw/) — every run, including superseded ones |
 
@@ -31,7 +33,9 @@ key-presence booleans and versions; the checker reads the cited tabular artifact
 
 ```bash
 uv run python scripts/build_dataset.py --start 2025-11-01 --end 2026-10-05
-uv run python scripts/run_eval.py
+uv run python scripts/run_eval.py --repeat 5 --feature-set compact
+uv run python scripts/run_eval.py --repeat 5
+uv run pytest scripts/test_check_results.py
 uv run python scripts/build_briefing_cases.py
 uv run python scripts/run_briefing_eval.py --writers template,gemma --no-cache
 ```
@@ -72,23 +76,52 @@ target support as current holdout support.
 
 ## Results: adopted base features (13)
 
-Artifact: [gono_20261007T142204+0530.json](raw/gono_20261007T142204+0530.json).
+Artifact: [gono_20261007T145138+0530.json](raw/gono_20261007T145138+0530.json).
 Holdout: **1,626 rows**, 2026-07-30T00:00 → 2026-10-05T17:00.
 
 | model | accuracy | macro-F1 | moderate recall | skip_as_go | n(SKIP) | decision acc | fit time |
 |---|---|---|---|---|---|---|---|
-| majority class | 0.4047 | 0.1441 | 0.0000 | 0.0 | 24 | 0.9982 | 0.0 s |
+| majority class | 0.4047 | 0.1441 | 0.0000 | 0.0 | 24 | 0.9982 | 0.0002 s |
 | persistence | 0.3647 | 0.2492 | 0.2746 | 0.0 | 24 | 0.9982 | 0.0 s |
-| logistic regression | 0.7294 | 0.4850 | 0.3662 | 0.0 | 24 | 0.9969 | 1.885 s |
-| random forest | 0.8296 | 0.5642 | 0.4296 | 0.0 | 24 | 0.9982 | 1.565 s |
-| gradient boosting | 0.8383 | 0.5874 | 0.5493 | 0.0 | 24 | 0.9982 | 8.543 s |
-| lightgbm | 0.8432 | 0.5825 | 0.4930 | 0.0 | 24 | 0.9975 | 2.232 s |
-| consensus ensemble | 0.8487 | 0.6089 | 0.6831 | 0.0 | 24 | 0.9975 | 7.962 s |
+| logistic regression | 0.7294 +/- 0.0000 | 0.4850 +/- 0.0000 | 0.3662 | 0.0 | 24 | 0.9969 | 1.0026 s |
+| random forest | 0.8325 +/- 0.0040 | 0.5695 +/- 0.0073 | 0.4296 | 0.0 | 24 | 0.9982 | 2.08 s |
+| gradient boosting | 0.8383 +/- 0.0000 | 0.5874 +/- 0.0000 | 0.5493 | 0.0 | 24 | 0.9982 | 8.8106 s |
+| lightgbm | 0.8437 +/- 0.0019 | 0.5837 +/- 0.0019 | 0.4930 | 0.0 | 24 | 0.9975 | 3.971 s |
+| consensus ensemble | 0.8483 +/- 0.0005 | 0.6079 +/- 0.0006 | 0.6831 | 0.0 | 24 | 0.9975 | 11.8966 s |
 | TabPFN | SKIPPED | SKIPPED | SKIPPED | SKIPPED | SKIPPED | SKIPPED | — |
+
+Headline accuracy and macro-F1 are means +/- sample standard deviations over
+five fits, seeds 0–4, on the same chronological holdout. Majority class and
+persistence use deterministic predictions, so they are shown without spread.
+Logistic regression and gradient boosting also returned identical headline
+metrics across these seeds; their measured sd is zero, not an assumed value.
+These spreads describe seed variability, not confidence intervals or variability
+across future weather periods.
+
+The moderate-recall and decision/safety columns, confusion matrix, and per-class
+tables below describe **seed 0 only**, because the runner retains `runs[0]` for
+these diagnostics. We retain that diagnostic rather than averaging confusion
+counts: it describes one actual fitted model, and remains directly auditable
+against the artifact. Fit time is a five-seed mean.
+
+The fitted base-feature serving artifacts `lgbm_gono.pkl` and
+`ensemble_gono.pkl` are **seed 4**, the last seed saved by the loop, rather than
+an average of five fitted models. The base seed 4 files were preserved before
+the compact comparison and restored afterward. `auto` prefers the fitted
+ensemble when available; a keyless clone without these ignored local files
+still falls back to the heuristic. The headline mean is not a measurement of
+the single serving model. The reproduction commands run compact first and adopted base last, so the
+base seed 4 files serve requests after reproduction.
+
+The ensemble has the highest mean accuracy and macro-F1. Its mean +/- sd
+intervals do not overlap any other model's on either metric. No fitted base
+model pair overlaps on either metric. LightGBM ranks above gradient boosting on accuracy, while gradient
+boosting ranks above LightGBM on macro-F1.
+This is a descriptive comparison, not a significance test.
 
 ## Official compact comparison (17)
 
-Artifact: [gono_20261007T142032+0530.json](raw/gono_20261007T142032+0530.json), same split, seed, models and thresholds.
+Artifact: [gono_20261007T145410+0530.json](raw/gono_20261007T145410+0530.json), same split, five seeds (0–4), models and thresholds.
 Features: `naqi`, `pm25`, `pm10`, `temp_c`, `precip_mm`, `humidity`, `wind_kmh`, `is_day`, `month`, `vpd`, `stagnation`, `pm_ratio`, `naqi_gap`, `hour_sin`, `hour_cos`, `month_sin`, `month_cos`.
 Derived columns use `baahar.features.compact_features_from_row` in eval and serving.
 
@@ -96,24 +129,34 @@ Derived columns use `baahar.features.compact_features_from_row` in eval and serv
 |---|---|---|---|---|---|---|---|
 | majority class | 0.4047 | 0.1441 | 0.0000 | 0.0 | 24 | 0.9982 | 0.0 s |
 | persistence | 0.3647 | 0.2492 | 0.2746 | 0.0 | 24 | 0.9982 | 0.0 s |
-| logistic regression | 0.7970 | 0.4644 | 0.1268 | 0.0 | 24 | 0.9982 | 1.961 s |
-| random forest | 0.8303 | 0.5871 | 0.5423 | 0.0 | 24 | 0.9982 | 1.839 s |
-| gradient boosting | 0.8223 | 0.5879 | 0.6338 | 0.0 | 24 | 0.9975 | 9.034 s |
-| lightgbm | 0.8266 | 0.5813 | 0.5352 | 0.0 | 24 | 0.9982 | 5.566 s |
-| consensus ensemble | 0.8192 | 0.5948 | 0.7817 | 0.0 | 24 | 0.9982 | 20.013 s |
+| logistic regression | 0.7970 +/- 0.0000 | 0.4644 +/- 0.0000 | 0.1268 | 0.0 | 24 | 0.9982 | 0.786 s |
+| random forest | 0.8314 +/- 0.0031 | 0.5844 +/- 0.0035 | 0.5423 | 0.0 | 24 | 0.9982 | 2.0012 s |
+| gradient boosting | 0.8223 +/- 0.0000 | 0.5879 +/- 0.0000 | 0.6338 | 0.0 | 24 | 0.9975 | 7.893 s |
+| lightgbm | 0.8267 +/- 0.0027 | 0.5823 +/- 0.0026 | 0.5352 | 0.0 | 24 | 0.9982 | 3.3246 s |
+| consensus ensemble | 0.8188 +/- 0.0008 | 0.5944 +/- 0.0011 | 0.7817 | 0.0 | 24 | 0.9982 | 11.72 s |
 | TabPFN | SKIPPED | SKIPPED | SKIPPED | SKIPPED | SKIPPED | SKIPPED | — |
 
-**Yes, the research moderate-recall claim reproduces officially: 78.17%.**
-We retain 13 features: ensemble accuracy 0.8487 versus 0.8192,
-and macro-F1 0.6089 versus 0.5948.
-This trades away the compact set's higher moderate recall (0.7817
-versus 0.6831) for stronger overall metrics.
-Selection used this holdout; this comparison is not independent validation of
-the choice. One seed only, so standard deviations are null.
+The compact seed 0 moderate-recall result reproduces officially:
+78.17%. This diagnostic is not a five-seed mean.
+We retain 13 features: ensemble accuracy 0.8483 +/- 0.0005 versus
+0.8188 +/- 0.0008, and macro-F1 0.6079 +/- 0.0006
+versus 0.5944 +/- 0.0011. Neither metric's mean +/- sd intervals overlap
+between the base and compact ensemble. Compact seed 0 moderate recall
+(0.7817 versus 0.6831) remains higher.
+Selection used this holdout; the five-seed comparison is not independent
+validation of the feature choice.
 
-TabPFN is **SKIPPED** in both runs: no `TABPFN_TOKEN`; no licence bypass.
+Within the compact comparison, random forest has the highest mean accuracy,
+and the ensemble has the highest mean macro-F1. Accuracy intervals overlap
+for random forest / LightGBM, so that accuracy ordering is unresolved by this
+spread. Macro-F1 intervals overlap for random forest / gradient boosting and
+random forest / LightGBM. The compact ensemble's macro-F1 interval does not
+overlap other models. These are descriptive intervals, not significance tests.
+
+TabPFN is **SKIPPED** in both five-seed runs: no `TABPFN_TOKEN`; no licence bypass.
 Earlier TabPFN runs used different NAQI semantics and do not establish current
-performance.
+performance. The old single-seed TabPFN-versus-classical margin **still has no
+spread**: classical seed variability cannot supply missing TabPFN variability.
 
 ### Safety limits
 
@@ -562,11 +605,11 @@ Stated so the gaps are visible rather than inferred.
 | `severe` / `hazardous` band accuracy | Zero such hours in the holdout. Not testable with this split. This is the gap that matters most. |
 | `poor` band accuracy | 3 examples. F1 = 0.0 is not a meaningful signal. |
 | Air-quality-driven SKIP safety | Every SKIP in the holdout was rain or heat. `skip_as_go_rate` does not test polluted-day safety. |
-| Whether TabPFN beats gradient boosting | One seed, no variance recorded. The +0.012 accuracy gap is ~20 rows on 1,626 and is not claimed to be significant. |
+| Whether TabPFN beats gradient boosting | TabPFN was SKIPPED in the five-seed runs. Its old single-seed margin has no spread and used different NAQI semantics; it is not variance-backed or a current comparison. |
 | TabPFN's behaviour on the bands that matter | `severe` / `hazardous` / `poor` are unvalidated for TabPFN too, for the same reason as every other model here. |
 | Fine-tuned vs baseline briefings | Tinker API unverifiable; endpoint deliberately not invented. |
 | Field test | Not performed. No human has walked with Baahar. Not fabricated. |
-| Multi-seed variance | Tabular runs used `--repeat 1`; per-run values are in `raw/`, sd is `null`. |
+| Independent temporal validation | Five-seed variability on one holdout is now measured; variation across independent holdout periods is not. Feature selection used this same holdout. |
 | Rubric discrimination | Scores run 8.92–10.00 across 72 briefings. The rubric catches a broken briefing and does almost nothing to rank good ones. |
 | Voice output quality | ElevenLabs implemented, never called. No audio was generated or assessed. |
 | Whether a seasonal cue led to a sighting | The cue wording and its provenance are tested; whether it changed what anyone looked at is not measured, because no human has walked with the app. Same answer as the field test: unknown, and not guessed at. |

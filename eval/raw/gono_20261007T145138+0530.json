@@ -1,0 +1,1050 @@
+{
+  "run_at": "2026-10-07T14:51:38.957575+05:30",
+  "city": "Bengaluru",
+  "task": "predict CPCB NAQI band +6h from hour-t features",
+  "horizon_hours": 6,
+  "dataset": {
+    "path": "gono_rows.jsonl",
+    "n_rows": 8130,
+    "n_train": 6504,
+    "n_test": 1626,
+    "train_time_range": [
+      "2025-11-01T00:00",
+      "2026-07-29T23:00"
+    ],
+    "test_time_range": [
+      "2026-07-30T00:00",
+      "2026-10-05T17:00"
+    ],
+    "split": "chronological, last 20% held out",
+    "feature_columns": [
+      "naqi",
+      "pm25",
+      "pm10",
+      "temp_c",
+      "apparent_c",
+      "precip_mm",
+      "precip_prob",
+      "humidity",
+      "wind_kmh",
+      "uv_index",
+      "is_day",
+      "hour",
+      "month"
+    ],
+    "feature_semantics": {
+      "naqi": "naqi is the EFFECTIVE (conservative) NAQI at hour t: the higher of that hour's own instantaneous reading and the trailing-mean reading over each pollutant's CPCB averaging period, i.e. baahar.naqi.conservative_naqi. It is the same number baahar.features.features_from_slot emits under the key 'naqi', which is what score.py serves to the policy and to TabPFN. The instantaneous reading is kept beside it as naqi_instant (with naqi_trailing and naqi_trailing_hours) so the gap is auditable instead of invisible. band is the band of that effective value.",
+      "target": "target_band and target_naqi are unchanged: the band and index at t+6h computed from that future hour's own instantaneous reading. The feature is the effective value; the label is not. That asymmetry is recorded here rather than left for a reader to discover.",
+      "feature_set": "base",
+      "derived": "compact_features_from_row in baahar.features; hour-t only",
+      "n_features": 13
+    },
+    "classes": [
+      "good",
+      "satisfactory",
+      "moderate",
+      "poor",
+      "severe",
+      "hazardous"
+    ],
+    "test_band_support": {
+      "good": {
+        "n": 823,
+        "present": true
+      },
+      "satisfactory": {
+        "n": 658,
+        "present": true
+      },
+      "moderate": {
+        "n": 142,
+        "present": true
+      },
+      "poor": {
+        "n": 3,
+        "present": true
+      },
+      "severe": {
+        "n": 0,
+        "present": false
+      },
+      "hazardous": {
+        "n": 0,
+        "present": false
+      }
+    },
+    "absent_from_holdout": [
+      "severe",
+      "hazardous"
+    ]
+  },
+  "keys_present": {
+    "gemini": true,
+    "tinker": false,
+    "tabpfn_license": false,
+    "tabpfn_api": false,
+    "elevenlabs": false,
+    "waqi": false
+  },
+  "versions": {
+    "python": "3.14.0",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "numpy": "2.5.3",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "tabpfn": "9.1.0",
+    "torch": "2.14.1",
+    "lightgbm": "4.7.0"
+  },
+  "results": {
+    "majority": {
+      "status": "OK",
+      "runs": 5,
+      "accuracy_mean": 0.4047,
+      "accuracy_sd": 0.0,
+      "macro_f1_mean": 0.1441,
+      "macro_f1_sd": 0.0,
+      "per_class": {
+        "good": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 823
+        },
+        "satisfactory": {
+          "precision": 0.4047,
+          "recall": 1.0,
+          "f1": 0.5762,
+          "support": 658
+        },
+        "moderate": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 142
+        },
+        "poor": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        },
+        "severe": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "hazardous": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "confusion": [
+        [
+          0,
+          823,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          658,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          142,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "safety": {
+        "n_true_skip": 24,
+        "skip_as_go_count": 0,
+        "skip_as_go_rate": 0.0,
+        "skip_as_go_wilson95": [
+          0.0,
+          0.138
+        ],
+        "skip_recall": 1.0,
+        "n_true_go": 1367,
+        "go_as_skip_count": 0,
+        "go_as_skip_rate": 0.0,
+        "decision_confusion": [
+          [
+            1367,
+            0,
+            0
+          ],
+          [
+            3,
+            232,
+            0
+          ],
+          [
+            0,
+            0,
+            24
+          ]
+        ],
+        "decision_accuracy": 0.9982,
+        "skip_cause_breakdown": {
+          "rain": 22,
+          "heat": 2
+        },
+        "skip_cause_note": "Which signal put each true-SKIP hour into SKIP. Read this before interpreting skip_as_go_rate: if 'air' is absent, the metric is measuring heat and rain handling, not air-quality safety.",
+        "_policy_approximation": "apply_band_policy was fed hour-t weather rather than hour-t+6 weather; the dataset does not store the target hour's weather separately."
+      },
+      "fit_seconds_mean": 0.0002,
+      "note": "always predicts the training majority"
+    },
+    "persistence": {
+      "status": "OK",
+      "runs": 5,
+      "accuracy_mean": 0.3647,
+      "accuracy_sd": 0.0,
+      "macro_f1_mean": 0.2492,
+      "macro_f1_sd": 0.0,
+      "per_class": {
+        "good": {
+          "precision": 0.5031,
+          "recall": 0.3925,
+          "f1": 0.441,
+          "support": 823
+        },
+        "satisfactory": {
+          "precision": 0.2906,
+          "recall": 0.3511,
+          "f1": 0.318,
+          "support": 658
+        },
+        "moderate": {
+          "precision": 0.2097,
+          "recall": 0.2746,
+          "f1": 0.2378,
+          "support": 142
+        },
+        "poor": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        },
+        "severe": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "hazardous": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "confusion": [
+        [
+          323,
+          482,
+          18,
+          0,
+          0,
+          0
+        ],
+        [
+          298,
+          231,
+          129,
+          0,
+          0,
+          0
+        ],
+        [
+          21,
+          79,
+          39,
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "safety": {
+        "n_true_skip": 24,
+        "skip_as_go_count": 0,
+        "skip_as_go_rate": 0.0,
+        "skip_as_go_wilson95": [
+          0.0,
+          0.138
+        ],
+        "skip_recall": 1.0,
+        "n_true_go": 1367,
+        "go_as_skip_count": 0,
+        "go_as_skip_rate": 0.0,
+        "decision_confusion": [
+          [
+            1367,
+            0,
+            0
+          ],
+          [
+            3,
+            232,
+            0
+          ],
+          [
+            0,
+            0,
+            24
+          ]
+        ],
+        "decision_accuracy": 0.9982,
+        "skip_cause_breakdown": {
+          "rain": 22,
+          "heat": 2
+        },
+        "skip_cause_note": "Which signal put each true-SKIP hour into SKIP. Read this before interpreting skip_as_go_rate: if 'air' is absent, the metric is measuring heat and rain handling, not air-quality safety.",
+        "_policy_approximation": "apply_band_policy was fed hour-t weather rather than hour-t+6 weather; the dataset does not store the target hour's weather separately."
+      },
+      "fit_seconds_mean": 0.0,
+      "note": "predict band(t) as band(t+6)"
+    },
+    "logreg": {
+      "status": "OK",
+      "runs": 5,
+      "accuracy_mean": 0.7294,
+      "accuracy_sd": 0.0,
+      "macro_f1_mean": 0.485,
+      "macro_f1_sd": 0.0,
+      "per_class": {
+        "good": {
+          "precision": 0.757,
+          "recall": 0.8858,
+          "f1": 0.8163,
+          "support": 823
+        },
+        "satisfactory": {
+          "precision": 0.6959,
+          "recall": 0.6155,
+          "f1": 0.6532,
+          "support": 658
+        },
+        "moderate": {
+          "precision": 0.6582,
+          "recall": 0.3662,
+          "f1": 0.4706,
+          "support": 142
+        },
+        "poor": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        },
+        "severe": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "hazardous": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "confusion": [
+        [
+          729,
+          94,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          229,
+          405,
+          24,
+          0,
+          0,
+          0
+        ],
+        [
+          5,
+          83,
+          52,
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          3,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "safety": {
+        "n_true_skip": 24,
+        "skip_as_go_count": 0,
+        "skip_as_go_rate": 0.0,
+        "skip_as_go_wilson95": [
+          0.0,
+          0.138
+        ],
+        "skip_recall": 1.0,
+        "n_true_go": 1367,
+        "go_as_skip_count": 0,
+        "go_as_skip_rate": 0.0,
+        "decision_confusion": [
+          [
+            1365,
+            2,
+            0
+          ],
+          [
+            3,
+            232,
+            0
+          ],
+          [
+            0,
+            0,
+            24
+          ]
+        ],
+        "decision_accuracy": 0.9969,
+        "skip_cause_breakdown": {
+          "rain": 22,
+          "heat": 2
+        },
+        "skip_cause_note": "Which signal put each true-SKIP hour into SKIP. Read this before interpreting skip_as_go_rate: if 'air' is absent, the metric is measuring heat and rain handling, not air-quality safety.",
+        "_policy_approximation": "apply_band_policy was fed hour-t weather rather than hour-t+6 weather; the dataset does not store the target hour's weather separately."
+      },
+      "fit_seconds_mean": 1.0026,
+      "note": "multinomial logistic regression"
+    },
+    "rf": {
+      "status": "OK",
+      "runs": 5,
+      "accuracy_mean": 0.8325,
+      "accuracy_sd": 0.004,
+      "macro_f1_mean": 0.5695,
+      "macro_f1_sd": 0.0073,
+      "per_class": {
+        "good": {
+          "precision": 0.9049,
+          "recall": 0.8676,
+          "f1": 0.8859,
+          "support": 823
+        },
+        "satisfactory": {
+          "precision": 0.7533,
+          "recall": 0.8723,
+          "f1": 0.8085,
+          "support": 658
+        },
+        "moderate": {
+          "precision": 0.8133,
+          "recall": 0.4296,
+          "f1": 0.5622,
+          "support": 142
+        },
+        "poor": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        },
+        "severe": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "hazardous": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "confusion": [
+        [
+          714,
+          108,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          74,
+          574,
+          10,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          80,
+          61,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          3,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "safety": {
+        "n_true_skip": 24,
+        "skip_as_go_count": 0,
+        "skip_as_go_rate": 0.0,
+        "skip_as_go_wilson95": [
+          0.0,
+          0.138
+        ],
+        "skip_recall": 1.0,
+        "n_true_go": 1367,
+        "go_as_skip_count": 0,
+        "go_as_skip_rate": 0.0,
+        "decision_confusion": [
+          [
+            1367,
+            0,
+            0
+          ],
+          [
+            3,
+            232,
+            0
+          ],
+          [
+            0,
+            0,
+            24
+          ]
+        ],
+        "decision_accuracy": 0.9982,
+        "skip_cause_breakdown": {
+          "rain": 22,
+          "heat": 2
+        },
+        "skip_cause_note": "Which signal put each true-SKIP hour into SKIP. Read this before interpreting skip_as_go_rate: if 'air' is absent, the metric is measuring heat and rain handling, not air-quality safety.",
+        "_policy_approximation": "apply_band_policy was fed hour-t weather rather than hour-t+6 weather; the dataset does not store the target hour's weather separately."
+      },
+      "fit_seconds_mean": 2.08,
+      "note": "RandomForestClassifier(300)"
+    },
+    "histgb": {
+      "status": "OK",
+      "runs": 5,
+      "accuracy_mean": 0.8383,
+      "accuracy_sd": 0.0,
+      "macro_f1_mean": 0.5874,
+      "macro_f1_sd": 0.0,
+      "per_class": {
+        "good": {
+          "precision": 0.8697,
+          "recall": 0.9162,
+          "f1": 0.8923,
+          "support": 823
+        },
+        "satisfactory": {
+          "precision": 0.8021,
+          "recall": 0.807,
+          "f1": 0.8045,
+          "support": 658
+        },
+        "moderate": {
+          "precision": 0.8041,
+          "recall": 0.5493,
+          "f1": 0.6527,
+          "support": 142
+        },
+        "poor": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        },
+        "severe": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "hazardous": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "confusion": [
+        [
+          754,
+          68,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          112,
+          531,
+          15,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          63,
+          78,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          3,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "safety": {
+        "n_true_skip": 24,
+        "skip_as_go_count": 0,
+        "skip_as_go_rate": 0.0,
+        "skip_as_go_wilson95": [
+          0.0,
+          0.138
+        ],
+        "skip_recall": 1.0,
+        "n_true_go": 1367,
+        "go_as_skip_count": 0,
+        "go_as_skip_rate": 0.0,
+        "decision_confusion": [
+          [
+            1367,
+            0,
+            0
+          ],
+          [
+            3,
+            232,
+            0
+          ],
+          [
+            0,
+            0,
+            24
+          ]
+        ],
+        "decision_accuracy": 0.9982,
+        "skip_cause_breakdown": {
+          "rain": 22,
+          "heat": 2
+        },
+        "skip_cause_note": "Which signal put each true-SKIP hour into SKIP. Read this before interpreting skip_as_go_rate: if 'air' is absent, the metric is measuring heat and rain handling, not air-quality safety.",
+        "_policy_approximation": "apply_band_policy was fed hour-t weather rather than hour-t+6 weather; the dataset does not store the target hour's weather separately."
+      },
+      "fit_seconds_mean": 8.8106,
+      "note": "HistGradientBoostingClassifier"
+    },
+    "lgbm": {
+      "status": "OK",
+      "runs": 5,
+      "accuracy_mean": 0.8437,
+      "accuracy_sd": 0.0019,
+      "macro_f1_mean": 0.5837,
+      "macro_f1_sd": 0.0019,
+      "per_class": {
+        "good": {
+          "precision": 0.8819,
+          "recall": 0.9162,
+          "f1": 0.8987,
+          "support": 823
+        },
+        "satisfactory": {
+          "precision": 0.7985,
+          "recall": 0.8313,
+          "f1": 0.8146,
+          "support": 658
+        },
+        "moderate": {
+          "precision": 0.8235,
+          "recall": 0.493,
+          "f1": 0.6167,
+          "support": 142
+        },
+        "poor": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        },
+        "severe": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "hazardous": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "confusion": [
+        [
+          754,
+          67,
+          2,
+          0,
+          0,
+          0
+        ],
+        [
+          100,
+          547,
+          10,
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          71,
+          70,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          3,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "safety": {
+        "n_true_skip": 24,
+        "skip_as_go_count": 0,
+        "skip_as_go_rate": 0.0,
+        "skip_as_go_wilson95": [
+          0.0,
+          0.138
+        ],
+        "skip_recall": 1.0,
+        "n_true_go": 1367,
+        "go_as_skip_count": 0,
+        "go_as_skip_rate": 0.0,
+        "decision_confusion": [
+          [
+            1366,
+            1,
+            0
+          ],
+          [
+            3,
+            232,
+            0
+          ],
+          [
+            0,
+            0,
+            24
+          ]
+        ],
+        "decision_accuracy": 0.9975,
+        "skip_cause_breakdown": {
+          "rain": 22,
+          "heat": 2
+        },
+        "skip_cause_note": "Which signal put each true-SKIP hour into SKIP. Read this before interpreting skip_as_go_rate: if 'air' is absent, the metric is measuring heat and rain handling, not air-quality safety.",
+        "_policy_approximation": "apply_band_policy was fed hour-t weather rather than hour-t+6 weather; the dataset does not store the target hour's weather separately."
+      },
+      "fit_seconds_mean": 3.971,
+      "note": "LightGBM 4.7.0"
+    },
+    "ensemble": {
+      "status": "OK",
+      "runs": 5,
+      "accuracy_mean": 0.8483,
+      "accuracy_sd": 0.0005,
+      "macro_f1_mean": 0.6079,
+      "macro_f1_sd": 0.0006,
+      "per_class": {
+        "good": {
+          "precision": 0.8778,
+          "recall": 0.9162,
+          "f1": 0.8966,
+          "support": 823
+        },
+        "satisfactory": {
+          "precision": 0.8266,
+          "recall": 0.804,
+          "f1": 0.8151,
+          "support": 658
+        },
+        "moderate": {
+          "precision": 0.7698,
+          "recall": 0.6831,
+          "f1": 0.7239,
+          "support": 142
+        },
+        "poor": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        },
+        "severe": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "hazardous": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "confusion": [
+        [
+          754,
+          67,
+          2,
+          0,
+          0,
+          0
+        ],
+        [
+          104,
+          529,
+          24,
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          44,
+          97,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          3,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "safety": {
+        "n_true_skip": 24,
+        "skip_as_go_count": 0,
+        "skip_as_go_rate": 0.0,
+        "skip_as_go_wilson95": [
+          0.0,
+          0.138
+        ],
+        "skip_recall": 1.0,
+        "n_true_go": 1367,
+        "go_as_skip_count": 0,
+        "go_as_skip_rate": 0.0,
+        "decision_confusion": [
+          [
+            1366,
+            1,
+            0
+          ],
+          [
+            3,
+            232,
+            0
+          ],
+          [
+            0,
+            0,
+            24
+          ]
+        ],
+        "decision_accuracy": 0.9975,
+        "skip_cause_breakdown": {
+          "rain": 22,
+          "heat": 2
+        },
+        "skip_cause_note": "Which signal put each true-SKIP hour into SKIP. Read this before interpreting skip_as_go_rate: if 'air' is absent, the metric is measuring heat and rain handling, not air-quality safety.",
+        "_policy_approximation": "apply_band_policy was fed hour-t weather rather than hour-t+6 weather; the dataset does not store the target hour's weather separately."
+      },
+      "fit_seconds_mean": 11.8966,
+      "note": "Consensus Ensemble (LGBM+HistGB+RF)"
+    },
+    "tabpfn": {
+      "status": "SKIPPED",
+      "reason": "tabpfn refuses to download weights until a Prior Labs licence acceptance is recorded in TABPFN_TOKEN, even though the weights are public on Hugging Face. We do not bypass a licence gate. See docs/NEEDS_HUMAN.md for the 3 steps."
+    }
+  }
+}

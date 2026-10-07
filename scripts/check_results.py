@@ -11,7 +11,9 @@ So RESULTS.md is checked against the JSON files it claims to summarise.
 What it checks
 --------------
 1. Dataset sizes and the holdout window quoted in the prose.
-2. Every cell of the go/no-go comparison table.
+2. Accuracy/macro-F1 means and published sample standard deviations, plus
+   SKIP rates and counts, in every go/no-go comparison table. Repeated fitted
+   models must publish spread; deterministic baselines need not.
 3. That classes absent from the holdout are *named* in RESULTS.md.
 4. That the SKIP-cause breakdown in RESULTS.md matches the artifact, including
    the disclosure that no SKIP hour was caused by air quality.
@@ -178,7 +180,9 @@ def check_tabular(md: str, raw_path: Path, out: Problem) -> None:
         out.add("tabular: could not find the go/no-go comparison table")
         return
 
-    header = [norm(c) for c in table[0]]
+    # Parentheses in column names are meaningful: norm() is for model names
+    # and would erase "(SKIP)", silently leaving that safety count unchecked.
+    header = [c.strip().strip("*").lower() for c in table[0]]
 
     def column(*names: str) -> int | None:
         for name in names:
@@ -218,18 +222,43 @@ def check_tabular(md: str, raw_path: Path, out: Problem) -> None:
             continue
 
         for name, col, expected in (
-            ("accuracy", col_acc, entry["accuracy_mean"]),
-            ("macro_f1", col_f1, entry["macro_f1_mean"]),
+            ("accuracy", col_acc, entry.get("accuracy_mean", entry.get("accuracy"))),
+            ("macro_f1", col_f1, entry.get("macro_f1_mean", entry.get("macro_f1"))),
             ("skip_as_go", col_skip, entry["safety"]["skip_as_go_rate"]),
             ("n_skip", col_nskip, entry["safety"]["n_true_skip"]),
         ):
             if col is None:
+                out.add(f"tabular {key}.{name}: missing column in RESULTS.md")
                 continue
-            got = num(row[col])
+            cell = row[col].replace("±", "+/-")
+            parts = cell.split("+/-")
+            got = num(parts[0])
             if got is None or expected is None:
+                out.add(f"tabular {key}.{name}: missing or invalid published/artifact number")
                 continue
-            if abs(got - float(expected)) > 0.0005:
+            tolerance = 0.00005 if name in {"accuracy", "macro_f1"} else 0.0005
+            if abs(got - float(expected)) > tolerance:
                 out.add(f"tabular {key}.{name}: RESULTS.md says {got}, artifact says {expected}")
+            else:
+                checked += 1
+
+            if name not in {"accuracy", "macro_f1"}:
+                continue
+            # These two baselines do not fit stochastic models. Repeating their
+            # predictions is not a measurement of seed variability.
+            needs_spread = entry.get("runs", 1) > 1 and key not in {"majority", "persistence"}
+            if len(parts) == 1:
+                if needs_spread:
+                    out.add(f"tabular {key}.{name}: runs > 1 but no standard deviation published")
+                continue
+            sd = num(parts[1]) if len(parts) == 2 else None
+            expected_sd = entry.get(f"{name}_sd")
+            if sd is None or expected_sd is None:
+                out.add(f"tabular {key}.{name}_sd: missing or invalid standard deviation")
+            elif abs(sd - float(expected_sd)) > 0.00005:
+                out.add(
+                    f"tabular {key}.{name}_sd: RESULTS.md says {sd}, artifact says {expected_sd}"
+                )
             else:
                 checked += 1
 
@@ -324,6 +353,21 @@ def check_per_class(md: str, raw_path: Path, out: Problem) -> None:
 
     if checked:
         out.add(f"per-class: verified {checked} numbers against {raw_path.name}", ok=True)
+
+
+def check_additional_tabular(md: str, raw_path: Path, out: Problem) -> None:
+    """Comparison tables need the same checks as the adopted headline table."""
+    headers = list(re.finditer(r"^\|\s*model\s*\|\s*accuracy\s*\|", md, re.MULTILINE))
+    for header in headers[1:]:
+        citations = list(re.finditer(r"gono_[0-9A-Za-z_+\-]+\.json", md[: header.start()]))
+        if not citations:
+            out.add("tabular comparison: no cited artifact before table")
+            continue
+        path = RAW / citations[-1].group()
+        if not path.exists():
+            out.add(f"tabular comparison: cited artifact {path.name} does not exist")
+            continue
+        check_tabular(md[header.start() :], path, out)
 
 
 def check_skip_causes(md: str, raw_path: Path, out: Problem) -> None:
@@ -472,7 +516,13 @@ def main(argv: list[str] | None = None) -> int:
         print(out[0])
         return 1
 
-    for check in (check_dataset, check_tabular, check_per_class, check_skip_causes):
+    for check in (
+        check_dataset,
+        check_tabular,
+        check_additional_tabular,
+        check_per_class,
+        check_skip_causes,
+    ):
         check(md, raw_path, out)
     try:
         check_briefings(md, brief_path, out)
