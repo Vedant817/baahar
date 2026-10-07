@@ -290,44 +290,59 @@ genuinely bad-air days.
 
 Holdout: last 20% chronologically — 1,626 rows, 2026-07-30 → 2026-10-05.
 
-| model | accuracy | macro-F1 | skip_as_go | n(SKIP) | fit time |
-|---|---|---|---|---|---|
-| majority class | 0.4047 | 0.1441 | 0.0 | 24 | <0.1 s |
-| persistence (band at *t*) | 0.3647 | 0.2492 | 0.0 | 24 | <0.1 s |
-| logistic regression | 0.7294 | 0.4850 | 0.0 | 24 | 1.9 s |
-| random forest | 0.8296 | 0.5642 | 0.0 | 24 | 1.8 s |
-| gradient boosting | 0.8383 | 0.5874 | 0.0 | 24 | 5.7 s |
-| lightgbm | 0.8432 | 0.5825 | 0.0 | 24 | 2.5 s |
-| **consensus ensemble** | **0.8487** | **0.6089** | **0.0** | **24** | **6.6 s** |
-| TabPFN 9.1.0 (cpu)* | 0.8512 | 0.6040 | 0.0 | 24 | 339 s |
+| model | accuracy | macro-F1 (4 bands)* | moderate recall | skip_as_go | n(SKIP) | fit time |
+|---|---|---|---|---|---|---|
+| majority class | 0.4047 | 0.1441 | 0.0000 | 0.0 | 24 | <0.1 s |
+| persistence (band at *t*) | 0.3647 | 0.2492 | 0.2746 | 0.0 | 24 | <0.1 s |
+| logistic regression | 0.7294 +/- 0.0000 | 0.4850 +/- 0.0000 | 0.3662 | 0.0 | 24 | 1.0 s |
+| random forest | 0.8325 +/- 0.0040 | 0.5695 +/- 0.0073 | 0.4296 | 0.0 | 24 | 2.1 s |
+| gradient boosting | 0.8383 +/- 0.0000 | 0.5874 +/- 0.0000 | 0.5493 | 0.0 | 24 | 8.8 s |
+| lightgbm | 0.8437 +/- 0.0019 | 0.5837 +/- 0.0019 | 0.4930 | 0.0 | 24 | 4.0 s |
+| **consensus ensemble** | **0.8483 +/- 0.0005** | **0.6079 +/- 0.0006** | **0.6831** | **0.0** | **24** | **11.9 s** |
+| TabPFN 9.1.0 (cpu) | 0.8542 +/- 0.0038 | 0.6031 +/- 0.0038 | 0.5775 | 0.0 | 24 | 312 s |
 
-**TabPFN wins. By an amount I do not think means anything.** +0.012 accuracy and
-+0.014 macro-F1 over gradient boosting is about 20 rows out of 1,626, from a single
-seed with no variance recorded. If I ran that comparison ten times the order would
-probably flip. And it is not like-for-like with the rows above it: TabPFN was
-SKIPPED in the current run, and its number comes from an earlier run fitted on
-instantaneous-only NAQI, before the conservative-NAQI fix. That row is provisional.
-So: TabPFN is the top line because it has the highest number, and I am not going to
-dress that up as "prior-learning transformers beat gradient boosting on Indian air
-quality".
+*Headline accuracy and macro-F1 are 5-seed means +/- sd (seeds 0–4). Macro-F1 is averaged over the 4 supported bands (good, satisfactory, moderate, poor); poor contributes a hard 0.0 for every model; severe and hazardous have zero holdout support. Moderate recall describes seed 0. Full details in [`eval/RESULTS.md`](eval/RESULTS.md).*
 
-Two things I find more interesting than the ranking:
+**TabPFN leads headline accuracy, but no longer wins overall — and loses where safety matters.**
+With `TABPFN_TOKEN` configured, TabPFN 9.1.0 ran for real on the identical chronological split,
+identical 13 base features (including the current effective-NAQI column), and across 5 seeds (0–4).
+It achieves the highest overall accuracy (**0.8542 +/- 0.0038**), edging the consensus ensemble
+(**0.8483 +/- 0.0005**) by +0.0059 — a margin within the width of its own seed standard deviation.
 
-**Where the gain actually came from.** One place: `moderate` recall, 0.5845 vs
-0.5563. Same error class, slightly fewer of them. The hard bands — `poor` on three
-examples, `severe` and `hazardous` on zero — are untested for TabPFN exactly as
-they are for everything else in the table.
+However, the consensus ensemble achieves higher macro-F1 (**0.6079 +/- 0.0006** vs TabPFN
+**0.6031 +/- 0.0038** across the 4 supported bands). More critically, TabPFN is substantially worse on
+`moderate` recall (**0.5775** vs ensemble **0.6831** on seed 0). For an outdoor air-safety assistant,
+moderate recall is the critical under-warning boundary: predicting a moderate pollution day as clean
+(good or satisfactory) misleads someone who depends on the app to avoid respiratory irritation. The
+consensus ensemble's threshold tuning (`tau_mod = 0.31`) successfully guards this boundary (+10.56
+percentage points of moderate recall over TabPFN).
 
-**It is 37x slower to fit, and on the live window it appears to pick the same
-hour as the heuristic.** I compared the two by hand on 6 October and did **not**
-record that per-hour comparison as an artifact, so read it as an anecdote rather
-than a measurement - nothing in `eval/raw/` supports it, and I would rather say
-that than publish a precise-sounding "all 24 hours" that no run reproduces. So for
-*this product*, TabPFN may be paying 339 seconds for something I cannot prove. I am
-shipping the claim because it genuinely ran and won the table, not because I think
-it is the right engine
-yet. The honest version of this row is "it works, it is the best number I have,
-and I cannot yet show it is worth it".
+TabPFN is also ~26× slower to fit (~312 s vs ~11.9 s for the ensemble), and requires ~5 minutes on CPU
+to score the holdout vs milliseconds for the ensemble.
+
+The honest framing: **TabPFN is the best number I have on accuracy, and the worst engine for this
+product on the band that matters.**
+
+*(Historical note: the 0.8512 accuracy / 0.6040 macro-F1 pair in earlier commits was a different,
+provisional single-seed measurement fitted on instantaneous-only NAQI before the conservative-NAQI
+fix; it was not re-fitted on current features and is not like-for-like with the 5-seed evaluation).*
+
+Two things worth understanding about these numbers:
+
+**Macro-F1 is averaged over 4 supported bands, not 6, and `poor` contributes a hard 0.0.**
+There are six CPCB bands, but the holdout has zero `severe` and zero `hazardous` rows — both bands
+are completely untested. The `poor` band has only 3 target rows, and every model (including TabPFN)
+scores 0.0 precision and 0.0 recall on it. So the published macro-F1 is simply the 3-band macro
+(0.8119 for the ensemble, 0.8075 for TabPFN) multiplied by 3/4 (0.75). Whenever macro-F1 is quoted,
+it describes only those 4 bands.
+
+**It takes ~312 s per fit, and on the live window it appears to pick the same hour as the heuristic.**
+I compared the two by hand on 6 October and did **not** record that per-hour comparison as an artifact,
+so read it as an anecdote rather than a measurement — nothing in `eval/raw/` supports it, and I would
+rather say that than publish a precise-sounding "all 24 hours" that no run reproduces. So for
+*this product*, TabPFN pays over five minutes of CPU compute for an accuracy edge that fails to protect
+moderate recall. I am shipping the TabPFN evaluation because it genuinely ran across all 5 seeds,
+not because it is the right engine for the product.
 
 Now notice the safety column is `0.0` for everything, *including the majority-class
 baseline that predicts a single band for every hour.* That is not a triumph of
@@ -523,7 +538,7 @@ alternative would undermine every number above.
 | Category | Entering? | Why |
 |---|---|---|
 | **Best Use of Gemma** | ✅ | `gemma-4-31b-it` generated and evaluated every model briefing. Open-weight model at the core of the product. |
-| **Best Use of TabPFN** | ✅ | `tabpfn==9.1.0` ran on a real 1,626-row chronological holdout: 0.8512 acc / 0.6040 macro-F1, best in my table. Licence accepted by a human; CPU override documented. |
+| **Best Use of TabPFN** | ✅ | `tabpfn==9.1.0` evaluated on the real 1,626-row chronological holdout on current effective-NAQI base features across 5 seeds: **0.8542 +/- 0.0038 acc / 0.6031 +/- 0.0038 macro-F1** (4 supported bands). Genuine evaluation, no longer provisional or SKIPPED; leads raw accuracy, though ensemble wins macro-F1 and moderate recall. Licence accepted by a human, token set in `.env`, CPU override documented. [`eval/RESULTS.md`](eval/RESULTS.md) § A. *(Historical provisional run on instantaneous NAQI: 0.8512 / 0.6040, not like-for-like).* |
 | **Best Use of Tinker** | ❌ | Fine-tuning dataset built (219 balanced examples), **run not performed** — API unverifiable. Not claiming it. |
 | **Best Use of Render** | ❌ | Not deployed. |
 | **Best Use of ElevenLabs** | ❌ | Client implemented, never called. |
@@ -571,10 +586,12 @@ A lot, and none of it is "add a feed".
    Poor hours, and every SKIP caused by rain or heat — so the one metric I care
    about most, polluted-day safety, is currently unmeasured. A Bengaluru winter
    dataset is the fix, and it is boring data collection rather than modelling.
-3. **Make TabPFN earn its 339 seconds.** It is the best number in my table and it
-   changes none of my answers. Either it starts beating the heuristic where it
-   matters — the bands the holdout cannot currently test — or it goes back to being
-   an optional extra, which is where it honestly belongs right now.
+3. **Make TabPFN earn its ~312 seconds.** It is the best number I have on accuracy
+   and the worst engine for this product on the band that matters (moderate recall),
+   while changing none of the hourly decisions on the live window. Either it starts
+   earning its compute where it matters — particularly on the under-represented severe/poor
+   bands this holdout cannot currently test — or the consensus ensemble remains the
+   unambiguous choice.
 4. **Finish the Tinker fine-tune** — the 219-example dataset exists; the reason is
    that `tinker.ai` does not resolve from my environment, not a missing idea. The
    fine-tune's target is stylistic: prose instead of a restated plan, Indian outdoor

@@ -33,7 +33,7 @@ Official comparison, every model (accuracy / macro-F1 / moderate recall / skip_a
 | histgb | 0.8383 / 0.5874 / 0.5493 / 0.0 | 0.8383 / 0.5874 / 0.5493 / 0.0 | 0.8223 / 0.5879 / 0.6338 / 0.0 |
 | lgbm | 0.8432 / 0.5825 / 0.4930 / 0.0 | 0.8432 / 0.5825 / 0.4930 / 0.0 | 0.8266 / 0.5813 / 0.5352 / 0.0 |
 | ensemble | 0.8487 / 0.6089 / 0.6831 / 0.0 | 0.8487 / 0.6089 / 0.6831 / 0.0 | 0.8192 / 0.5948 / 0.7817 / 0.0 |
-| tabpfn | SKIPPED: licence gate | SKIPPED: licence gate | SKIPPED: licence gate |
+| tabpfn | SKIPPED: licence gate | 0.8542 / 0.6031 / 0.5775 / 0.0* | SKIPPED: unsupported in compact |
 
 Before: `eval/raw/gono_20261007T141923+0530.json`.
 After/adopted: `eval/raw/gono_20261007T142204+0530.json`.
@@ -55,7 +55,9 @@ uv run python scripts/check_results.py
 ```
 
 Section A and all its per-class tables were generated from raw JSON values.
-The checker passed unchanged. Both runs report TabPFN SKIPPED on its licence gate.
+The checker passed unchanged. The initial contract fix runs (141923 and 142204) reported TabPFN SKIPPED on its licence gate; with the token subsequently set, the adopted 5-seed evaluation (gono_20261007T155628+0530.json) ran TabPFN for real on the 13 base features (0.8542 acc / 0.6031 macro-F1 / 0.5775 moderate recall / 0.0 skip_as_go), while compact remained SKIPPED.
+
+*TabPFN was SKIPPED in the initial contract-fix run (142204) on the licence gate, but subsequently evaluated on the adopted 13-feature baseline across 5 seeds in gono_20261007T155628+0530.json.
 
 Saved-model identity: reloaded ensemble and LightGBM reproduce the adopted
 holdout confusion matrices on all 1,626 target rows. Hashes and feature order

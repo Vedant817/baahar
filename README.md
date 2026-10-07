@@ -147,12 +147,18 @@ a first-class fallback rather than a stub. Without the licence, `run_eval.py`
 reports TabPFN as **`SKIPPED`** with the reason and still publishes the
 conventional baselines.
 
-**With the licence accepted**, TabPFN runs for real on a 1,626-row chronological
-holdout and scores **0.8512 accuracy / 0.6040 macro-F1** - the best number in the
-table, from a run fitted on instantaneous-only NAQI *before* the conservative-NAQI
-fix. It was not re-fitted on the current feature column, so that row is provisional
-and not like-for-like with the models beside it. Two things worth knowing before
-you trust it:
+**With the licence accepted and token configured**, TabPFN runs for real on the
+1,626-row chronological holdout on current effective-NAQI base features across
+5 seeds (0–4) and scores **0.8542 +/- 0.0038 accuracy / 0.6031 +/- 0.0038 macro-F1**
+(averaged over the 4 supported bands; two bands have zero support). It achieves the
+highest raw accuracy in the evaluation (+0.0059 over the consensus ensemble), but loses
+macro-F1 to the ensemble (0.6079 +/- 0.0006) and is substantially worse on moderate recall
+(0.5775 vs 0.6831 on seed 0) — the critical under-warning direction for an air-safety product.
+It is the best number we have on accuracy and the worst engine for this product on the band
+that matters. *(The earlier 0.8512 acc / 0.6040 macro-F1 pair cited in older commits was a
+different, provisional single-seed measurement on instantaneous-only NAQI before the
+conservative-NAQI fix; it was not re-fitted on current features and is not like-for-like with
+the rest of the table).* Three things worth knowing before you trust it:
 
 - TabPFN guards against >5,000 rows on CPU. `score.py` sets
   `TABPFN_ALLOW_CPU_LARGE_DATASET=1` for you, **before importing tabpfn** (setting
@@ -213,14 +219,15 @@ PDT is UTC−7, so Oct 11 23:59 PDT = Oct 12 06:59 UTC = Oct 12 12:29 IST.
 
 **Status of each box:** weather, air quality, Indian NAQI, the heuristic scorer,
 the Gemma briefing and Pocket Mode all run today with zero keys. **TabPFN** runs
-for real once a Prior Labs licence acceptance is in `TABPFN_TOKEN`
-([how](docs/NEEDS_HUMAN.md)) — 0.8512 acc / 0.6040 macro-F1 on a 1,626-row
-([how](docs/NEEDS_HUMAN.md)) - 0.8512 acc / 0.6040 macro-F1 on a 1,626-row
-chronological holdout, from a run that predates the conservative-NAQI fix and was
-not re-fitted, so treat that number as provisional.
+for real with `TABPFN_TOKEN` configured ([how](docs/NEEDS_HUMAN.md)) —
+**0.8542 +/- 0.0038 acc / 0.6031 +/- 0.0038 macro-F1** (4 supported bands) over
+5 seeds on current effective-NAQI base features. It leads headline accuracy, but
+loses macro-F1 and moderate recall to the consensus ensemble. *(The old 0.8512 / 0.6040
+numbers were from an earlier provisional single-seed run on instantaneous NAQI, not
+like-for-like with current features).*
 `tinker.ai` did not resolve from the build environment, so no endpoint is
 hard-coded ([adr/001](docs/adr/001-tinker-outcome.md)) and the category is not
-claimed. **ElevenLabs** voice is implemented against fixtures and never called.
+claimed. **ElevenLabs** voice is implemented against fixtures and blocked at the vendor's paid plan.
 
 Full module-by-module detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 Decision records: [`docs/adr/`](docs/adr/).

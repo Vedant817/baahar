@@ -12,36 +12,32 @@ Ordered by what unblocks the most.
 
 ## 1. TabPFN — unblocks the **TabPFN** prize category (Featured, $200)
 
-**Status: code complete, evaluation blocked on one licence acceptance.**
+**Status: COMPLETED. Evaluated across 5 seeds on current features.**
 
-`uv run python scripts/run_eval.py` currently reports:
+`TABPFN_TOKEN` is configured and TabPFN 9.1.0 ran on the 1,626-row chronological
+holdout on current effective-NAQI base features across 5 seeds (0–4). The earlier
+`SKIPPED` status and provisional single-seed numbers have been retired.
 
-```
-tabpfn  SKIPPED -- tabpfn refuses to download weights until a Prior Labs
-        licence acceptance is recorded in TABPFN_TOKEN, even though the
-        weights are public on Hugging Face. We do not bypass a licence gate.
-```
+Artifact: [`eval/raw/gono_20261007T155628+0530.json`](../eval/raw/gono_20261007T155628+0530.json).
 
-Background, verified 2026-10-06: `tabpfn==9.1.0` calls
-`ensure_license_accepted()` before it will fetch weights. The weights themselves
-are public — `Prior-Labs/TabPFN-v2-clf` reports `gated=False` — so the block is
-a **licence acceptance, not a technical or access limit**. Baahar deliberately
-does not patch around it. Everything else about the TabPFN path is done: the
-adapter, the feature matrix, the eval harness, and the safety asymmetry that
-prevents the model from being more permissive than the safety policy.
+Results:
+- **Accuracy**: 0.8542 +/- 0.0038 (highest in the evaluation, +0.0059 over the consensus ensemble).
+- **Macro-F1**: 0.6031 +/- 0.0038 (averaged over the 4 supported bands; loses to consensus ensemble 0.6079 +/- 0.0006).
+- **Moderate recall**: 0.5775 (seed 0) vs ensemble 0.6831 (10.56 percentage points worse on the critical under-warning boundary).
+- **Fit time**: ~312 s per fit vs ensemble ~12 s (~26× slower; ~5 minutes for 1,626 CPU predictions).
 
-> **UPDATE 2026-10-06: the licence was accepted and TabPFN ran for real.**
-> `TABPFN_TOKEN` was in `.env` at the time and
-> `TabPFNClassifier(device="cpu").fit(...)` completed against `tabpfn_3_5`
-> weights, which is where the 0.8512 acc / 0.6040 macro-F1 numbers quoted
-> throughout came from.
+> **Prize category status**: **Genuinely claimable.** TabPFN was evaluated for real
+> on the current pipeline without mocks or shortcuts. The post claims the category
+> honestly, while explicitly reporting the product trade-off: TabPFN is the best
+> number on raw accuracy, but the consensus ensemble remains the superior engine
+> for this product because it wins macro-F1 and substantially outperforms TabPFN on
+> moderate recall.
 >
-> **UPDATE 2026-10-07: that token is no longer in `.env`, so the current run
-> SKIPPED TabPFN** (`gono_20261007T142204+0530.json`). The category is therefore
-> *provisional*. Re-adding the token is what makes it real again; nothing in the
-> codebase bypasses the gate in the meantime, by design.
+> *(Historical note: On 2026-10-06, an earlier single-seed run scored 0.8512 acc / 0.6040 macro-F1
+> on instantaneous-only NAQI before the conservative-NAQI fix; in a subsequent run it was SKIPPED
+> when the token was temporarily unset. Both were superseded by the 5-seed 2026-10-07 run).*
 
-### Steps (about 3 minutes)
+### Reproduction steps (if reproducing on a clean environment)
 
 1. Register at <https://ux.priorlabs.ai>.
 2. Sign in, open the **Licenses** tab, accept the TabPFN licence.
@@ -55,15 +51,9 @@ prevents the model from being more permissive than the safety policy.
 5. Re-run:
    ```bash
    uv sync --group dev --group ml
-   uv run python scripts/run_eval.py
+   uv run python scripts/run_eval.py --repeat 5
    ```
-6. Copy the numbers from `eval/raw/gono_*.json` into `eval/RESULTS.md`.
-
-If you would rather not deal with the licence, **skip it and say so in the post.**
-The honest version of the write-up is "TabPFN is implemented but gated behind a
-licence acceptance I did not have time to complete", and the conventional
-baselines in `RESULTS.md` are strong enough to carry the argument on their own.
-Do not claim the TabPFN category for code that never ran.
+6. The outputs match `eval/raw/gono_20261007T155628+0530.json` and [`eval/RESULTS.md`](../eval/RESULTS.md).
 
 ---
 
@@ -338,7 +328,7 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 
 | # | Item | Unblocks | Effort | Agent blocked? | Status |
 |---|---|---|---|---|---|
-| 1 | TabPFN licence | TabPFN category | 3 min | yes | **ran 2026-10-06** (0.8512 acc); token no longer set, so the current run SKIPPED it |
+| 1 | TabPFN licence | TabPFN category | 3 min | no (token set) | **done** — ran 2026-10-07 on current features over 5 seeds (0.8542 acc / 0.6031 macro-F1); category claimable |
 | 2 | Tinker key + FT run | Tinker category | 20 min + job | partly | blocked: `tinker.ai` does not resolve |
 | 3 | Gemini key | Gemma category | done | no | **done** — 36 cases judged |
 | 4 | ElevenLabs paid plan | ElevenLabs category | a paid plan | yes | **blocked at the vendor**: free accounts cannot call library voices over the API (HTTP 402) |
@@ -355,11 +345,13 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 
 - Everything that needs no key: the whole product, the web UI, Pocket Mode, the
   journal (including the species sighting question), the CLI, the seasonal species
-  cues, and 482 offline tests.
-- **TabPFN ran for real once.** On 2026-10-06 the licence was accepted and it
-  scored `0.8512` acc / `0.6040` macro-F1 on the chronological holdout. That run
-  predates the conservative-NAQI fix and was not re-fitted, and the current run
-  skipped it, so the number is provisional. `eval/RESULTS.md` A.
+  cues, and 505 offline tests.
+- **TabPFN ran for real across 5 seeds.** With `TABPFN_TOKEN` configured, TabPFN 9.1.0
+  was evaluated on the 1,626-row chronological holdout on current effective-NAQI
+  base features: **0.8542 +/- 0.0038 acc / 0.6031 +/- 0.0038 macro-F1** (4 supported bands).
+  It leads accuracy, but loses macro-F1 and moderate recall to the consensus ensemble.
+  The earlier provisional 0.8512 / 0.6040 single-seed numbers and the SKIPPED status
+  have been retired. [`eval/RESULTS.md`](../eval/RESULTS.md) § A.
 - **Gemma.** A key was present in the build environment, so the Gemma path was
   evaluated for real: 36 cases, machine checks plus a blind rubric.
   [`eval/RESULTS.md`](../eval/RESULTS.md) § B.

@@ -1,7 +1,7 @@
 # Definition of Done
 
 The checklist from the HF26 Week 1 brief, with an honest status for each item.
-Last updated **2026-10-06 IST**.
+Last updated **2026-10-07 IST**.
 
 Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 **BLOCKED** (needs a human) · **NOT DONE**
@@ -30,7 +30,7 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | Indian NAQI, not US AQI | `naqi.py`; CPCB breakpoints; `naqi_basis` provenance on every result |
 | **DONE** | GO / WAIT / SKIP scorer with documented policy | `features.py`, `score.py` |
 | **DONE** | Heuristic fallback always available | `score_heuristic`, called directly in `tests/test_score.py` and `tests/test_pocket.py`, and used as the fallback whenever a model is absent |
-| **PARTIAL** | TabPFN path implemented + evaluated | `tabpfn==9.1.0` on cpu ran for real on 2026-10-06: **0.8512 acc / 0.6040 macro-F1**, best in that table. Provisional - that run predates the conservative-NAQI fix, TabPFN was SKIPPED in the current run because `TABPFN_TOKEN` is not set, and it was not re-fitted. `eval/RESULTS.md` A. The request-time path is exercised by test after the feature-alignment fix (C.14) and only runs when a token and the artifact are both present. |
+| **DONE** | TabPFN path implemented + evaluated | `tabpfn==9.1.0` on cpu ran for real on 2026-10-07 on current effective-NAQI base features across 5 seeds (0–4): **0.8542 +/- 0.0038 acc / 0.6031 +/- 0.0038 macro-F1** (averaged over 4 supported bands). Leads accuracy, but loses macro-F1 to the consensus ensemble (0.6079 +/- 0.0006) and falls behind on moderate recall (0.5775 vs 0.6831 on seed 0). Fit time ~312 s. [`eval/RESULTS.md`](../eval/RESULTS.md) § A. *(Historical provisional run on instantaneous NAQI, not like-for-like: 0.8512 / 0.6040).* The request-time path is exercised by test after the feature-alignment fix (C.14) and only runs when a token and the artifact are both present. |
 | **DONE** | Gemma briefing path works | `brief.py`; `gemma-4-31b-it` via AI Studio free tier |
 | **DONE** | ≤120-word safety-aware briefing | `MAX_WORDS`, `enforce_safety` |
 | **DONE** | Pocket Mode | `pocket.py` + `static/`, verified headless |
@@ -71,7 +71,7 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 
 | | Item | Evidence |
 |---|---|---|
-| **DONE** | `post.md` complete DEV draft | [`post.md`](../post.md) |
+| **DONE** | DEV post draft complete | [`post.md`](../post.md) |
 | **NOT DONE** | Field test performed | [`FIELD_TEST.md`](FIELD_TEST.md) — **not yet done**, and marked as such |
 | **NOT DONE** | Photos / video | Awaiting the walk |
 | **DONE** | Human-only steps documented | [`NEEDS_HUMAN.md`](NEEDS_HUMAN.md) |
@@ -84,7 +84,7 @@ Only categories for tech that **actually ran**, per the challenge rule.
 | Category | Claim? | Why |
 |---|---|---|
 | **Gemma** | **Yes** | `gemma-4-31b-it` generated and evaluated briefings. Open-weight model at the core of the product. |
-| **TabPFN** | **Yes** | 	abpfn==9.1.0 ran on a real chronological holdout (1,626 rows): 0.8512 acc / 0.6040 macro-F1. Provisional: that run predates the conservative-NAQI fix and was not re-fitted, so it is not like-for-like with the other rows. Licence accepted by the human, not bypassed. val/RESULTS.md A. |
+| **TabPFN** | **Yes** | `tabpfn==9.1.0` ran on the real chronological holdout (1,626 rows) on current effective-NAQI base features across 5 seeds: **0.8542 +/- 0.0038 acc / 0.6031 +/- 0.0038 macro-F1** (4 supported bands). Genuine evaluation, no longer provisional or SKIPPED; leads table on accuracy, though ensemble wins macro-F1 and moderate recall. Licence accepted by the human, token set in `.env`. [`eval/RESULTS.md`](../eval/RESULTS.md) § A. *(Earlier 0.8512 / 0.6040 run was provisional on instantaneous NAQI, not like-for-like).* |
 | **Tinker** | **No** | Dataset built (219 examples), run not performed. Do not claim. |
 | **Render** | **No** | Not deployed. |
 | **ElevenLabs** | **No** | Client implemented, never called. Do not claim. |
@@ -118,11 +118,14 @@ name what a reader can reproduce.**
    and archive come from the same CAMS model — but it is not zero.
 6. **Gemma latency is 51.7 s p50 / 115.2 s p95.** Real, measured, and the reason
    the deterministic writer is the default.
-7. **TabPFN wins by an amount this run cannot defend.** +0.012 accuracy and
-   +0.014 macro-F1 over gradient boosting is ~20 rows on a 1,626-row holdout, at
-   `--repeat 1` with no seed variance. It is reported as the best number in the
-   table because it is, not because the gap is significant. It is also 37× slower
-   to fit, and on the live window it and the heuristic pick the same hour.
+7. **TabPFN leads accuracy, but no longer wins overall and is worse where safety matters.**
+   It achieves the highest headline accuracy (0.8542 +/- 0.0038 vs ensemble 0.8483 +/- 0.0005,
+   a slim +0.0059 margin within seed variance), but loses macro-F1 to the consensus ensemble
+   (0.6031 +/- 0.0038 vs 0.6079 +/- 0.0006 averaged across the 4 supported bands) and falls far
+   behind on moderate recall (0.5775 vs 0.6831 on seed 0) — the critical under-warning direction
+   for outdoor air safety. It is also ~26× slower to fit (~312 s vs ~12 s for the ensemble), and
+   on the live window it and the heuristic pick the same hour. The honest framing: it is the best
+   number we have on accuracy and the worst engine for this product on the band that matters.
 8. **The fitted TabPFN classifier is 840 MB** and is deliberately not committed
    (`eval/artifacts/` is gitignored). `scripts/run_eval.py` recreates it. This is
    the disk constraint doing its job: the weights stay out of the repo.
