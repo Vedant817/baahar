@@ -91,6 +91,15 @@ ml = [
   "tabpfn>=2.0",
 ]
 
+# Also heavy and opt-in: the Tinker SDK, used only by
+# scripts/fine_tune_tinker.py. It pulls transformers and tokenizers, and reaches
+# the training host rather than doing anything locally. Kept separate from `ml`
+# because a reader who wants to reproduce the tabular evaluation should not have
+# to install a fine-tuning client, and vice versa. Nothing in src/ imports it.
+tinker = [
+  "tinker>=0.32",
+]
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
