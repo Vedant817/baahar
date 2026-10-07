@@ -132,25 +132,61 @@ Two operational notes worth knowing:
 
 ---
 
-## 4. ElevenLabs — unblocks the **ElevenLabs** prize category (Partner, $100)
+## 4. ElevenLabs - unblocks the **ElevenLabs** prize category (Partner, $100)
 
-**Status: client implemented and tested against fixtures, never called live.**
+**Status: BLOCKED AT THE VENDOR'S PAID PLAN. Tested live 2026-10-07.**
 
-Baahar already generates the briefing; voice is a few lines on top.
+Baahar already generates the briefing; voice is a few lines on top, and the
+client is implemented and tested against fixtures.
+
+### What the live call returned
+
+With a real `ELEVENLABS_API_KEY` and a real `ELEVENLABS_VOICE_ID` in `.env`, the
+text-to-speech call returns:
+
+```
+POST https://api.elevenlabs.io/v1/text-to-speech/{voice_id}   -> HTTP 402
+
+{"detail":{"type":"payment_required",
+           "code":"paid_plan_required",
+           "message":"Free users cannot use library voices via the API.
+                       Please upgrade your subscription to use this voice.",
+           "status":"payment_required"}}
+```
+
+This is not a missing key, a wrong voice ID, or a bad request. The credentials
+are valid and the endpoint answers; **the free plan is not permitted to call
+library voices over the API at all.** No amount of configuration on our side
+changes that.
+
+### Why we stop here rather than upgrade
+
+`AGENTS.md` forbids adding a service that requires a card signup, and says to
+abort cleanly and ship the fallback when a partner promo walls on a card. That is
+exactly this. Upgrading would also mean the ElevenLabs number in
+`eval/RESULTS.md` depended on a paid account, which is a different claim from the
+one this repo makes about everything else.
+
+The product already degrades correctly: `brief --voice` without a working voice
+falls back to the text briefing and says so. Nothing breaks; one optional feature
+is absent.
+
+### To unblock
+
+Only a paid ElevenLabs plan does it. If you have one:
 
 1. Claim the ElevenLabs promo at <https://hacktoberfest.com/my/promos>.
-2. Create an API key at <https://elevenlabs.io>.
-3. Pick a voice and copy its ID.
-4. Put both in `.env`:
+2. Put the key and a voice ID in `.env`:
    ```
    ELEVENLABS_API_KEY=...
    ELEVENLABS_VOICE_ID=...
    ```
-5. Verify:
+3. Verify:
    ```bash
    uv run baahar brief --model template --voice
    uv run baahar serve      # then hit "speak" in the UI
    ```
+4. Re-run the briefing eval and update `eval/RESULTS.md` § B.
 
 Voice is the highest-leverage stretch feature for this particular challenge,
 because Pocket Mode's whole argument is that you should not be looking at a
@@ -305,7 +341,7 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 | 1 | TabPFN licence | TabPFN category | 3 min | yes | **ran 2026-10-06** (0.8512 acc); token no longer set, so the current run SKIPPED it |
 | 2 | Tinker key + FT run | Tinker category | 20 min + job | partly | blocked: `tinker.ai` does not resolve |
 | 3 | Gemini key | Gemma category | done | no | **done** — 36 cases judged |
-| 4 | ElevenLabs key | ElevenLabs category | 5 min | yes | key present, never called |
+| 4 | ElevenLabs paid plan | ElevenLabs category | a paid plan | yes | **blocked at the vendor**: free accounts cannot call library voices over the API (HTTP 402) |
 | 5 | WAQI token | nothing | 2 min | no | **done** — found a 1,727 km bug |
 | 6 | Render promo | nothing | 10 min | yes | optional |
 | 7 | **The walk** | credibility + the species rate | 30 min × 3 | **yes, always** | **not done** |
