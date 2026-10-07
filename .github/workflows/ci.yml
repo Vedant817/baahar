@@ -189,6 +189,9 @@ jobs:
         with:
           node-version: '24'
 
+      - name: Pocket Mode behaviour (no browser or server)
+        run: node scripts/app_state_test.mjs
+
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 

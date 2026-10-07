@@ -153,37 +153,26 @@ def _headline_for(plan: OutdoorPlan, park_name: str | None) -> tuple[str, str]:
         when = _next_hint(plan)
         if when:
             return ("Not yet.", f"Rest until {when}. Then outside.")
-        # No hour to promise, so promise none. The old wording here was "Rest
-        # until the window opens", which names no time and so is a promise the
-        # product cannot keep -- and for a WAIT plan it usually cannot keep it
-        # at all, because `pick_best` ranks GO above WAIT, so a WAIT verdict
-        # means no hour in the scored window was a GO. Saying so is more useful
-        # than a vague promise, and it is the only honest option left.
+        # `pick_best` ranks GO above WAIT across the full scored window.
+        # A planner-produced WAIT therefore has no clean hour to promise.
         return ("Not yet.", "No clean hour left in this window.")
     return ("Stay in.", "Baahar is not sending you out today.")
 
 
 def _next_hint(plan: OutdoorPlan) -> str:
-    """The hour to come back out at, or ``""`` when the plan has no such hour.
+    """Name an explicitly recorded future GO, never guess an opening time.
 
-    Read from the plan's own per-hour verdicts (`OutdoorPlan.slots`), never
-    invented: only an hour the scorer actually called GO is named, and only if
-    it falls *after* the hour the plan is already resting through -- otherwise
-    the copy would send someone back out earlier than the advice it is quoting.
-
-    ``%H:%M`` is deliberate and matches every other hour in the product
-    (`score._headline`, `brief.build_context`, `pocket.format_window`, the CLI
-    and `journal.py`). The pocket screen sits directly under a brief that shows
-    the same hours in the same format, so a second format here would be a
-    contradiction, not a nicety. Slot timestamps are whole hours, so there are no
-    minutes to render either way.
+    `build_plan` ranks every GO above WAIT before truncating the display list,
+    so a planner-produced WAIT has no GO anywhere in the full scored window.
+    This branch only serves externally constructed plans that explicitly carry
+    a later GO. `plan.slots` is a display subset, not a full forecast search.
     """
     candidates = [s.time for s in plan.slots if s.decision is Decision.GO]
     if plan.best_time is not None:
         candidates = [t for t in candidates if t > plan.best_time]
     if not candidates:
         return ""
-    return min(candidates).strftime("%H:%M")
+    return min(candidates).strftime("%I:%M %p").lstrip("0").lower()
 
 
 def _subline_for(plan: OutdoorPlan) -> str:

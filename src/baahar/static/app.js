@@ -329,6 +329,11 @@ function paintCue() {
 }
 
 function enterPocket(auto) {
+  // Deep links and timer callbacks must honour the same verdict as the button.
+  if (!state.pocketActive) {
+    cancelAutoPocket();
+    return;
+  }
   clearTimeout(state.pocketTimer);
   clearTimeout(state.countdown);
   clearInterval(state.autoTick);
@@ -527,8 +532,8 @@ function showFailsafe() {
 /* Auto-pocket with a visible, cancellable countdown. The user can always opt
  * out by tapping, and can opt in again immediately. */
 function scheduleAutoPocket() {
-  clearTimeout(state.pocketTimer);
-  clearInterval(state.autoTick);
+  cancelAutoPocket();
+  if (!state.pocketActive) return;
   state.autoPocketAt = Date.now() + AUTO_POCKET_MS;
   const hint = $('auto-hint');
   hint.hidden = false;
@@ -689,13 +694,13 @@ function boot() {
   if (params.get('auto') === '1' || skipToPocket || params.get('journal') === '1') {
     load().then(() => {
       const wantPocket = skipToPocket || params.get('journal') === '1';
-      if (wantPocket && state.data) {
+      if (wantPocket && state.data && state.pocketActive) {
         cancelAutoPocket();
         enterPocket(false);
       }
       // `?journal=1` jumps straight to the after-walk screen. Used to verify the
       // journal in the UI audit without waiting out a real walk.
-      if (params.get('journal') === '1' && state.data) {
+      if (params.get('journal') === '1' && state.data && state.pocketActive) {
         showFailsafe();
       }
     });

@@ -13,6 +13,7 @@ exactly the same way `data/samples/` is.
 from __future__ import annotations
 
 import json
+from datetime import datetime
 
 import pytest
 from fastapi.testclient import TestClient
@@ -476,7 +477,17 @@ class TestPocketIntegration:
 
 class TestApiContract:
     @pytest.fixture
-    def client(self):
+    def client(self, monkeypatch):
+        # Replay the recorded morning, not whichever hours wall-clock time
+        # happens to retain. Later rainy hours correctly suppress species cues.
+        from baahar import air, weather
+        from baahar.models import slice_from_now
+
+        def recorded_morning(items, hours):
+            return slice_from_now(items, hours, now=datetime(2026, 10, 5))
+
+        monkeypatch.setattr(weather, "slice_from_now", recorded_morning)
+        monkeypatch.setattr(air, "slice_from_now", recorded_morning)
         return TestClient(app)
 
     def test_cue_tags_align_with_cues_in_order(self, client) -> None:
