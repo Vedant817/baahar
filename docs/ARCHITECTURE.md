@@ -1,33 +1,24 @@
 # Architecture
 
-Baahar is a small Python package plus a static front end. There is no framework
-in the middle and no build step anywhere, which is a deliberate response to the
-constraint that a judge should be able to clone the repo and be running inside
-five minutes.
+The mental model for Baahar, why the pieces are shaped the way they are, and the
+failure modes each piece exists to prevent.
+
+---
+
+## The pipeline
 
 ```
-   ┌──────────────────────────────────────────────────────────┐
-   │  baahar serve  →  FastAPI                                │
-   │                    /                 /api/brief           │
-   │              index.html          (plan + brief + pocket)  │
-   │              style.css                                   │
-   │              app.js          3 screens, 1 request         │
-   └───────────────────────┬──────────────────────────────────┘
-                           │
-   ┌───────────────────────▼──────────────────────────────────┐
-   │  cli.py            brief · score · parks · check · serve │
-   └───────────────────────┬──────────────────────────────────┘
                            │
                     ┌──────▼───────┐
                     │  forecast.py │  join on timestamp
                     └──────┬───────┘
-            ┌──────────────┼───────────────┐
+            ┌──────────────┴──────────────┐
             ▼              ▼               ▼
      ┌────────────┐  ┌─────────────┐  ┌──────────┐
      │ weather.py │  │   air.py    │  │stations.py│  optional WAQI
      │ Open-Meteo │  │ Open-Meteo  │  └──────────┘
      │ forecast   │  │ + naqi.py   │
-     └─────┬──────┘  └──────┬──────┘
+     └─────┬──────┘  └─────┬───────┘
            │                │
            │          ┌─────▼──────┐
            │          │  naqi.py   │  CPCB Indian NAQI
@@ -36,13 +27,13 @@ five minutes.
            └────────────┬───────────┘
                         ▼
              ┌─────────────────────┐
-             │ features.py         │  tabular rows + the documented
-             │   · policy labels   │  GO/WAIT/SKIP rule
+             │ features.py         │  28 features (13 base + 15 lags)
+             │   · policy labels   │  + documented GO/WAIT/SKIP rule
              │   · time_split()    │  chronological, never shuffled
              └──────────┬──────────┘
                         ▼
              ┌─────────────────────┐
-             │ score.py            │  heuristic  ──or──▶  TabPFN
+             │ score.py            │  heuristic ──or──▶ Ensemble (shipped) / TabPFN
              │   · safety asymmetry│  a model may be stricter
              └──────────┬──────────┘  than policy, never laxer
                         ▼
@@ -51,22 +42,32 @@ five minutes.
              │ template · gemma    │        │ pocket.py    │
              │ · enforce_safety()  │◀───────│ sensory cues │
              └─────────────────────┘        └──────────────┘
+                        │
+                        ▼
+             ┌─────────────────────┐
+             │ static/             │  HTML + CSS + JS, zero bundler
+             │ · Pocket Mode       │  large type, near-black, phone-down
+             └─────────────────────┘
 ```
 
-## The seven decisions worth explaining
+---
 
-### 1. Indian NAQI, computed rather than borrowed
+## Eight decisions that matter
 
-Open-Meteo returns `us_aqi`, the US EPA scale. India has its own index with
-different breakpoints, different averaging periods and different band names.
-`naqi.py` recomputes the CPCB Indian NAQI from raw concentrations — per-pollutant
-sub-index from the 2014 CPCB breakpoints, overall index = the worst sub-index.
+### 1. Indian NAQI, not US AQI
 
-The CPCB breakpoints are defined on **24-hour means**; Open-Meteo publishes
-**hourly** values. So the number Baahar shows is an approximation of official
-NAQI, not official NAQI. Every result carries that provenance in a
-`naqi_basis` field and the UI labels it. A clearly-labelled approximation is
-honest; a mislabelled number is not.
+Open-Meteo's default is the US EPA AQI. Baahar ignores it and derives the Indian
+National Air Quality Index directly from PM2.5, PM10, NO₂, SO₂, CO and O₃
+concentrations using CPCB breakpoints (`naqi.py`).
+
+US AQI and Indian NAQI have different breakpoints and different reference
+intervals (e.g. 24h for particulate matter vs US 1h/24h mixes). Running an
+Indian park planner on US AQI is an error in jurisdiction.
+
+Every hourly record carries `naqi_basis`, which names the governing pollutant
+(e.g. `pm25` or `pm10`). If particulate data is missing entirely, `naqi` is
+`None` — Baahar refuses to derive a cheerful NAQI from NO₂ alone on a day when
+dust is the hazard.
 
 ### 2. The safety rule is code, not a model output
 
@@ -81,20 +82,22 @@ every threshold stated in one place and anchored to CPCB's own category edges
 
 ### 3. Safety asymmetry in the scorer
 
-When TabPFN is active, a model prediction that is *less* strict than the policy
-is discarded in favour of the policy. A model may talk someone out of a walk; it
-may never talk them into bad air. This is one comparison in `score.py` and it
-is covered by tests with a deliberately adversarial stub model.
+When a learned model (consensus ensemble or TabPFN) is active, a model prediction
+that is *less* strict than the policy is discarded in favour of the policy. A model
+may talk someone out of a walk; it may never talk them into bad air. This is one
+comparison in `score.py` and it is covered by tests with a deliberately adversarial
+stub model.
 
-- **The eval and the app share one feature definition.** `FEATURE_NAMES` in
-  `features.py` is the single owner of the column order; `scripts/run_eval.py`
-  does `FEATURE_COLUMNS = list(TABPFN_FEATURE_ORDER)` rather than declaring its
-  own list. They used to diverge (13 archive columns against 15 library features),
-  which meant a model fitted by the eval could never be used at request time: it
-  raised inside `predict_proba`, `score_slots` caught it, and every hour fell back
-  to the policy while the published accuracy table described a pipeline nobody ran.
-  `score_tabpfn` now compares `n_features_in_` against `len(FEATURE_NAMES)` and
-  raises a `ValueError` naming both counts, rather than reordering columns to fit.
+- **The eval and the app share one 28-feature definition.** `FEATURE_NAMES` in
+  `features.py` is the single owner of the column order (13 base features + 15 past-hour
+  lags, differences, and rolling windows); `scripts/run_eval.py` does
+  `FEATURE_COLUMNS = list(TABPFN_FEATURE_ORDER)` rather than declaring its own list.
+  They used to diverge (13 archive columns against 15 library features), which meant
+  a model fitted by the eval could never be used at request time: it raised inside
+  `predict_proba`, `score_slots` caught it, and every hour fell back to the policy
+  while the published accuracy table described a pipeline nobody ran. `score_tabpfn`
+  now compares `n_features_in_` against `len(FEATURE_NAMES)` (28) and raises a
+  `ValueError` naming both counts, rather than reordering columns to fit.
   `eval/RESULTS.md` § C.14 has the full account.
 
 Two further practical notes, all three learned by hitting them:
@@ -111,18 +114,19 @@ Two further practical notes, all three learned by hitting them:
   of the repository and `scripts/run_eval.py` recreates them. This is the disk
   constraint from `AGENTS.md` enforced at the file level rather than by
   discipline.
-
 - **The fitted model lives at `DEFAULT_TABPFN_ARTIFACT`** and both
   `save_tabpfn_model` and `load_tabpfn_model` name that constant. They used to
   disagree: the writer saved to `eval/artifacts/tabpfn_gono.pkl` while the reader
   only looked at `$TABPFN_MODEL_PATH`, so an 840 MB fitted model sat on disk being
   invisible to the scorer. Writer and reader must agree on the path; that is a test.
 
-Measured on the offline fixture window: TabPFN and the heuristic pick the same best
-hour and disagree on 0 of 24 hours. The model is in the product because the
-challenge asked for it and because it is genuinely the highest-scoring model on the
-holdout — not because it currently changes an answer. That is recorded rather than
-smoothed over.
+**Engine selection:** The consensus ensemble (LightGBM, HistGradientBoosting, Random Forest)
+is the default shipped engine (`ensemble_gono.pkl`). While TabPFN achieves the highest raw
+accuracy on the 1,626-row holdout (0.8708 vs 0.8617), the ensemble wins on 4-band macro-F1
+(0.6349 vs 0.6193), 3-band macro-F1 (0.8249 vs 0.8236), and crucially on moderate recall
+(0.6620 vs 0.5845) — the vital under-warning boundary for an air quality assistant — while
+fitting in 46 s instead of 358 s. On the offline fixture window, both TabPFN and the heuristic
+pick the same best hour.
 
 ### 4. Safety is enforced after generation, not requested in a prompt
 
@@ -197,75 +201,3 @@ which is a readout, not an instruction. `SeasonalCue.evidence` carries the count
 the radius, the source, and the disclaimer, and is rendered small underneath.
 `tests/test_seasonal.py` asserts the instruction stays under 45 characters and
 contains no statistics.
-
-Two boundaries keep the honesty from being merely intended:
-
-* `briefing_cue()` never hands a seasonal cue to the briefing writer. An LLM told
-  to include a species line will restate it more confidently than the record
-  supports, so the species never enters the prompt. This also keeps the 36-case
-  briefing evaluation describing the prompt that actually ships.
-* Seasonal cues are withheld entirely when the plan is not a GO, and whenever an
-  air or heat safety cue is showing. "Find the coolest patch of shade within fifty
-  metres" is doing real work at 34 °C, and a butterfly suggestion three taps away
-  from it would be a distraction from the one instruction that matters.
-
-The cue carries `taxon_id`, `scientific_name` and `source_url`, because common
-names are ambiguous and the binomial is what a reader can check. The app is not
-an identification tool and makes no identification claims.
-
-## Module map
-
-| Module | Responsibility | Knows nothing about |
-|---|---|---|
-| `config.py` | settings from `.env` + env, cached | anything domain-specific |
-| `http_client.py` | timeouts, retries, recorded fixtures | weather, air, models |
-| `naqi.py` | CPCB breakpoints, worst-sub-index | the network, the product |
-| `weather.py` | Open-Meteo forecast | air quality |
-| `air.py` | Open-Meteo AQ → Indian NAQI | scoring |
-| `stations.py` | optional WAQI cross-check | scoring, briefing |
-| `forecast.py` | timestamp join | policy |
-| `features.py` | feature rows, policy labels, time split | models |
-| `score.py` | TabPFN + heuristic, safety asymmetry | language |
-| `parks.py` | curated parks, nearest + shade | scoring |
-| `brief.py` | writers, safety repair, caching, voice | UI |
-| `pocket.py` | Pocket Mode payload and cue ordering | the writer |
-| `seasonal.py` | recorded species cues, wording, evidence | the network, scoring |
-| `app.py` | HTTP surface | HTML |
-| `cli.py` | terminal surface | HTTP |
-
-Dependencies point in one direction only. `naqi.py` is the leaf: it knows the
-CPCB table and nothing else, which is why its tests are fast, offline, and
-exhaustive.
-
-## Testing strategy
-
-- **Default run is offline.** No test touches the network. `pytest` passes with
-  the cable unplugged, because the product must too.
-- **Exhaustive where it matters.** Every CPCB breakpoint boundary is pinned in
-  `test_naqi.py`, including the exact value where a band changes.
-- **Adversarial where it matters.** `test_score.py` feeds a stub model that
-  always says GO and asserts the policy overrules it.
-- **Regression tests for real bugs.** Each bug found while building has a test
-  named after it — the Gemma reasoning part, mid-word truncation, the
-  self-deleting safety caveat, the duplicated park name, the `hidden`-attribute
-  override. They are in `tests/` with comments saying what happened.
-- **The UI is checked headlessly.** `scripts/ui_check.mjs` drives Chrome over
-  CDP using Node's built-in WebSocket — no npm install — and fails on console
-  errors, horizontal overflow, or a screen that should have been dismissed. It
-  also asserts the provenance line is *absent* under a hand-written cue and
-  *present* under a data-backed one, since a source credit on the wrong line is
-  the kind of bug a screenshot review would not catch.
-- **Honesty rules are tests, not prose.** `tests/test_seasonal.py` fails the
-  build if a cue ever promises a sighting, if the instruction grows past a
-  glanceable line, or if a species claim reaches the briefing prompt.
-
-## Deliberate omissions
-
-- **No background job scheduler.** Baahar answers one question at one moment.
-- **No user accounts, no database.** A JSONL journal and SQLite-free state; see
-  ADR 000.
-- **No continuous location.** City-level coordinates only. There is no GPS
-  history because a tool whose purpose is to get you away from the screen should
-  not be building a record of where you went.
-- **No metrics endpoint.** Nothing about Baahar needs telemetry, and shipping
-  any would undercut the privacy claim in the README.

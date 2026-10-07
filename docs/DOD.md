@@ -30,7 +30,7 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | Indian NAQI, not US AQI | `naqi.py`; CPCB breakpoints; `naqi_basis` provenance on every result |
 | **DONE** | GO / WAIT / SKIP scorer with documented policy | `features.py`, `score.py` |
 | **DONE** | Heuristic fallback always available | `score_heuristic`, called directly in `tests/test_score.py` and `tests/test_pocket.py`, and used as the fallback whenever a model is absent |
-| **DONE** | TabPFN path implemented + evaluated | `tabpfn==9.1.0` on cpu ran for real on 2026-10-07 on current effective-NAQI base features across 5 seeds (0–4): **0.8542 +/- 0.0038 acc / 0.6031 +/- 0.0038 macro-F1** (averaged over 4 supported bands). Leads accuracy, but loses macro-F1 to the consensus ensemble (0.6079 +/- 0.0006) and falls behind on moderate recall (0.5775 vs 0.6831 on seed 0). Fit time ~312 s. [`eval/RESULTS.md`](../eval/RESULTS.md) § A. *(Historical provisional run on instantaneous NAQI, not like-for-like: 0.8512 / 0.6040).* The request-time path is exercised by test after the feature-alignment fix (C.14) and only runs when a token and the artifact are both present. |
+| **DONE** | TabPFN path implemented + evaluated | `tabpfn==9.1.0` on cpu ran for real on 2026-10-07 on 28 features (13 base + 15 past-hour lags) across 5 seeds (0–4): **0.8708 +/- 0.0023 acc / 0.6193 +/- 0.0020 macro-F1** (averaged over 4 supported bands). Leads raw accuracy, but loses macro-F1 to the shipped consensus ensemble (0.6349 +/- 0.0368; 3 bands: 0.8249 vs 0.8236) and falls behind on moderate recall (0.5845 vs 0.6620 on seed 0). Fit time ~358 s vs ensemble ~46 s. [`eval/RESULTS.md`](../eval/RESULTS.md) § A. *(Historical superseded runs: 13-feature run was 0.8542 / 0.6031; earlier provisional run on instantaneous NAQI, not like-for-like: 0.8512 / 0.6040).* The request-time path is exercised by test after the feature-alignment fix (C.14) and only runs when a token and the artifact are both present. |
 | **DONE** | Gemma briefing path works | `brief.py`; `gemma-4-31b-it` via AI Studio free tier |
 | **DONE** | ≤120-word safety-aware briefing | `MAX_WORDS`, `enforce_safety` |
 | **DONE** | Pocket Mode | `pocket.py` + `static/`, verified headless |
@@ -84,7 +84,7 @@ Only categories for tech that **actually ran**, per the challenge rule.
 | Category | Claim? | Why |
 |---|---|---|
 | **Gemma** | **Yes** | `gemma-4-31b-it` generated and evaluated briefings. Open-weight model at the core of the product. |
-| **TabPFN** | **Yes** | `tabpfn==9.1.0` ran on the real chronological holdout (1,626 rows) on current effective-NAQI base features across 5 seeds: **0.8542 +/- 0.0038 acc / 0.6031 +/- 0.0038 macro-F1** (4 supported bands). Genuine evaluation, no longer provisional or SKIPPED; leads table on accuracy, though ensemble wins macro-F1 and moderate recall. Licence accepted by the human, token set in `.env`. [`eval/RESULTS.md`](../eval/RESULTS.md) § A. *(Earlier 0.8512 / 0.6040 run was provisional on instantaneous NAQI, not like-for-like).* |
+| **TabPFN** | **Yes** | `tabpfn==9.1.0` ran on the real chronological holdout (1,626 rows) on 28 features (13 base + 15 past-hour lags) across 5 seeds: **0.8708 +/- 0.0023 acc / 0.6193 +/- 0.0020 macro-F1** (4 supported bands). Genuine evaluation, no longer provisional or SKIPPED; leads raw accuracy, though the shipped consensus ensemble wins macro-F1 (0.6349 vs 0.6193; 3 bands: 0.8249 vs 0.8236) and moderate recall (0.6620 vs 0.5845). Licence accepted by the human, token set in `.env`. [`eval/RESULTS.md`](../eval/RESULTS.md) § A. *(Earlier 13-feature run was 0.8542 / 0.6031; earlier provisional run on instantaneous NAQI was 0.8512 / 0.6040, not like-for-like).* |
 | **Tinker** | **No** | Dataset built (219 examples), run not performed. Do not claim. |
 | **Render** | **No** | Not deployed. |
 | **ElevenLabs** | **No** | Client implemented, never called. Do not claim. |
@@ -118,14 +118,15 @@ name what a reader can reproduce.**
    and archive come from the same CAMS model — but it is not zero.
 6. **Gemma latency is 51.7 s p50 / 115.2 s p95.** Real, measured, and the reason
    the deterministic writer is the default.
-7. **TabPFN leads accuracy, but no longer wins overall and is worse where safety matters.**
-   It achieves the highest headline accuracy (0.8542 +/- 0.0038 vs ensemble 0.8483 +/- 0.0005,
-   a slim +0.0059 margin within seed variance), but loses macro-F1 to the consensus ensemble
-   (0.6031 +/- 0.0038 vs 0.6079 +/- 0.0006 averaged across the 4 supported bands) and falls far
-   behind on moderate recall (0.5775 vs 0.6831 on seed 0) — the critical under-warning direction
-   for outdoor air safety. It is also ~26× slower to fit (~312 s vs ~12 s for the ensemble), and
-   on the live window it and the heuristic pick the same hour. The honest framing: it is the best
-   number we have on accuracy and the worst engine for this product on the band that matters.
+7. **TabPFN leads accuracy (0.8708), and is NOT the best engine for the product.**
+   It achieves the highest raw accuracy (0.8708 +/- 0.0023 vs ensemble 0.8617 +/- 0.0005),
+   but loses macro-F1 to the consensus ensemble (0.6193 +/- 0.0020 vs 0.6349 +/- 0.0368 averaged
+   across the 4 supported bands; on the 3 bands with real support, ensemble 0.8249 vs TabPFN 0.8236)
+   and falls behind on moderate recall (0.5845 vs 0.6620 on seed 0) — the critical under-warning direction
+   for outdoor air safety. It is also ~7.7× slower to fit (~358 s vs ~46 s for the ensemble). The +/- figures
+   are seed spreads over 5 seeds (sd 0.0005 for ensemble; binomial SE at n=1,626 is ~0.009, ~18× larger,
+   so seed spreads do not imply statistical significance). The consensus ensemble is the shipped engine.
+   *(Old 13-feature run was 0.8542 / 0.6031 vs 0.8483 / 0.6079; earlier provisional single-seed run on instantaneous NAQI was 0.8512 / 0.6040, not like-for-like).*
 8. **The fitted TabPFN classifier is 840 MB** and is deliberately not committed
    (`eval/artifacts/` is gitignored). `scripts/run_eval.py` recreates it. This is
    the disk constraint doing its job: the weights stay out of the repo.

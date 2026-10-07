@@ -15,27 +15,30 @@ Ordered by what unblocks the most.
 **Status: COMPLETED. Evaluated across 5 seeds on current features.**
 
 `TABPFN_TOKEN` is configured and TabPFN 9.1.0 ran on the 1,626-row chronological
-holdout on current effective-NAQI base features across 5 seeds (0–4). The earlier
+holdout on 28 features (13 base + 15 past-hour lags) across 5 seeds (0–4). The earlier
 `SKIPPED` status and provisional single-seed numbers have been retired.
 
-Artifact: [`eval/raw/gono_20261007T155628+0530.json`](../eval/raw/gono_20261007T155628+0530.json).
+Artifact: [`eval/raw/gono_20261007T173452+0530.json`](../eval/raw/gono_20261007T173452+0530.json).
 
 Results:
-- **Accuracy**: 0.8542 +/- 0.0038 (highest in the evaluation, +0.0059 over the consensus ensemble).
-- **Macro-F1**: 0.6031 +/- 0.0038 (averaged over the 4 supported bands; loses to consensus ensemble 0.6079 +/- 0.0006).
-- **Moderate recall**: 0.5775 (seed 0) vs ensemble 0.6831 (10.56 percentage points worse on the critical under-warning boundary).
-- **Fit time**: ~312 s per fit vs ensemble ~12 s (~26× slower; ~5 minutes for 1,626 CPU predictions).
+- **Accuracy**: 0.8708 +/- 0.0023 (highest in the evaluation, +0.0091 over the consensus ensemble 0.8617 +/- 0.0005).
+- **Macro-F1**: 0.6193 +/- 0.0020 (averaged over the 4 supported bands; loses to consensus ensemble 0.6349 +/- 0.0368; on 3 bands with real support, ensemble 0.8249 vs TabPFN 0.8236).
+- **Moderate recall**: 0.5845 (seed 0 is 0.5845, 5-seed mean is 0.5845 +/- 0.0000) vs ensemble 0.6620 (7.75 percentage points worse on the critical under-warning boundary).
+- **Fit time**: 358.1 s per fit (~6 minutes on CPU) vs ensemble 46.43 s (~7.7× slower).
 
 > **Prize category status**: **Genuinely claimable.** TabPFN was evaluated for real
-> on the current pipeline without mocks or shortcuts. The post claims the category
-> honestly, while explicitly reporting the product trade-off: TabPFN is the best
-> number on raw accuracy, but the consensus ensemble remains the superior engine
-> for this product because it wins macro-F1 and substantially outperforms TabPFN on
-> moderate recall.
+> on the current 28-feature pipeline without mocks or shortcuts. The post claims the category
+> honestly, while explicitly reporting the product trade-off: TabPFN is the accuracy leader
+> on raw accuracy (0.8708), but the consensus ensemble remains the superior engine
+> for this product because it wins macro-F1 (0.6349 vs 0.6193) and substantially outperforms TabPFN on
+> moderate recall (0.6620 vs 0.5845).
 >
-> *(Historical note: On 2026-10-06, an earlier single-seed run scored 0.8512 acc / 0.6040 macro-F1
-> on instantaneous-only NAQI before the conservative-NAQI fix; in a subsequent run it was SKIPPED
-> when the token was temporarily unset. Both were superseded by the 5-seed 2026-10-07 run).*
+> The `+/-` figures are seed spreads (sample standard deviations over 5 seeds 0–4), not confidence
+> intervals: ensemble seed sd is 0.0005, whereas the binomial SE at n=1,626 is ~0.009 (~18× larger).
+>
+> *(Historical note: The earlier 13-feature run scored 0.8542 / 0.6031. An older single-seed run scored
+> 0.8512 acc / 0.6040 macro-F1 on instantaneous-only NAQI before the conservative-NAQI fix; in a subsequent
+> run it was SKIPPED when the token was temporarily unset. Both were superseded by the 28-feature 5-seed run).*
 
 ### Reproduction steps (if reproducing on a clean environment)
 
@@ -53,7 +56,7 @@ Results:
    uv sync --group dev --group ml
    uv run python scripts/run_eval.py --repeat 5
    ```
-6. The outputs match `eval/raw/gono_20261007T155628+0530.json` and [`eval/RESULTS.md`](../eval/RESULTS.md).
+6. The outputs match `eval/raw/gono_20261007T173452+0530.json` and [`eval/RESULTS.md`](../eval/RESULTS.md).
 
 ---
 
@@ -328,7 +331,7 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 
 | # | Item | Unblocks | Effort | Agent blocked? | Status |
 |---|---|---|---|---|---|
-| 1 | TabPFN licence | TabPFN category | 3 min | no (token set) | **done** — ran 2026-10-07 on current features over 5 seeds (0.8542 acc / 0.6031 macro-F1); category claimable |
+| 1 | TabPFN licence | TabPFN category | 3 min | no (token set) | **done** — ran 2026-10-07 on current 28 features over 5 seeds (0.8708 acc / 0.6193 macro-F1); category claimable |
 | 2 | Tinker key + FT run | Tinker category | 20 min + job | partly | blocked: `tinker.ai` does not resolve |
 | 3 | Gemini key | Gemma category | done | no | **done** — 36 cases judged |
 | 4 | ElevenLabs paid plan | ElevenLabs category | a paid plan | yes | **blocked at the vendor**: free accounts cannot call library voices over the API (HTTP 402) |
@@ -347,11 +350,12 @@ notes into `post.md`. Until then both documents say the walk has not happened.
   journal (including the species sighting question), the CLI, the seasonal species
   cues, and 505 offline tests.
 - **TabPFN ran for real across 5 seeds.** With `TABPFN_TOKEN` configured, TabPFN 9.1.0
-  was evaluated on the 1,626-row chronological holdout on current effective-NAQI
-  base features: **0.8542 +/- 0.0038 acc / 0.6031 +/- 0.0038 macro-F1** (4 supported bands).
-  It leads accuracy, but loses macro-F1 and moderate recall to the consensus ensemble.
-  The earlier provisional 0.8512 / 0.6040 single-seed numbers and the SKIPPED status
-  have been retired. [`eval/RESULTS.md`](../eval/RESULTS.md) § A.
+  was evaluated on the 1,626-row chronological holdout on 28 features (13 base + 15 past-hour lags):
+  **0.8708 +/- 0.0023 acc / 0.6193 +/- 0.0020 macro-F1** (4 supported bands).
+  It leads raw accuracy, but loses macro-F1 and moderate recall (0.5845 vs 0.6620) to the consensus ensemble,
+  which is the shipped engine. The earlier 13-feature numbers (0.8542 / 0.6031), the provisional 0.8512 / 0.6040
+  single-seed numbers, and the SKIPPED status have all been retired as superseded history.
+  [`eval/RESULTS.md`](../eval/RESULTS.md) § A.
 - **Gemma.** A key was present in the build environment, so the Gemma path was
   evaluated for real: 36 cases, machine checks plus a blind rubric.
   [`eval/RESULTS.md`](../eval/RESULTS.md) § B.

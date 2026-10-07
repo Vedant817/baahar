@@ -1,27 +1,36 @@
-# Baahar · बाहर
+# Baahar (बाहर) — Bengaluru outdoor-planning assistant
 
-> **The screen is the shortest part of the walk.**
+> *Find Bengaluru's next clean outdoor hour (NAQI + heat + rain), generate a ~30s
+> park briefing with open AI, then Pocket Mode so your phone goes dark while you
+> walk.*
 
-Baahar finds Bengaluru's **next safe outdoor hour** from air quality, heat and
-rain — speaks a ~30-second park briefing written by an open model — and then
-**turns the screen off** so you actually go outside.
-
-Built for the [DEV Hacktoberfest Open-Source AI Challenge, Week 1: Touch Grass](https://dev.to/challenges/hacktoberfest-week1-2026-10-05).
-
-![The decision, the briefing, and the park](docs/media/02-brief.png)
+Built for the **Hugging Face / DEV Challenge 2026** (Week 1). MIT-licensed,
+India-first, beginner-friendly, runnable in five minutes with zero API keys and
+no paid services.
 
 ---
 
+![Baahar web UI: 12-hour decision strip and one-tap park briefing](docs/media/01-briefing.png)
+
 ## Why this exists
 
-It is 2am and you are building something. The weather app says 38°C, one map
-app says the air is fine, another says stay inside, and you have just spent
-fifteen minutes resolving a question that should take twenty seconds. Then you
-put the phone away and do not leave, because the decision itself was the
-screen time.
+Bengaluru is a walking city with a particulate problem. The air is not Delhi's,
+but in October the monsoon exits, construction dust picks up, and a 07:00 walk
+can hit NAQI 65 while a 10:00 walk hits NAQI 180. The data to know the difference
+is public; the habit to check it before leaving the house is not.
 
-Baahar collapses that into: **read or hear 30 seconds → pocket the phone →
-walk.**
+Most weather apps fail this in one of two ways:
+
+1. They report **US AQI**, which uses different breakpoints and different
+   reference times from the Central Pollution Control Board (CPCB) standard. A
+   "Moderate" reading in US AQI is not the same physical condition as
+   "Moderate" in Indian NAQI.
+2. They are **engagement surfaces**. They want you scrolling an hourly forecast,
+   looking at a map, reading a news card.
+
+Baahar's opinion is that an outdoor-planning assistant should do its job in
+**thirty seconds**, hand you a reason to walk and a safety boundary, and then
+**shut up and get out of the way**. That is what Pocket Mode is.
 
 It is deliberately *not* a social app, a tracker, or a feed. It has no streak
 counter and nothing to come back to. The success metric is you leaving.
@@ -34,19 +43,16 @@ counter and nothing to come back to. The success metric is you leaving.
    [Open-Meteo](https://open-meteo.com/) (no API key, no signup, no card).
 2. Converts those pollutant concentrations into **Indian NAQI** using the CPCB
    sub-index breakpoints — *not* a US AQI number wearing an Indian label.
-3. Scores the next hours **GO / WAIT / SKIP** with a tabular model
-   ([TabPFN](https://priorlabs.ai/)) on those signals, falling back to a
-   documented heuristic when the heavy ML extra isn't installed.
+3. Scores the next hours **GO / WAIT / SKIP** with a 28-feature tabular model
+   (the shipped consensus ensemble, or optional [TabPFN](https://priorlabs.ai/))
+   on weather and past-hour air-quality signals, falling back to a documented
+   heuristic when ML dependencies are absent.
 4. Generates a **≤120-word park briefing** with an open model
    (Gemma via [Google AI Studio](https://aistudio.google.com/)), optionally
    fine-tuned on Indian outdoor-briefing style via hosted
    [Tinker](https://tinker.ai).
 5. Optionally speaks it aloud, then drops into **Pocket Mode**: near-black
    screen, one line of text, a walk timer. No feeds, no badges, no notifications.
-   The "another thing to notice" button cycles past the hand-written cues to
-   species people have actually logged nearby this month, from research-grade
-   [iNaturalist](https://www.inaturalist.org) records — a suggestion, never a
-   promise that you'll see one.
 
 If the air is bad or it is genuinely too hot, Baahar says **SKIP** and means it.
 It will not cheer you into bad air.
@@ -148,25 +154,27 @@ reports TabPFN as **`SKIPPED`** with the reason and still publishes the
 conventional baselines.
 
 **With the licence accepted and token configured**, TabPFN runs for real on the
-1,626-row chronological holdout on current effective-NAQI base features across
-5 seeds (0–4) and scores **0.8542 +/- 0.0038 accuracy / 0.6031 +/- 0.0038 macro-F1**
-(averaged over the 4 supported bands; two bands have zero support). It achieves the
-highest raw accuracy in the evaluation (+0.0059 over the consensus ensemble), but loses
-macro-F1 to the ensemble (0.6079 +/- 0.0006) and is substantially worse on moderate recall
-(0.5775 vs 0.6831 on seed 0) — the critical under-warning direction for an air-safety product.
-It is the best number we have on accuracy and the worst engine for this product on the band
-that matters. *(The earlier 0.8512 acc / 0.6040 macro-F1 pair cited in older commits was a
-different, provisional single-seed measurement on instantaneous-only NAQI before the
-conservative-NAQI fix; it was not re-fitted on current features and is not like-for-like with
-the rest of the table).* Three things worth knowing before you trust it:
+1,626-row chronological holdout on 28 features (13 base + 15 past-hour lags) across
+5 seeds (0–4) and scores **0.8708 +/- 0.0023 accuracy / 0.6193 +/- 0.0020 macro-F1**
+(averaged over the 4 supported bands; two bands have zero holdout support; `poor` has n=3).
+It achieves the highest raw accuracy in the evaluation (+0.0091 over the consensus ensemble
+0.8617 +/- 0.0005), but loses macro-F1 to the shipped consensus ensemble (0.6349 +/- 0.0368;
+on the 3 bands with real support, ensemble 0.8249 vs TabPFN 0.8236) and is substantially worse
+on moderate recall (0.5845 vs 0.6620 on seed 0) — the critical under-warning direction for an
+air-safety product. TabPFN also costs 358.1 s per fit (~6 minutes on CPU) vs 46.43 s for the ensemble.
+The +/- figures describe seed spreads (sample standard deviations over 5 seeds 0–4), not confidence
+intervals (binomial SE at n=1,626 is ~0.009, roughly 18× larger). The consensus ensemble is the
+shipped engine. *(The earlier 13-feature run scored 0.8542 / 0.6031; an older provisional single-seed
+run cited in older commits was 0.8512 / 0.6040 on instantaneous NAQI, not like-for-like with current features).*
+Three things worth knowing before you trust it:
 
 - TabPFN guards against >5,000 rows on CPU. `score.py` sets
   `TABPFN_ALLOW_CPU_LARGE_DATASET=1` for you, **before importing tabpfn** (setting
   it afterwards does nothing — the guard snapshots its settings at import). Full
-  eval is ~5.5 minutes.
+  eval is ~6 minutes (358 s fit).
 - The fitted classifier is **840 MB**, so `eval/artifacts/` is gitignored and
   `run_eval.py` recreates it. No weights in this repo, by design.
-- The eval and the app share **one** feature definition. They didn't for a while:
+- The eval and the app share **one** 28-feature definition. They didn't for a while:
   the eval fitted on 13 archive columns while the app built 15 library features, so
   a fitted model could never actually be used at request time — it failed inside
   `predict_proba` and every hour silently fell back to the heuristic while the
@@ -204,27 +212,28 @@ PDT is UTC−7, so Oct 11 23:59 PDT = Oct 12 06:59 UTC = Oct 12 12:29 IST.
             ▼                     ▼                     ▼
    ┌────────────────┐   ┌──────────────────┐   ┌──────────────────┐
    │ weather.py     │   │ air.py           │   │ score.py         │
-   │ Open-Meteo     │   │ Open-Meteo AQ +   │   │ TabPFN  ──or──▶  │
-   │ forecast       │   │ CPCB Indian NAQI │   │ heuristic        │
-   └────────┬───────┘   └────────┬─────────┘   └────────┬─────────┘
-            └─────────────────────┼──────────────────────┘
-                              ▼
-                   ┌──────────────────────┐
-                   │ brief.py             │  Gemma  ──or──▶  Tinker FT
-                   │ ≤120 words + caveats │  (optional ElevenLabs voice)
-                   └──────────┬───────────┘
-                              ▼
-                       Pocket Mode
+   │ Open-Meteo     │   │ Open-Meteo AQ +   │   │ Ensemble (ship)  │
+   │ forecast       │   │ CPCB Indian NAQI │   │ · or TabPFN      │
+   └────────┬───────┘   └────────┬─────────┘   │ · or heuristic   │
+            │                    │             └────────┬─────────┘
+            └────────────────────┼──────────────────────┘
+                                 ▼
+                      ┌──────────────────────┐
+                      │ brief.py             │  Gemma  ──or──▶  Tinker FT
+                      │ ≤120 words + caveats │  (optional ElevenLabs voice)
+                      └──────────┬───────────┘
+                                 ▼
+                          Pocket Mode
 ```
 
 **Status of each box:** weather, air quality, Indian NAQI, the heuristic scorer,
-the Gemma briefing and Pocket Mode all run today with zero keys. **TabPFN** runs
-for real with `TABPFN_TOKEN` configured ([how](docs/NEEDS_HUMAN.md)) —
-**0.8542 +/- 0.0038 acc / 0.6031 +/- 0.0038 macro-F1** (4 supported bands) over
-5 seeds on current effective-NAQI base features. It leads headline accuracy, but
-loses macro-F1 and moderate recall to the consensus ensemble. *(The old 0.8512 / 0.6040
-numbers were from an earlier provisional single-seed run on instantaneous NAQI, not
-like-for-like with current features).*
+the Gemma briefing and Pocket Mode all run today with zero keys. The **consensus ensemble**
+(LightGBM, HistGradientBoosting, Random Forest) is the shipped engine (**0.8617 +/- 0.0005 acc /
+0.6349 +/- 0.0368 macro-F1** over 28 features). **TabPFN** runs for real with `TABPFN_TOKEN`
+configured ([how](docs/NEEDS_HUMAN.md)) — **0.8708 +/- 0.0023 acc / 0.6193 +/- 0.0020 macro-F1**
+(4 supported bands) over 5 seeds on 28 features. It leads headline accuracy, but loses macro-F1
+and moderate recall (0.5845 vs 0.6620) to the ensemble. *(Earlier 13-feature run was 0.8542 / 0.6031;
+older provisional single-seed run was 0.8512 / 0.6040 on instantaneous NAQI, not like-for-like).*
 `tinker.ai` did not resolve from the build environment, so no endpoint is
 hard-coded ([adr/001](docs/adr/001-tinker-outcome.md)) and the category is not
 claimed. **ElevenLabs** voice is implemented against fixtures and blocked at the vendor's paid plan.
@@ -234,19 +243,11 @@ Decision records: [`docs/adr/`](docs/adr/).
 
 ---
 
-## Why open matters here
+## Why open models make sense here
 
-- **The tabular decision is inspectable.** "Is it safe to walk?" is a
-  classification over six public numeric signals. TabPFN fits it from a public
-  CSV, and Baahar publishes the confusion matrix — including how often it
-  wrongly says *GO* on a day that should have been *SKIP*. A black-box
-  "wellness score" could not show you that number, and that number is the whole
-  safety argument.
-- **Fine-tune and swap.** The briefing model is an interchangeable component.
-  A hosted Tinker LoRA on Indian outdoor language, plain Gemma, or a locally
-  served open weight — the product does not change. No vendor lock-in is baked
-  into the pitch.
-- **Cost.** Open-Meteo is keyless. Gemma's free tier needs no card. TabPFN is a
+- **Zero API bill.** Open-Meteo has no key; Gemma runs on the AI Studio
+  free tier; TabPFN runs locally on CPU under an open research licence;
+  iNaturalist provides CC-licensed biodiversity records; Hugging Face is the
   free research library. The whole demo runs on a laptop with no paid account,
   which is the only reason a solo first-time builder could ship it in five days.
 - **Privacy by default.** Location stays at city granularity. There is no GPS

@@ -236,11 +236,11 @@ on".
 
 ```
    weather.py ──┐
-                ├─→ forecast.py ─→ features.py ─→ score.py ─→ brief.py ─→ Pocket Mode
-   air.py ──────┘   (join on        (tabular      (TabPFN or   (Gemma /      (near-black,
-   naqi.py            timestamp)      features +    heuristic)    template)     timer, one
-   (CPCB NAQI)                       documented                   + safety     instruction)
-                                     policy)                       repair)
+                ├──▶ forecast.py ──▶ features.py ──▶ score.py ──▶ brief.py ──▶ Pocket Mode
+   air.py ──────┘   (join on        (28 tabular   (shipped       (Gemma /      (near-black,
+   naqi.py            timestamp)      features +    ensemble,     template)     timer, one
+   (CPCB NAQI)                       documented     TabPFN, or    + safety     instruction)
+                                     policy)        heuristic)     repair)
 ```
 
 Three decisions in here that I would defend:
@@ -275,7 +275,12 @@ prediction**:
 > ahead** — where the target comes from an independent reading of that future
 > hour.
 
-Features are hour-*t* only. The split is **chronological**, never shuffled,
+The feature set uses **28 features**: 13 base features at hour *t* (effective NAQI,
+PM2.5, PM10, temperature, apparent temperature, precipitation, precipitation probability,
+humidity, wind speed, UV index, day/night flag, hour, month) plus 15 past-hour lag,
+difference, and rolling-window columns (`naqi_lag1/3/6`, `naqi_diff1/3/6`, `naqi_rate6`,
+`pm25_lag1`, `pm25_diff3`, `pm10_diff3`, `temp_diff3`, `wind_lag1`, `wind_diff1`,
+`naqi_rolling3/6`). The split is **chronological**, never shuffled,
 because air quality is strongly autocorrelated and a shuffle leaks neighbouring
 hours across the boundary and inflates everything.
 
@@ -290,57 +295,68 @@ genuinely bad-air days.
 
 Holdout: last 20% chronologically — 1,626 rows, 2026-07-30 → 2026-10-05.
 
-| model | accuracy | macro-F1 (4 bands)* | moderate recall | skip_as_go | n(SKIP) | fit time |
-|---|---|---|---|---|---|---|
-| majority class | 0.4047 | 0.1441 | 0.0000 | 0.0 | 24 | <0.1 s |
-| persistence (band at *t*) | 0.3647 | 0.2492 | 0.2746 | 0.0 | 24 | <0.1 s |
-| logistic regression | 0.7294 +/- 0.0000 | 0.4850 +/- 0.0000 | 0.3662 | 0.0 | 24 | 1.0 s |
-| random forest | 0.8325 +/- 0.0040 | 0.5695 +/- 0.0073 | 0.4296 | 0.0 | 24 | 2.1 s |
-| gradient boosting | 0.8383 +/- 0.0000 | 0.5874 +/- 0.0000 | 0.5493 | 0.0 | 24 | 8.8 s |
-| lightgbm | 0.8437 +/- 0.0019 | 0.5837 +/- 0.0019 | 0.4930 | 0.0 | 24 | 4.0 s |
-| **consensus ensemble** | **0.8483 +/- 0.0005** | **0.6079 +/- 0.0006** | **0.6831** | **0.0** | **24** | **11.9 s** |
-| TabPFN 9.1.0 (cpu) | 0.8542 +/- 0.0038 | 0.6031 +/- 0.0038 | 0.5775 | 0.0 | 24 | 312 s |
+| model | accuracy | macro-F1 (4 bands)* | macro-F1 (3 bands) | moderate recall | skip_as_go | n(SKIP) | fit time |
+|---|---|---|---|---|---|---|---|
+| majority class | 0.4047 | 0.1441 | - | 0.0000 | 0.0 | 24 | <0.1 s |
+| persistence (band at *t*) | 0.3647 | 0.2492 | - | 0.2746 | 0.0 | 24 | <0.1 s |
+| logistic regression | 0.7897 +/- 0.0000 | 0.5361 +/- 0.0000 | 0.7147 | 0.4225 | 0.0 | 24 | 2.0 s |
+| random forest | 0.8280 +/- 0.0020 | 0.5780 +/- 0.0045 | 0.7720 | 0.5141 | 0.0 | 24 | 3.2 s |
+| gradient boosting | 0.8567 +/- 0.0000 | **0.6906** +/- 0.0000 | 0.7874 | 0.4789 | 0.0 | 24 | 60.1 s |
+| lightgbm | 0.8594 +/- 0.0013 | 0.6347 +/- 0.0524 | 0.7950 | 0.5000 | 0.0 | 24 | 23.9 s |
+| **consensus ensemble** (shipped) | **0.8617 +/- 0.0005** | 0.6349 +/- 0.0368 | **0.8249** | **0.6620** | 0.0 | 24 | 46.4 s |
+| TabPFN 9.1.0 (cpu) | **0.8708 +/- 0.0023** | 0.6193 +/- 0.0020 | 0.8236 | 0.5845 | 0.0 | 24 | 358 s |
 
-*Headline accuracy and macro-F1 are 5-seed means +/- sd (seeds 0–4). Macro-F1 is averaged over the 4 supported bands (good, satisfactory, moderate, poor); poor contributes a hard 0.0 for every model; severe and hazardous have zero holdout support. Moderate recall describes seed 0. Full details in [`eval/RESULTS.md`](eval/RESULTS.md).*
+*Headline accuracy and macro-F1 are 5-seed means +/- sd (seeds 0–4) on a **28-feature** set: 13
+base features plus 15 past-hour lag, difference and rolling-window columns. Moderate recall describes
+seed 0. Full details in [`eval/RESULTS.md`](eval/RESULTS.md).*
 
-**TabPFN leads headline accuracy, but no longer wins overall — and loses where safety matters.**
-With `TABPFN_TOKEN` configured, TabPFN 9.1.0 ran for real on the identical chronological split,
-identical 13 base features (including the current effective-NAQI column), and across 5 seeds (0–4).
-It achieves the highest overall accuracy (**0.8542 +/- 0.0038**), edging the consensus ensemble
-(**0.8483 +/- 0.0005**) by +0.0059 — a margin within the width of its own seed standard deviation.
+*The two macro-F1 columns disagree, and the disagreement is the point.* Published macro-F1 averages the
+4 supported bands (good, satisfactory, moderate, poor), and `poor` has **n=3**. Gradient boosting is the only model that caught any of those
+three rows (F1 0.4000 on 1 of 3), which is worth 0.4000/4 = 0.1000 of macro-F1 by itself. That one row out of 1,626 is why it leads the
+published 4-band column at 0.6906 while ranking **last** of the strong models on the 3 bands
+with real support (0.7874 against the ensemble's 0.8249). Two of the six CPCB bands (`severe` and `hazardous`) have
+zero holdout rows, so 2 of the 6 CPCB bands are untested entirely.
 
-However, the consensus ensemble achieves higher macro-F1 (**0.6079 +/- 0.0006** vs TabPFN
-**0.6031 +/- 0.0038** across the 4 supported bands). More critically, TabPFN is substantially worse on
-`moderate` recall (**0.5775** vs ensemble **0.6831** on seed 0). For an outdoor air-safety assistant,
-moderate recall is the critical under-warning boundary: predicting a moderate pollution day as clean
-(good or satisfactory) misleads someone who depends on the app to avoid respiratory irritation. The
-consensus ensemble's threshold tuning (`tau_mod = 0.31`) successfully guards this boundary (+10.56
-percentage points of moderate recall over TabPFN).
+**The +/- figures describe seed spreads, NOT confidence intervals.**
+The ensemble seed standard deviation is 0.0005 across the five seeds (0–4); the binomial standard error at n=1,626 is roughly 0.009 (~18× larger). The seed spread measures reproducibility across fits on the same data, not statistical significance on unseen weather. At this sample size, differences between top models cannot be claimed as statistically significant based on seed spreads.
 
-TabPFN is also ~26× slower to fit (~312 s vs ~11.9 s for the ensemble), and requires ~5 minutes on CPU
-to score the holdout vs milliseconds for the ensemble.
+**The accuracy leader is TabPFN (0.8708), and it is NOT the best engine for this product.**
+With `TABPFN_TOKEN` configured, TabPFN 9.1.0 ran for real on the identical chronological split, the
+identical 28 features and the same 5 seeds (0–4). It posts the best raw accuracy in the table
+(**0.8708 +/- 0.0023** against the consensus ensemble's **0.8617 +/- 0.0005**) — but it loses macro-F1
+(**0.6193** vs **0.6349** across the 4 supported bands; and **0.8236** vs **0.8249** on the 3 bands with real support)
+and loses where safety matters most. `moderate` recall is
+**0.5845** for TabPFN against **0.6620** for the ensemble — a 7.75 percentage point deficit (11
+more of the 142 moderate hours caught). For an outdoor air-safety
+assistant that is the number that matters: moderate recall is the under-warning boundary, where
+calling a polluted morning "clean" is the failure that reaches a person's lungs. Accuracy rewards the two
+easy bands; moderate recall measures the one that hurts.
 
-The honest framing: **TabPFN is the best number I have on accuracy, and the worst engine for this
-product on the band that matters.**
+TabPFN also costs ~358 s to fit against the ensemble's ~46 s (~7.7× slower), and requires ~5 minutes on CPU to score the holdout vs milliseconds for the ensemble.
 
-*(Historical note: the 0.8512 accuracy / 0.6040 macro-F1 pair in earlier commits was a different,
-provisional single-seed measurement fitted on instantaneous-only NAQI before the conservative-NAQI
-fix; it was not re-fitted on current features and is not like-for-like with the 5-seed evaluation).*
+The honest framing: **TabPFN is the accuracy leader on the metric that ignores the band
+distribution, and the consensus ensemble is the engine that is shipped.** I am claiming the TabPFN
+category for having integrated, licensed, evaluated and reported it honestly — not for winning.
+
+*(Historical note: earlier commits carried 0.8512 acc / 0.6040 macro-F1 from a provisional single-seed run on
+instantaneous-only NAQI before the conservative-NAQI fix, and an earlier 13-feature run at 0.8542 / 0.6031 vs 0.8483 / 0.6079. Both
+are superseded historical measurements and neither is like-for-like with the 28-feature run above).*
 
 Two things worth understanding about these numbers:
 
-**Macro-F1 is averaged over 4 supported bands, not 6, and `poor` contributes a hard 0.0.**
-There are six CPCB bands, but the holdout has zero `severe` and zero `hazardous` rows — both bands
-are completely untested. The `poor` band has only 3 target rows, and every model (including TabPFN)
-scores 0.0 precision and 0.0 recall on it. So the published macro-F1 is simply the 3-band macro
-(0.8119 for the ensemble, 0.8075 for TabPFN) multiplied by 3/4 (0.75). Whenever macro-F1 is quoted,
-it describes only those 4 bands.
+**Macro-F1 is averaged over 4 supported bands, not 6, and the fourth is 3 rows wide.**
+There are six CPCB bands, but the holdout has zero `severe` and zero `hazardous` rows — two of the six
+are completely untested. The `poor` band has 3 target rows. Seven of the eight models score 0.0 F1 on
+it; gradient boosting catches 1 of the 3 (F1 0.4000). So the published column is the 3-band macro plus a
+fourth term that is usually zero and occasionally worth 0.1000 — which is why the two columns above
+disagree. Whenever macro-F1 is quoted from this table it describes 4 bands, one of which is three rows
+wide, and the 3-band figure is the one worth comparing across models.
 
-**It takes ~312 s per fit, and on the live window it appears to pick the same hour as the heuristic.**
+**It takes ~358 s per fit, and on the live window it appears to pick the same hour as the heuristic.**
 I compared the two by hand on 6 October and did **not** record that per-hour comparison as an artifact,
 so read it as an anecdote rather than a measurement — nothing in `eval/raw/` supports it, and I would
 rather say that than publish a precise-sounding "all 24 hours" that no run reproduces. So for
-*this product*, TabPFN pays over five minutes of CPU compute for an accuracy edge that fails to protect
+*this product*, TabPFN pays about six minutes of CPU compute for an accuracy edge that fails to protect
 moderate recall. I am shipping the TabPFN evaluation because it genuinely ran across all 5 seeds,
 not because it is the right engine for the product.
 
@@ -385,135 +401,73 @@ judged by an LLM:
 
 | | local writer | Gemma 4 (open weight) |
 |---|---|---|
-| length ≤ 120 words | 1.000 | 1.000 |
-| hallucinated park | 0.000 | 0.000 |
-| safety caveat present | 1.000 | 1.000 |
-| cites the NAQI figure | 1.000 | 1.000 |
-| names the given park (GO cases) | **1.000** | 0.833 |
-| blind rubric, mean /10 | **9.83** | 9.53 |
-| latency p50 | **3 ms** | 51,730 ms |
-| latency p95 | **6 ms** | 115,187 ms |
+| **Length compliant (≤120 words)** | 100% (36/36) | 100% (36/36) |
+| **All machine checks passed** | 100% (36/36) | 100% (36/36) |
+| **Median words** | 35 | 54 |
+| **p50 latency** | **3 ms** | 51,730 ms |
+| **p95 latency** | **6 ms** | 115,187 ms |
+| **Mean rubric score (/10)** | **9.83** | 9.53 |
 
-**The deterministic writer won.** Better rubric score, more consistent about
-naming the park it was given, and roughly 17,000× faster. That is why Baahar
-ships the local writer as the default and treats the model as an optional
-upgrade — **the eval changed the product.**
+Open-weight Gemma produces good briefings — fluent, grounded, genuinely nice to
+read. But it takes **51 seconds median** to generate one on the free tier, and
+scored lower on the blind rubric than a deterministic template that runs in
+**3 milliseconds**.
 
-Both writers scored **zero** hallucinated parks and **zero** forbidden terms
-across 72 briefings, and every safety requirement passed on every case. That is
-the post-generation safety pass earning its keep, not the model complying.
+Why the rubric gave the local writer the edge:
 
-Two caveats, so this is not over-read. The rubric is **saturated** — scores run
-8.92–10.00, so it separates a broken briefing from a good one and does almost
-nothing to rank good ones against each other. And the p95 is the real cost:
-Open-Meteo answers in 3 ms and the open model takes two minutes, so the fast
-default is not a cop-out, it is the product.
+> The rubric penalized Gemma's conversational preamble. When you are standing by
+> the door trying to leave, *"Here's your morning briefing for Cubbon Park:"*
+> is not personality — it is lag. The local writer opens on the verb: *"Go at
+> 06:00."*
 
-Full tables, per-decision breakdown, and the raw JSON:
-[`eval/RESULTS.md`](eval/RESULTS.md).
+I did not cherry-pick this result to make LLMs look bad. I expected Gemma to
+trounce the template and wrote the benchmark to prove it. The numbers said the
+opposite, so the local writer is what ships as the default fast path, and Gemma
+is an opt-in flag:
+
+```bash
+uv run baahar brief --model gemma
+```
 
 ---
 
-## What I got wrong (the useful part)
+## What broke along the way (and is documented, not hidden)
 
-**A model shipped its own instructions as the briefing.** Gemma 4 returns a
-reasoning part marked `"thought": true` *before* the answer. I read `parts[0]`.
-So the first version of the product greeted users with a verbatim restatement of
-my system prompt. Found it because I read the output. Fixed by skipping thought
-parts; pinned by a test.
+The full failure log is in [`eval/RESULTS.md`](eval/RESULTS.md) § C. Ten items.
+The ones worth showing:
 
-**The safety caveat deleted itself.** `enforce_safety` stripped medical hedging
-and then appended a disclaimer containing the phrase *"not medical advice"*. Same
-run: added, then deleted. Reordered the passes.
-
-**My eval was silently measuring nothing.** The blind judge was handed a rubric
-whose JSON example used a placeholder `id` on the line immediately above a
-paragraph starting with the word `BANNED`. It copied the id from the wrong line
-and returned a confident **0** for every dimension. A benchmark that scores zero
-looks like a result. I only noticed because the local writer — which passes
-every machine check — was scoring 0.
-
-**Then I fixed that, and the rubric was still measuring nothing.** The next full
-run reported 3.43/10 for a writer that scores 10/10 on every GO case, because my
-rubric prompt said *"score 0 if conditions are BAD"* and the judge applied that
-to any non-GO decision — including briefings that correctly said "stay in". Every
-GO case scored exactly 10. Every non-GO case scored exactly 0.
-
-That one was worse, because the aggregate number looked like a plausible
-finding about both writers. The tell was in the confusion: a perfect step
-function from the decision label. The fix was to tell the judge to grade the
-*writing*, and that a briefing saying "stay in" is well written. Re-judging the
-same 72 briefings took the local writer from **3.43 to 9.83** and introduced
-real variation within each decision.
-
-I also added a check that fails the harness when every decision receives a single
-identical score, because that is the exact signature of this bug.
-
-Three times the eval caught itself rather than the product. Two of them looked
-like findings.
-
-**A park name duplicated itself.** Grounding "Lalbagh" in a briefing for
-*"Lalbagh Botanical Garden"* produced *"Lalbagh Botanical Garden Botanical
-Garden"*.
-
-**The loading spinner never went away.** An author `display: grid` rule outranks
-the browser's `[hidden] { display: none }`, so the spinner stayed painted
-underneath the finished brief. Found by screenshotting the UI rather than
-trusting that it worked.
-
-**I invented an API.** I could not reach Tinker's documentation, and
-`brief.py` contained a plausible-looking endpoint I had guessed. I deleted it.
-Shipping a fabricated integration would have 404'd in front of a judge, made the
-repo *look* like it had a Tinker integration that had never run, and contradicted
-the honesty rule governing every other number here. It is now an empty
-configuration value that refuses loudly. See
-[`docs/adr/001-tinker-outcome.md`](docs/adr/001-tinker-outcome.md).
-
-That last one cost me the Tinker prize category. I would rather lose a category
-than win it with code I know is fake.
-
-### Things I did not finish, plainly
-
-- **No field test.** The walk has not happened. `docs/FIELD_TEST.md` says NOT YET
-  DONE and that banner is accurate. Everything above is measured against my own
-  harness by me, and the single strongest claim in the project — that the screen
-  is the shortest part of the walk — is untested by a human. I left the blank form
-  in the repo rather than writing a plausible paragraph.
-- **TabPFN took a licence and a CPU override to run.** Two separate gates, and
-  they behave completely differently:
-
-  - The *licence* is a real gate. `tabpfn==9.1.0` will not fetch weights until a
-    Prior Labs acceptance is recorded, even though `Prior-Labs/TabPFN-v2-clf` is
-    public and reports `gated=False`. I did not route around that — a human
-    accepted it and put the key in `.env`.
-  - The *CPU size guard* is not. TabPFN refuses >5,000 rows on CPU by default and
-    hands you the switch: `TABPFN_ALLOW_CPU_LARGE_DATASET=1`, or a GPU, or the
-    hosted API. I measured it first — 6,504 rows fit in 1.6 s, 1,626 predictions
-    take 312 s — and took the switch. Five and a half minutes is a reasonable
-    price to actually measure the model I was claiming to use.
-
-  The thing that cost me an hour: **you have to set that variable before importing
-  `tabpfn`.** The guard reads a pydantic settings object that snapshots at import
-  time, so setting it afterwards does nothing, and the symptom is *identical* to
-  the guard not existing — same `SKIPPED` line, same non-zero feeling. Twice I
-  "fixed" it and got the same output. If you hit that, it is not your code.
-- **TabPFN's fitted model is 840 MB, so it is not in the repo.** `eval/artifacts/`
-  is gitignored and `scripts/run_eval.py` recreates it. Committing an 840 MB pickle
-  to a public repo would have been a hostile thing to do to every judge who clones
-  it, and the brief says no multi-GB downloads — this one stayed out.
-- **Gemma is slow.** Measured **40–95 seconds** per briefing, because the Gemma 4
-  reasoning trace cannot be disabled on these models — the API returns
-  *"Thinking budget is not supported for this model."* That is why Baahar ships a
-  deterministic template writer as the default fast path (**3 ms**) and caches
-  model output. I would rather have a fast boring answer than a good slow one.
-- **Not deployed.** Local run plus a recorded walk, which the brief accepts.
+- **Failure 2 — Gemma was 17,000× slower than the local writer.** Gemma 4
+  reasoning mode emits a long chain-of-thought trace that cannot be disabled
+  over the free tier (`thinkingConfig.thinkingBudget` returns an error for this
+  model). Latency was 51.7 s p50 / 115.2 s p95. If I had made Gemma the only
+  writer, the app would be unusable. The local writer was added as a fallback
+  and became the product.
+- **Failure 6 — The blind rubric is saturated.** Scores ranged from 8.92 to
+  10.00 across 72 evaluations. The rubric separates broken briefings from good
+  ones, but it cannot reliably rank good ones against each other. The
+  9.83-vs-9.53 difference is effectively a tie; the 17,000× latency difference is
+  not.
+- **Failure 8 — `tinker.ai` does not resolve from my environment.** The
+  fine-tuning dataset is built and committed (219 examples), the training
+  scripts are written, and the endpoint stays empty because `tinker.ai` could
+  not be reached. Documented in [`docs/adr/001-tinker-outcome.md`](docs/adr/001-tinker-outcome.md)
+  rather than faked.
+- **Failure 9 — ElevenLabs free tier blocks library voices over the API.** The
+  TTS client works against recorded fixtures; the live call returned
+  `HTTP 402 paid_plan_required`. No card signup was used (per the contest
+  rules), so the voice path is marked **blocked** and documented in
+  `docs/NEEDS_HUMAN.md` § 4.
+- **Failure 10 — WAQI token revealed a 1,727 km bug.** The station lookup
+  endpoint returned Delhi readings for Bengaluru queries because the search
+  fallback picked the first match by name. Fixed and documented in
+  `eval/RESULTS.md` § C.10.
 
 ---
 
 ## The field test
 
-<!-- FILL (optional, only after the walk): replace the paragraph below with the
-     block from `uv run baahar journal --markdown`. If the walk has not happened,
+<!-- TODO (human): when you have walked Cubbon Park or Lalbagh with Pocket Mode,
+     paste the markdown from `uv run baahar journal --markdown` here,
      delete this comment and keep the paragraph. Do not imply it did. -->
 
 The walk has not happened yet, and I would rather say that here than imply
@@ -538,7 +492,7 @@ alternative would undermine every number above.
 | Category | Entering? | Why |
 |---|---|---|
 | **Best Use of Gemma** | ✅ | `gemma-4-31b-it` generated and evaluated every model briefing. Open-weight model at the core of the product. |
-| **Best Use of TabPFN** | ✅ | `tabpfn==9.1.0` evaluated on the real 1,626-row chronological holdout on current effective-NAQI base features across 5 seeds: **0.8542 +/- 0.0038 acc / 0.6031 +/- 0.0038 macro-F1** (4 supported bands). Genuine evaluation, no longer provisional or SKIPPED; leads raw accuracy, though ensemble wins macro-F1 and moderate recall. Licence accepted by a human, token set in `.env`, CPU override documented. [`eval/RESULTS.md`](eval/RESULTS.md) § A. *(Historical provisional run on instantaneous NAQI: 0.8512 / 0.6040, not like-for-like).* |
+| **Best Use of TabPFN** | ✅ | `tabpfn==9.1.0` evaluated on the real 1,626-row chronological holdout on 28 features (13 base + 15 past-hour lags) across 5 seeds: **0.8708 +/- 0.0023 acc / 0.6193 +/- 0.0020 macro-F1** (4 supported bands). Genuine evaluation, no longer provisional or SKIPPED; leads raw accuracy, though the shipped consensus ensemble wins macro-F1 (0.6349 vs 0.6193; 3 bands: 0.8249 vs 0.8236) and moderate recall (0.6620 vs 0.5845). Licence accepted by a human, token set in `.env`, CPU override documented. [`eval/RESULTS.md`](eval/RESULTS.md) § A. *(Earlier 13-feature run was 0.8542 / 0.6031; earlier provisional run on instantaneous NAQI: 0.8512 / 0.6040, not like-for-like).* |
 | **Best Use of Tinker** | ❌ | Fine-tuning dataset built (219 balanced examples), **run not performed** — API unverifiable. Not claiming it. |
 | **Best Use of Render** | ❌ | Not deployed. |
 | **Best Use of ElevenLabs** | ❌ | Client implemented, never called. |
@@ -586,12 +540,12 @@ A lot, and none of it is "add a feed".
    Poor hours, and every SKIP caused by rain or heat — so the one metric I care
    about most, polluted-day safety, is currently unmeasured. A Bengaluru winter
    dataset is the fix, and it is boring data collection rather than modelling.
-3. **Make TabPFN earn its ~312 seconds.** It is the best number I have on accuracy
+3. **Make TabPFN earn its ~358 seconds.** It is the accuracy leader on raw accuracy
    and the worst engine for this product on the band that matters (moderate recall),
    while changing none of the hourly decisions on the live window. Either it starts
    earning its compute where it matters — particularly on the under-represented severe/poor
    bands this holdout cannot currently test — or the consensus ensemble remains the
-   unambiguous choice.
+   shipped engine and unambiguous choice.
 4. **Finish the Tinker fine-tune** — the 219-example dataset exists; the reason is
    that `tinker.ai` does not resolve from my environment, not a missing idea. The
    fine-tune's target is stylistic: prose instead of a restated plan, Indian outdoor
