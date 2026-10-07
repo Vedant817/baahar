@@ -59,9 +59,11 @@ from pathlib import Path
 from baahar.config import EVAL_DATA_DIR, EVAL_RAW_DIR, get_settings
 from baahar.features import (
     BAND_ORDINALS,
+    COMPACT_FEATURE_NAMES,
     NAQI_SKIP,
     PRECIP_SKIP_MM,
     TABPFN_FEATURE_ORDER,
+    compact_features_from_row,
 )
 from baahar.score import (
     CPU_LARGE_DATASET_ENV,
@@ -117,10 +119,12 @@ def _coerce(value) -> float:
         return float("nan")
 
 
-def to_matrix(rows: list[dict]):
+def to_matrix(rows: list[dict], feature_columns=None):
     import numpy as np
 
-    x = np.array([[_coerce(r.get(c)) for c in FEATURE_COLUMNS] for r in rows], dtype="float64")
+    columns = FEATURE_COLUMNS if feature_columns is None else feature_columns
+    derived = [{**r, **compact_features_from_row(r)} for r in rows]
+    x = np.array([[_coerce(r.get(c)) for c in columns] for r in derived], dtype="float64")
     y = np.array([BAND_ORDINALS.get(r["target_band"], -1) for r in rows], dtype="int64")
     return x, y
 
@@ -279,7 +283,7 @@ def safety_metrics(y_true_band: list[int], y_pred_band: list[int], rows: list[di
 # models
 # ---------------------------------------------------------------------------
 def fit_predict(
-    name: str, x_train, y_train, x_test, medians, seed: int = 0
+    name: str, x_train, y_train, x_test, medians, seed: int = 0, feature_columns=None
 ) -> tuple[list[int], float, str]:
     """Return ``(predictions, fit_seconds, note)``. Raises to signal SKIPPED."""
     t0 = time.perf_counter()
@@ -483,7 +487,9 @@ def fit_predict(
             "tau_mod": tau_mod,
         }
         try:
-            artifact = save_ensemble_model(ensemble_bundle)
+            artifact = save_ensemble_model(
+                ensemble_bundle, feature_order=feature_columns or FEATURE_COLUMNS
+            )
             print(f"  fitted ensemble model saved -> {artifact}")
         except Exception as exc:  # noqa: BLE001
             print(f"  could not save fitted ensemble model: {exc}", file=sys.stderr)
@@ -541,11 +547,15 @@ def main(argv: list[str] | None = None) -> int:
         default="majority,persistence,logreg,rf,histgb,lgbm,ensemble,tabpfn",
         help="comma-separated model list",
     )
+    ap.add_argument("--feature-set", choices=("base", "compact"), default="base")
     args = ap.parse_args(argv)
+    feature_columns = list(
+        COMPACT_FEATURE_NAMES if args.feature_set == "compact" else TABPFN_FEATURE_ORDER
+    )
 
     rows = load_rows(Path(args.rows))
 
-    x_all, y_all = to_matrix(rows)
+    x_all, y_all = to_matrix(rows, feature_columns)
     x_all, medians = impute(x_all)
 
     # Chronological cut. The holdout is the *most recent* slice, which is the
@@ -560,7 +570,7 @@ def main(argv: list[str] | None = None) -> int:
     # reading it here is not leakage.
     test_band_now = [BAND_ORDINALS.get(r["band"], -1) for r in test_rows]
 
-    print(f"rows={len(rows)}  features={len(FEATURE_COLUMNS)}  horizon=6h")
+    print(f"rows={len(rows)}  features={len(feature_columns)}  horizon=6h")
     print(f"train={len(x_train)} ({train_rows[0]['time']} .. {train_rows[-1]['time']})")
     print(f"test ={len(x_test)} ({test_rows[0]['time']} .. {test_rows[-1]['time']})")
     print(f"holdout fraction={args.holdout}  (chronological, not shuffled)\n")
@@ -586,7 +596,7 @@ def main(argv: list[str] | None = None) -> int:
                     note = "predict band(t) as band(t+6)"
                 else:
                     preds, elapsed, note = fit_predict(
-                        name, x_train, y_train, x_test, medians, seed
+                        name, x_train, y_train, x_test, medians, seed, feature_columns
                     )
             except RuntimeError as exc:
                 skipped_reason = str(exc)
@@ -687,10 +697,13 @@ def main(argv: list[str] | None = None) -> int:
             "train_time_range": [train_rows[0]["time"], train_rows[-1]["time"]],
             "test_time_range": [test_rows[0]["time"], test_rows[-1]["time"]],
             "split": f"chronological, last {args.holdout:.0%} held out",
-            "feature_columns": FEATURE_COLUMNS,
+            "feature_columns": feature_columns,
             "feature_semantics": {
                 "naqi": NAQI_FEATURE_NOTE,
                 "target": LABEL_NOTE,
+                "feature_set": args.feature_set,
+                "derived": "compact_features_from_row in baahar.features; hour-t only",
+                "n_features": len(feature_columns),
             },
             "classes": BANDS,
             "test_band_support": holdout_support(test_rows),

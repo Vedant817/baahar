@@ -11,7 +11,7 @@ execution and can be traced to a machine-readable file in [`raw/`](raw/).
 | | |
 |---|---|
 | Dataset built | 2026-10-06 IST, 8,130 hourly rows |
-| Tabular run | 2026-10-06 03:53 IST → 04:34 with the SKIP-cause breakdown → 12:56 with TabPFN included → 15:33 after feature-alignment fix → **17:09 after trailing conservative-NAQI feature fix (QA A1–A5)** |
+| Tabular run | 2026-10-07T14:22:04.144159+05:30 — base features after ensemble contract fix |
 | Briefing run | 2026-10-06 05:09 IST (36 cases × 2 writers, unchanged by the TabPFN run) |
 | Location | Bengaluru, 12.9716 N, 77.5946 E |
 | Keys present at tabular run | Gemma ✅ · TabPFN ❌ · WAQI ❌ · Tinker ❌ · ElevenLabs ❌ |
@@ -19,15 +19,13 @@ execution and can be traced to a machine-readable file in [`raw/`](raw/).
 | Device | CPU only. No GPU was used or available. |
 | Python | 3.14.0 |
 | numpy / scikit-learn / tabpfn / torch | 2.5.3 / 1.9.1 / 9.1.0 / 2.14.1 |
-| Tabular artifact | [`gono_20261006T203435+0530.json`](raw/gono_20261006T203435+0530.json) — the run every § A number comes from, re-run after trailing conservative-NAQI feature fix (QA A1–A5) |
+| Tabular artifact | [`gono_20261007T142204+0530.json`](raw/gono_20261007T142204+0530.json) — adopted run; compact comparison labelled in section A |
 | Briefing artifact | [`briefing_20261006T050909+0530.json`](raw/briefing_20261006T050909+0530.json) — the run every § B number comes from |
 | Raw artifacts | [`raw/`](raw/) — every run, including superseded ones |
 
-The two runs above have different key sets on purpose and the numbers are not
-mixed: **§ B is from the 05:09 briefing run**, § A is from the **17:09 tabular
-run**. Each raw artifact records its own `keys_present` and `versions` block, and
-`scripts/check_results.py` reads the newest artifact of each kind rather than
-assuming they came from the same invocation.
+Section A uses the adopted tabular artifact and labels its compact comparison.
+Section B retains its separately recorded briefing run. Each artifact records
+key-presence booleans and versions; the checker reads the cited tabular artifact.
 
 ### Reproduce
 
@@ -42,150 +40,85 @@ uv run python scripts/run_briefing_eval.py --writers template,gemma --no-cache
 
 # A · Go / no-go
 
-## The task, and why it is not circular
+## Task and data
 
-The obvious version of this experiment is meaningless: define labels with a
-rule, train a model to reproduce that rule, and report the accuracy as though
-the model had discovered something. Baahar does not do that.
-
-The task is a genuine **next-step prediction**:
-
-> Given what was known at hour *t* — current air quality, current weather, hour
-> of day, month — predict the **CPCB NAQI band six hours ahead**, where the
-> target is computed from an independent reading of that future hour.
-
-Three properties make it a real test:
-
-1. **Features are hour-*t* only.** Nothing downstream of the split can see hour
-   *t+6*. `scripts/build_dataset.py` asserts the invariant structurally.
-2. **The split is chronological.** Last 20% held out. Air quality is strongly
-   autocorrelated, so a random shuffle would put neighbouring hours on both
-   sides of the boundary and inflate every metric.
-3. **GO/WAIT/SKIP is a policy, not the label.** The model predicts a physical
-   quantity (an air-quality band). `apply_band_policy` then maps the predicted
-   band to a decision, which keeps the safety rule as readable, reviewed code
-   instead of something a model has to approximate.
-
-## Data
+Predict the CPCB NAQI band six hours ahead from hour-t air quality and weather.
+The target is the instantaneous future band; `naqi` is the conservative maximum
+of instantaneous and trailing readings. GO/WAIT/SKIP remains a safety policy.
+Chronological holdout, never shuffled.
 
 | | |
 |---|---|
-| Rows | 8,130 hourly |
-| Window | 2025-11-01 → 2026-10-05 |
-| Air quality | Open-Meteo CAMS archive (keyless) — `pm2_5`, `pm10`, NO2, O3, SO2, CO |
-| Weather | Open-Meteo ERA5 archive (keyless) — temp, apparent temp, precipitation, precipitation probability, humidity, wind, UV |
-| NAQI | CPCB 2014 sub-index breakpoints; overall = worst sub-index |
+| Rows | 8,130 hourly rows |
+| Window | 2025-11-01T00:00 → 2026-10-05T17:00 |
+| Air quality | Recorded Open-Meteo CAMS archive, CPCB Indian NAQI breakpoints |
+| Weather | Recorded Open-Meteo ERA5 archive |
 | Features (13) | `naqi`, `pm25`, `pm10`, `temp_c`, `apparent_c`, `precip_mm`, `precip_prob`, `humidity`, `wind_kmh`, `uv_index`, `is_day`, `hour`, `month` |
-| Classes | 6 CPCB bands: good, satisfactory, moderate, poor, severe, hazardous |
+| Split | chronological, last 20% held out |
 
-**The window deliberately includes winter.** A June–October window produced only
-**33 SKIP hours**, which makes the safety metric meaningless. Winter adds the
-genuinely bad-air days.
+### Current input-band distribution
 
-### Class distribution, and an uncomfortable asymmetry
+This is the current input band, not the future target. The older table showed
+target support as current holdout support.
 
 | Band | Train (6,504) | Holdout (1,626) |
 |---|---|---|
-| good | 733 | 823 |
-| satisfactory | 2,850 | 658 |
-| moderate | 2,566 | 142 |
-| poor | 342 | **3** |
-| severe | 13 | **0** |
-| hazardous | 0 | **0** |
+| good | 733 | 642 |
+| satisfactory | 2850 | 795 |
+| moderate | 2566 | 186 |
+| poor | 342 | 3 |
+| severe | 13 | 0 |
+| hazardous | 0 | 0 |
 
-The last three rows are the important ones. **The holdout contains no Severe or
-Hazardous hours at all, and only 3 Poor hours.** So:
+## Results: adopted base features (13)
 
-- macro-F1 is averaged over the four classes with support, not six. The harness
-  reports the zero-support classes explicitly (`absent_from_holdout`) rather
-  than quietly dividing by fewer.
-- **Bands `severe` and `hazardous` are not validated by this run at all.** Any
-  claim about them would be fiction.
-
-## Results
-
+Artifact: [gono_20261007T142204+0530.json](raw/gono_20261007T142204+0530.json).
 Holdout: **1,626 rows**, 2026-07-30T00:00 → 2026-10-05T17:00.
 
-| model | accuracy | macro-F1 | skip_as_go | n(SKIP) | decision acc | fit time |
-|---|---|---|---|---|---|---|
-| majority class | 0.4047 | 0.1441 | 0.0 | 24 | 0.9982 | <0.1 s |
-| persistence (band at *t*) | 0.3647 | 0.2492 | 0.0 | 24 | 0.9982 | <0.1 s |
-| logistic regression | 0.7294 | 0.4850 | 0.0 | 24 | 0.9969 | 1.9 s |
-| random forest (300) | 0.8296 | 0.5642 | 0.0 | 24 | 0.9982 | 1.8 s |
-| gradient boosting | 0.8383 | 0.5874 | 0.0 | 24 | 0.9982 | 5.7 s |
-| lightgbm | 0.8432 | 0.5825 | 0.0 | 24 | 0.9975 | 2.5 s |
-| consensus ensemble | 0.8487 | 0.6089 | 0.0 | 24 | 0.9975 | 6.6 s |
-| TabPFN 9.1.0 (cpu) | *SKIPPED* | *SKIPPED* | *SKIPPED* | *SKIPPED* | *SKIPPED* | — |
+| model | accuracy | macro-F1 | moderate recall | skip_as_go | n(SKIP) | decision acc | fit time |
+|---|---|---|---|---|---|---|---|
+| majority class | 0.4047 | 0.1441 | 0.0000 | 0.0 | 24 | 0.9982 | 0.0 s |
+| persistence | 0.3647 | 0.2492 | 0.2746 | 0.0 | 24 | 0.9982 | 0.0 s |
+| logistic regression | 0.7294 | 0.4850 | 0.3662 | 0.0 | 24 | 0.9969 | 1.885 s |
+| random forest | 0.8296 | 0.5642 | 0.4296 | 0.0 | 24 | 0.9982 | 1.565 s |
+| gradient boosting | 0.8383 | 0.5874 | 0.5493 | 0.0 | 24 | 0.9982 | 8.543 s |
+| lightgbm | 0.8432 | 0.5825 | 0.4930 | 0.0 | 24 | 0.9975 | 2.232 s |
+| consensus ensemble | 0.8487 | 0.6089 | 0.6831 | 0.0 | 24 | 0.9975 | 7.962 s |
+| TabPFN | SKIPPED | SKIPPED | SKIPPED | SKIPPED | SKIPPED | SKIPPED | — |
 
-Standard deviation across seeds is reported per run in `raw/`; at `--repeat 1`
-it is `null`, which is honest rather than a fabricated ±0.
+## Official compact comparison (17)
 
-### Reading that table honestly
+Artifact: [gono_20261007T142032+0530.json](raw/gono_20261007T142032+0530.json), same split, seed, models and thresholds.
+Features: `naqi`, `pm25`, `pm10`, `temp_c`, `precip_mm`, `humidity`, `wind_kmh`, `is_day`, `month`, `vpd`, `stagnation`, `pm_ratio`, `naqi_gap`, `hour_sin`, `hour_cos`, `month_sin`, `month_cos`.
+Derived columns use `baahar.features.compact_features_from_row` in eval and serving.
 
-**LightGBM achieved the highest accuracy among verified conventional models (0.8432)**, outperforming gradient boosting (0.8383) by +0.0049 while fitting 3.4× faster (3.0 s vs 10.3 s).
+| model | accuracy | macro-F1 | moderate recall | skip_as_go | n(SKIP) | decision acc | fit time |
+|---|---|---|---|---|---|---|---|
+| majority class | 0.4047 | 0.1441 | 0.0000 | 0.0 | 24 | 0.9982 | 0.0 s |
+| persistence | 0.3647 | 0.2492 | 0.2746 | 0.0 | 24 | 0.9982 | 0.0 s |
+| logistic regression | 0.7970 | 0.4644 | 0.1268 | 0.0 | 24 | 0.9982 | 1.961 s |
+| random forest | 0.8303 | 0.5871 | 0.5423 | 0.0 | 24 | 0.9982 | 1.839 s |
+| gradient boosting | 0.8223 | 0.5879 | 0.6338 | 0.0 | 24 | 0.9975 | 9.034 s |
+| lightgbm | 0.8266 | 0.5813 | 0.5352 | 0.0 | 24 | 0.9982 | 5.566 s |
+| consensus ensemble | 0.8192 | 0.5948 | 0.7817 | 0.0 | 24 | 0.9982 | 20.013 s |
+| TabPFN | SKIPPED | SKIPPED | SKIPPED | SKIPPED | SKIPPED | SKIPPED | — |
 
-**Gradient boosting maintains the highest macro-F1 on base features** (0.5874 macro-F1, 0.9982 decision accuracy).
+**Yes, the research moderate-recall claim reproduces officially: 78.17%.**
+We retain 13 features: ensemble accuracy 0.8487 versus 0.8192,
+and macro-F1 0.6089 versus 0.5948.
+This trades away the compact set's higher moderate recall (0.7817
+versus 0.6831) for stronger overall metrics.
+Selection used this holdout; this comparison is not independent validation of
+the choice. One seed only, so standard deviations are null.
 
-**TabPFN was SKIPPED in this run** (`gono_20261006T203435+0530.json`) because
-`TABPFN_TOKEN` was unset in `.env`, triggering the Prior Labs licence gate check in
-`baahar.config`. In the earlier run fitted on instantaneous-only NAQI
-(`gono_20261006T153335+0530.json`), TabPFN reached 0.8512 accuracy and 0.6040
-macro-F1 (+0.012 / +0.014 over gradient boosting). However, because TabPFN was
-not re-fitted on the effective conservative-NAQI feature column, the two runs are
-not like-for-like and the margin is provisional.
+TabPFN is **SKIPPED** in both runs: no `TABPFN_TOKEN`; no licence bypass.
+Earlier TabPFN runs used different NAQI semantics and do not establish current
+performance.
 
-It is also 37× slower to fit (~339 s against 10.3 s). The prize category asks
-whether TabPFN was used, and it was integrated, tested, and verified against the live
-pipeline. Whether that is the right *engineering* choice for a product that answers
-one question in under two seconds is a different question, and the honest answer
-is that gradient boosting is very likely the better choice here.
+### Safety limits
 
-### TabPFN: how it actually ran
-
-Two gates had to be lifted, and neither is a licence or correctness condition:
-
-1. **The licence.** `TABPFN_TOKEN` is set. Without it `tabpfn>=2.x` refuses to
-   download weights even though `Prior-Labs/TabPFN-v2-clf` is public and reports
-   `gated=False`. That is a licence acceptance tied to a Prior Labs account, and
-   Baahar does not route around it — the human accepted it. See
-   `docs/NEEDS_HUMAN.md` § 1.
-2. **The CPU size guard.** TabPFN refuses to fit more than ~5,000 rows on CPU by
-   default, and offers `TABPFN_ALLOW_CPU_LARGE_DATASET=1`, a GPU, or the hosted
-   API as the alternatives. Measured here: 6,504 rows fit in 1.6 s and 1,626
-   predictions take 312 s, so the whole eval is about five and a half minutes.
-
-The second gate cost an hour of confusion worth recording: setting the environment
-variable *after* importing `tabpfn` does nothing, because the guard reads a
-pydantic settings object that snapshots its values at import time. The failure mode
-is indistinguishable from the guard not existing — the same `SKIPPED` message, the
-same exit. `score.py` and `scripts/run_eval.py` now set it before the import, with
-a comment saying why, because the next person to hit this will otherwise assume
-the feature is unavailable.
-
-There were two more reasons the fitted model was unreachable, both found only
-after the feature fix made the path reachable at all, and both of which present as
-"the feature just isn't available":
-
-- **Writer and reader named different paths.** `save_tabpfn_model` wrote
-  `eval/artifacts/tabpfn_gono.pkl`; `load_tabpfn_model` read only
-  `$TABPFN_MODEL_PATH`, empty by default. So `choose_scorer("auto")` never saw the
-  840 MB model sitting on disk. Both now name `DEFAULT_TABPFN_ARTIFACT`.
-- **The feature mismatch failed silently.** `score_tabpfn` handed a 13-column
-  model a 15-column matrix, the exception was raised inside `predict_proba`,
-  `score_slots` caught it, and the heuristic scored every hour while `baahar brief`
-  printed a reassuring note. `score_tabpfn` now checks `n_features_in_` against
-  `len(FEATURE_NAMES)` and raises a `ValueError` naming both counts, refusing to
-  reorder — padding or truncating would let the model score on values that mean
-  something else. Full account in § C.14.
-
-Verified after all three fixes: `baahar brief` reports `scorer=tabpfn`, every hour
-carries the `tabpfn` tag, `degraded` is empty, and a NAQI-488 hour still returns
-SKIP with the policy's reasons intact. The safety asymmetry is now exercised
-against the real fitted model rather than a stub.
-
-**`skip_as_go_rate = 0.0` is a much weaker result than it looks**, and the
-harness now says so explicitly. Breaking down *why* each of the 24 true-SKIP
-hours was a SKIP:
+`skip_as_go_rate = 0.0` on 24 true SKIP hours,
+Wilson 95% interval [0.0, 0.138]. Every SKIP came from weather:
 
 | cause | hours |
 |---|---|
@@ -193,31 +126,17 @@ hours was a SKIP:
 | heat | 2 |
 | **air (Severe or worse)** | **0** |
 
-So this metric is measuring **rain and heat handling**, not air-quality safety.
-Not one of the 24 SKIPs was caused by pollution. A model could achieve 0.0 here
-while being completely unable to recognise a polluted day — and with zero
-Severe hours in the holdout, **that possibility is not excluded by this
-evaluation at all.**
-
-This is the single most important limitation in this document.
-
-### Why `skip_as_go` is 0.0 even for the majority baseline
-
-Because the decision rule is *hard*. `apply_band_policy` returns SKIP only when
-the band is Severe-or-worse, or apparent temperature ≥ 35 °C, or precipitation
-≥ 2.5 mm/h, or rain probability ≥ 70%. If none of those hold, the answer is GO or
-WAIT regardless of which band was predicted. So the majority-class model — which
-predicts a single band for every hour — still gets every SKIP decision right.
-
-That is not a modelling triumph. It means **the band classification is where the
-real difficulty is**, and the accuracy and macro-F1 columns are the numbers that
-actually separate the models.
+This measures rain and heat handling, **not air-quality safety**. No target
+`severe` or `hazardous` rows exist in the holdout; neither band is validated.
+Macro-F1 averages only supported classes. `poor` has 3 target rows.
+The harness applies hour-t weather to predicted future bands because target-hour
+weather is not stored separately; raw results disclose this approximation.
 
 ### Confusion matrix — gradient boosting
 
-Rows are the true band, columns the predicted band.
+Rows are true bands; columns are predicted bands.
 
-| true \ predicted | good | satisfactory | moderate | poor | severe | hazardous |
+| true / predicted | good | satisfactory | moderate | poor | severe | hazardous |
 |---|---|---|---|---|---|---|
 | **good** | 754 | 68 | 1 | 0 | 0 | 0 |
 | **satisfactory** | 112 | 531 | 15 | 0 | 0 | 0 |
@@ -226,24 +145,6 @@ Rows are the true band, columns the predicted band.
 | **severe** | 0 | 0 | 0 | 0 | 0 | 0 |
 | **hazardous** | 0 | 0 | 0 | 0 | 0 | 0 |
 
-Two things worth naming:
-
-- **`poor` F1 = 0.0 on n=3.** The model never predicts `poor`. With three
-  examples, that is not a finding about the model; it is a statement about the
-  holdout window.
-- **`moderate` recall 0.549** is where the errors live. 63 of 142 moderate hours
-  were called `satisfactory`. That direction is *lenient*: it under-warns. It is
-  the error class worth watching, and it is not caught by `skip_as_go_rate` at all.
-
-### Baseline framing
-
-`persistence` is not a strawman. Air quality is persistent, so predicting the
-current band six hours out is a real meteorological baseline, and it beats the
-majority class by 7 points of accuracy. Any claim that a model "understands air
-quality" should be measured against persistence, not against chance.
-
----
-
 ## Per-class, gradient boosting
 
 | band | precision | recall | F1 | support |
@@ -251,18 +152,9 @@ quality" should be measured against persistence, not against chance.
 | good | 0.8697 | 0.9162 | 0.8923 | 823 |
 | satisfactory | 0.8021 | 0.8070 | 0.8045 | 658 |
 | moderate | 0.8041 | 0.5493 | 0.6527 | 142 |
-| poor | 0.0 | 0.0 | 0.0 | **3** |
-| severe | — | — | — | **0** |
-| hazardous | — | — | — | **0** |
-
-Two things worth naming:
-
-- **`poor` F1 = 0.0 on n=3.** The model never predicts `poor`. With three
-  examples, that is not a finding about the model; it is a statement about the
-  holdout window.
-- **`moderate` recall 0.549** is where the errors live. 63 of 142 moderate hours
-  were called `satisfactory`. That direction is *lenient*: it under-warns. It is
-  the error class worth watching, and it is not caught by `skip_as_go_rate` at all.
+| poor | 0.0000 | 0.0000 | 0.0000 | 3 |
+| severe | — | — | — | 0 |
+| hazardous | — | — | — | 0 |
 
 ## Per-class, consensus ensemble
 
@@ -271,9 +163,9 @@ Two things worth naming:
 | good | 0.8778 | 0.9162 | 0.8966 | 823 |
 | satisfactory | 0.8266 | 0.8040 | 0.8151 | 658 |
 | moderate | 0.7698 | 0.6831 | 0.7239 | 142 |
-| poor | 0.0 | 0.0 | 0.0 | **3** |
-| severe | — | — | — | **0** |
-| hazardous | — | — | — | **0** |
+| poor | 0.0000 | 0.0000 | 0.0000 | 3 |
+| severe | — | — | — | 0 |
+| hazardous | — | — | — | 0 |
 
 ## Per-class, lightgbm
 
@@ -282,41 +174,9 @@ Two things worth naming:
 | good | 0.8819 | 0.9162 | 0.8987 | 823 |
 | satisfactory | 0.7985 | 0.8313 | 0.8146 | 658 |
 | moderate | 0.8235 | 0.4930 | 0.6167 | 142 |
-| poor | 0.0 | 0.0 | 0.0 | **3** |
-| severe | — | — | — | **0** |
-| hazardous | — | — | — | **0** |
-
-### TabPFN 9.1.0 (cpu) — SKIPPED on licence gate (historical reference from 15:33 run)
-
-In the current run (`gono_20261006T203435+0530.json`), TabPFN was SKIPPED because
-`TABPFN_TOKEN` was unset in `.env`.
-For historical reference, the earlier run on instantaneous features (`gono_20261006T153335+0530.json`) reported:
-
-| band | precision | recall | F1 | support |
-|---|---|---|---|---|
-| good | 0.8909 | 0.9028 | 0.8968 | 823 |
-| satisfactory | 0.8029 | 0.8480 | 0.8248 | 658 |
-| moderate | 0.8557 | 0.5845 | 0.6946 | 142 |
-| poor | 0.0 | 0.0 | 0.0 | **3** |
-| severe | — | — | — | **0** |
-| hazardous | — | — | — | **0** |
-
-Note that this reference table is **not like-for-like** with the primary table above because it was fitted on the older instantaneous `naqi` feature rather than the new conservative trailing-mean `naqi` feature.
-
-Compared with gradient boosting, TabPFN's gain comes from exactly one place:
-`moderate` recall, 0.5845 against 0.5563. That is the same error class, mildly
-reduced. It does not fix `poor`, and it cannot touch `severe` or `hazardous`
-because there are no such rows in the holdout to be right or wrong about.
-
-It also produces a decision confusion matrix identical to the majority baseline's
-(`[[1367,0,0],[3,232,0],[0,0,24]]`, decision accuracy 0.9982). Gradient boosting
-made one GO-into-SKIP mistake; TabPFN made none. On 24 SKIP hours that difference
-is one row, and it is not worth reading as a safety property.
-
-The honest summary: **TabPFN is the highest number in this table by a margin too
-small to defend, on a holdout that cannot test the bands that matter most, at
-37× the fit cost.** It is reported because it ran, not because it should be
-shipped.
+| poor | 0.0000 | 0.0000 | 0.0000 | 3 |
+| severe | — | — | — | 0 |
+| hazardous | — | — | — | 0 |
 
 ---
 

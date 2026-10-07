@@ -4,7 +4,7 @@ Implementations:
 
 * **heuristic** -- the documented policy in :mod:`baahar.features`. Always
   available, zero heavy dependencies, fully explainable.
-* **lgbm** -- tuned LightGBM classifier over the compact 17-feature set.
+* **lgbm** -- tuned LightGBM classifier over the base 13-feature set.
 * **ensemble** -- weighted consensus blend (LightGBM + HistGB + RF).
 * **tabpfn** -- a TabPFN classifier over the feature rows in
   :mod:`baahar.features`. Optional, because it needs PyTorch.
@@ -212,6 +212,56 @@ def save_lgbm_model(model: Any, path: Any | None = None) -> str:
     return str(target)
 
 
+def _model_components(model: Any) -> list[tuple[str, Any]]:
+    if isinstance(model, dict):
+        return [(key, model[key]) for key in ("lgb", "hgb", "rf") if key in model]
+    return [("model", model)]
+
+
+def _feature_order(model: Any, artifact: Any) -> tuple[str, ...]:
+    from .features import COMPACT_FEATURE_NAMES, TABPFN_FEATURE_ORDER
+
+    if isinstance(model, dict) and "feature_order" in model:
+        order = tuple(model["feature_order"])
+        known = set(COMPACT_FEATURE_NAMES) | set(TABPFN_FEATURE_ORDER)
+        if not order or len(set(order)) != len(order) or any(n not in known for n in order):
+            raise ValueError(
+                f"Invalid feature_order in artifact {artifact}; re-run scripts/run_eval.py"
+            )
+        return order
+    for _, component in _model_components(model):
+        expected = getattr(component, "n_features_in_", None)
+        if expected is not None:
+            for order in (TABPFN_FEATURE_ORDER, COMPACT_FEATURE_NAMES):
+                if int(expected) == len(order):
+                    return order
+            raise ValueError(
+                f"Artifact {artifact} expects {expected} features; supported legacy widths are "
+                f"{len(TABPFN_FEATURE_ORDER)} and {len(COMPACT_FEATURE_NAMES)}; "
+                "re-run scripts/run_eval.py to record feature_order"
+            )
+    raise ValueError(
+        f"Artifact {artifact} has no feature_order or component n_features_in_; "
+        "re-run scripts/run_eval.py to record the fitted feature contract"
+    )
+
+
+def _validate_width(model: Any, x: Any, artifact: Any) -> None:
+    for name, component in _model_components(model):
+        expected = getattr(component, "n_features_in_", None)
+        if expected is None:
+            raise ValueError(
+                f"Artifact {artifact} component {name} has no n_features_in_; "
+                "re-run scripts/run_eval.py with fitted components"
+            )
+        if x.shape[1] != int(expected):
+            raise ValueError(
+                f"Feature width mismatch in artifact {artifact}: component {name} expects "
+                f"{expected} features, matrix has {x.shape[1]}; "
+                "re-run scripts/run_eval.py to refit and save the matching feature_order"
+            )
+
+
 def score_lgbm(slots: Sequence[HourSlot], model: Any | None = None) -> list[SlotScore]:
     """Score hours with LightGBM, falling back per-hour to the heuristic."""
     if model is None:
@@ -227,24 +277,22 @@ def score_lgbm(slots: Sequence[HourSlot], model: Any | None = None) -> list[Slot
         log.warning("LightGBM model found but numpy is unavailable (%s); using policy", exc)
         return score_heuristic(slots)
 
-    from .features import COMPACT_FEATURE_NAMES, TABPFN_FEATURE_ORDER
-
-    order = COMPACT_FEATURE_NAMES
-    expected = getattr(model, "n_features_in_", None)
-    if expected is not None and int(expected) == len(TABPFN_FEATURE_ORDER):
-        order = TABPFN_FEATURE_ORDER
+    artifact = get_settings().lgbm_model_path or DEFAULT_LGBM_ARTIFACT
+    order = _feature_order(model, artifact)
 
     x = np.array(
         [[features_from_slot(s)[name] for name in order] for s in slots],
         dtype="float64",
     )
+    _validate_width(model, x, artifact)
     if np.isnan(x).any():
         medians = np.nanmedian(x, axis=0)
         medians = np.where(np.isnan(medians), 0.0, medians)
         inds = np.where(np.isnan(x))
         x[inds] = np.take(medians, inds[1])
 
-    decisions = _predict_decisions(model, x, slots)
+    predictor = model["lgb"] if isinstance(model, dict) else model
+    decisions = _predict_decisions(predictor, x, slots)
 
     out: list[SlotScore] = []
     for slot, decision in zip(slots, decisions, strict=True):
@@ -301,11 +349,19 @@ def load_ensemble_model(path: Any | None = None) -> Any | None:
         return None
 
 
-def save_ensemble_model(model: Any, path: Any | None = None) -> str:
+def save_ensemble_model(
+    model: Any, path: Any | None = None, *, feature_order: Sequence[str] | None = None
+) -> str:
     """Persist a fitted Consensus Ensemble bundle."""
     import pickle
     from pathlib import Path
 
+    model = dict(model)
+    model["feature_order"] = list(
+        feature_order
+        if feature_order is not None
+        else _feature_order(model, path or DEFAULT_ENSEMBLE_ARTIFACT)
+    )
     target = Path(path) if path else DEFAULT_ENSEMBLE_ARTIFACT
     target.parent.mkdir(parents=True, exist_ok=True)
     with target.open("wb") as fh:
@@ -330,17 +386,14 @@ def score_ensemble(
         log.warning("Ensemble model found but numpy is unavailable (%s); using policy", exc)
         return score_heuristic(slots)
 
-    from .features import COMPACT_FEATURE_NAMES, TABPFN_FEATURE_ORDER
-
-    order = COMPACT_FEATURE_NAMES
-    expected = getattr(model, "n_features_in_", None)
-    if expected is not None and int(expected) == len(TABPFN_FEATURE_ORDER):
-        order = TABPFN_FEATURE_ORDER
+    artifact = get_settings().ensemble_model_path or DEFAULT_ENSEMBLE_ARTIFACT
+    order = _feature_order(model, artifact)
 
     x = np.array(
         [[features_from_slot(s)[name] for name in order] for s in slots],
         dtype="float64",
     )
+    _validate_width(model, x, artifact)
     if np.isnan(x).any():
         medians = np.nanmedian(x, axis=0)
         medians = np.where(np.isnan(medians), 0.0, medians)

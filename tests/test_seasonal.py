@@ -476,7 +476,18 @@ class TestPocketIntegration:
 
 class TestApiContract:
     @pytest.fixture
-    def client(self):
+    def client(self, monkeypatch):
+        # Replay the recorded day from its start. Wall-clock slicing can select
+        # a rainy afternoon instead, making these morning GO contract tests
+        # fail depending on when pytest runs.
+        from baahar import air, weather
+        from baahar.models import slice_from_now
+
+        def recorded_start(items, hours):
+            return slice_from_now(items, hours, now=items[0].time) if items else []
+
+        monkeypatch.setattr(air, "slice_from_now", recorded_start)
+        monkeypatch.setattr(weather, "slice_from_now", recorded_start)
         return TestClient(app)
 
     def test_cue_tags_align_with_cues_in_order(self, client) -> None:

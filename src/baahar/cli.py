@@ -143,6 +143,8 @@ def render_brief(resp: BriefResponse) -> None:
     for item in plan.degraded:
         console.print(f"  ! {item}", style="yellow")
 
+    console.print(f"  [dim]scorer={plan.scorer}[/]")
+
     slots = plan.slots[: plan.window_hours]
     if slots:
         table = Table(box=None, pad_edge=False, show_header=True, header_style="dim")

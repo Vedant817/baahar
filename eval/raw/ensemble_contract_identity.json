@@ -1,0 +1,25 @@
+{
+  "artifact": "gono_20261007T142204+0530.json",
+  "ensemble_feature_order": [
+    "naqi",
+    "pm25",
+    "pm10",
+    "temp_c",
+    "apparent_c",
+    "precip_mm",
+    "precip_prob",
+    "humidity",
+    "wind_kmh",
+    "uv_index",
+    "is_day",
+    "hour",
+    "month"
+  ],
+  "holdout_rows": 1626,
+  "ensemble_confusion_matches": true,
+  "lgbm_confusion_matches": true,
+  "model_sha256": {
+    "ensemble_gono.pkl": "17e2afcb992df64a2deca85125afdbb1db16ded69bf130909408e981709e1562",
+    "lgbm_gono.pkl": "e1f70090017761eafc82e47db9d0103e940669b3dba955f59152c012d9622d9c"
+  }
+}

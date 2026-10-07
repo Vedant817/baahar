@@ -364,6 +364,8 @@ class TestSafetyAsymmetry:
         from baahar import score as score_mod
 
         class AlwaysGo:
+            n_features_in_ = len(COMPACT_FEATURE_NAMES)
+
             def predict_proba(self, x):
                 return np.tile([[1.0, 0.0, 0.0]], (len(x), 1))
 
@@ -378,6 +380,8 @@ class TestSafetyAsymmetry:
         from baahar import score as score_mod
 
         class AlwaysGo:
+            n_features_in_ = len(COMPACT_FEATURE_NAMES)
+
             def predict_proba(self, x):
                 return np.tile([[1.0, 0.0, 0.0]], (len(x), 1))
 
@@ -404,6 +408,8 @@ class TestSafetyAsymmetry:
         from baahar import score as score_mod
 
         class AlwaysSkip:
+            n_features_in_ = len(COMPACT_FEATURE_NAMES)
+
             def predict_proba(self, x):
                 return np.tile([[0.0, 0.0, 1.0]], (len(x), 1))
 
@@ -417,6 +423,8 @@ class TestSafetyAsymmetry:
         from baahar import score as score_mod
 
         class AlwaysSkip:
+            n_features_in_ = len(COMPACT_FEATURE_NAMES)
+
             def predict_proba(self, x):
                 return np.tile([[0.0, 0.0, 1.0]], (len(x), 1))
 
@@ -541,10 +549,12 @@ class TestFeatures:
         assert loaded == {"sentinel": True}
 
     def test_save_and_load_ensemble_agree(self, tmp_path: Path) -> None:
-        target = save_ensemble_model({"sentinel": True}, path=tmp_path / "ens.pkl")
+        target = save_ensemble_model(
+            {"sentinel": True}, path=tmp_path / "ens.pkl", feature_order=COMPACT_FEATURE_NAMES
+        )
         assert Path(target) == tmp_path / "ens.pkl"
         loaded = load_ensemble_model(path=tmp_path / "ens.pkl")
-        assert loaded == {"sentinel": True}
+        assert loaded == {"sentinel": True, "feature_order": list(COMPACT_FEATURE_NAMES)}
 
     def test_default_artifact_is_gitignored(self) -> None:
         """The fitted models are artifacts and must never reach the repo."""

@@ -140,6 +140,54 @@ def features_from_slot(slot: HourSlot) -> dict[str, float]:
     naqi_effective = _f(air.naqi_effective)
     naqi_instant = _f(air.naqi)
 
+    compact = compact_features_from_row(
+        {
+            "temp_c": temp,
+            "humidity": humidity,
+            "wind_kmh": wind,
+            "pm25": pm25,
+            "pm10": pm10,
+            "naqi": naqi_effective,
+            "naqi_instant": naqi_instant,
+            "hour": hour,
+            "month": month,
+        }
+    )
+
+    return {
+        # -- model columns, in FEATURE_NAMES order -----------------------------
+        "naqi": naqi_effective,
+        "pm25": pm25,
+        "pm10": pm10,
+        "temp_c": temp,
+        "apparent_c": _f(weather.apparent_c),
+        "precip_mm": _f(weather.precip_mm),
+        "precip_prob": _f(weather.precip_prob),
+        "humidity": humidity,
+        "wind_kmh": wind,
+        "uv_index": _f(weather.uv_index),
+        "is_day": float(weather.is_day or 0),
+        "hour": float(hour),
+        "month": month,
+        # -- compact 17-feature set additions ----------------------------------
+        **compact,
+        # -- derived, for the policy and the UI, not for the model -------------
+        "naqi_band_ordinal": float(BAND_ORDINALS.get(band, -1)),
+        "heat_index_flag": heat_index_flag(weather.apparent_c),
+    }
+
+
+def compact_features_from_row(row: dict[str, Any]) -> dict[str, float]:
+    """Derive compact columns from hour-t values, shared by eval and serving."""
+    temp = _f(row.get("temp_c"))
+    humidity = _f(row.get("humidity"))
+    wind = _f(row.get("wind_kmh"))
+    pm25 = _f(row.get("pm25"))
+    pm10 = _f(row.get("pm10"))
+    naqi_effective = _f(row.get("naqi"))
+    naqi_instant = _f(row.get("naqi_instant"))
+    hour = _f(row.get("hour"))
+    month = _f(row.get("month"))
     # 1. Magnus-Tetens Vapor Pressure Deficit (kPa)
     if not math.isnan(temp) and not math.isnan(humidity):
         rh_clamped = max(min(humidity, 100.0), 0.01)
@@ -176,23 +224,7 @@ def features_from_slot(slot: HourSlot) -> dict[str, float]:
     # 6. Hour cyclical encoding
     hour_sin = math.sin(2.0 * math.pi * hour / 24.0)
     hour_cos = math.cos(2.0 * math.pi * hour / 24.0)
-
     return {
-        # -- model columns, in FEATURE_NAMES order -----------------------------
-        "naqi": naqi_effective,
-        "pm25": pm25,
-        "pm10": pm10,
-        "temp_c": temp,
-        "apparent_c": _f(weather.apparent_c),
-        "precip_mm": _f(weather.precip_mm),
-        "precip_prob": _f(weather.precip_prob),
-        "humidity": humidity,
-        "wind_kmh": wind,
-        "uv_index": _f(weather.uv_index),
-        "is_day": float(weather.is_day or 0),
-        "hour": float(hour),
-        "month": month,
-        # -- compact 17-feature set additions ----------------------------------
         "vpd": vpd,
         "stagnation": stagnation,
         "pm_ratio": pm_ratio,
@@ -201,9 +233,6 @@ def features_from_slot(slot: HourSlot) -> dict[str, float]:
         "hour_cos": hour_cos,
         "month_sin": month_sin,
         "month_cos": month_cos,
-        # -- derived, for the policy and the UI, not for the model -------------
-        "naqi_band_ordinal": float(BAND_ORDINALS.get(band, -1)),
-        "heat_index_flag": heat_index_flag(weather.apparent_c),
     }
 
 

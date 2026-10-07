@@ -1,0 +1,22 @@
+[
+  {
+    "scorer": "ensemble",
+    "all_hour_tags_match": true,
+    "n_hours": 9,
+    "degraded": [
+      "weather from recorded fixture, not a live forecast",
+      "air quality from recorded fixture, not a live forecast"
+    ],
+    "scorer_note": "Consensus ensemble requested and model artifact loaded."
+  },
+  {
+    "scorer": "lgbm",
+    "all_hour_tags_match": true,
+    "n_hours": 9,
+    "degraded": [
+      "weather from recorded fixture, not a live forecast",
+      "air quality from recorded fixture, not a live forecast"
+    ],
+    "scorer_note": "LightGBM requested and model artifact loaded."
+  }
+]
