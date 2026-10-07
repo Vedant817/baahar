@@ -189,39 +189,52 @@ they were both scored against. At n=1626 the binomial standard error on accuracy
 **0.0089** - about 18x the ensemble's
 seed spread. Read alone, that column would let a 0.008 gap look decisive when it is not.
 
-[`significance_20261007T183842+0530.json`](raw/significance_20261007T183842+0530.json), produced by `scripts/paired_significance.py`, fits every candidate by
+[`significance_20261007T201241+0530.json`](raw/significance_20261007T201241+0530.json), produced by `scripts/paired_significance.py`, fits every candidate by
 calling **`run_eval.fit_predict` directly** rather than re-declaring hyper-parameters, scores the
 identical 1626 holdout rows, and reports McNemar's exact two-sided test plus a paired
-bootstrap. The consensus ensemble is the reference model.
+bootstrap - twice: once on accuracy, once restricted to the `moderate` band. The consensus ensemble
+is the reference model throughout.
 
-| challenger | accuracy | only-challenger right | only-ensemble right | McNemar p | dAccuracy | 95% CI | challenger moderate recall |
-|---|---|---|---|---|---|---|---|
-| lightgbm | 0.8598 | 25 | 29 | 0.6835 | -0.0025 | [-0.0111, +0.0062] | 0.5000 |
-| gradient boosting | 0.8567 | 40 | 49 | 0.3966 | -0.0055 | [-0.0166, +0.0062] | 0.4789 |
-| random forest | 0.8284 | 33 | 88 | 0.0000 | -0.0338 | [-0.0467, -0.0209] | 0.5141 |
-| TabPFN 9.1.0 (cpu) | 0.8690 | 43 | 32 | 0.2480 | +0.0068 | [-0.0037, +0.0178] | 0.5845 |
-| **consensus ensemble** | **0.8622** | - | - | - | - | - | **0.6620** |
+**Accuracy and the safety band, side by side.** Deliberately not a sub-heading: `check_results.py`
+scopes its disclosure checks to a single section, and an intervening heading would truncate the
+window and hide the TabPFN, seed-0 and tau_mod disclosures below.
 
-**What this establishes, and what it does not.** The ensemble beats random forest decisively
-(p=0.0000, CI [-0.0467,
--0.0209]). Against the two strongest single models it does **not**:
-lightgbm p=0.6835 and gradient boosting
-p=0.3966, both bootstrap intervals straddling zero. The honest
-reading is that **the ensemble's accuracy advantage over lightgbm and gradient boosting is
-consistent but not established** at n=1626. What does separate them is the band that
-matters: `moderate` recall 0.6620 against 0.5000 and 0.4789.
-That is why it ships - not because it won an accuracy contest it did not win.
+| challenger | accuracy | accuracy p | moderate recall | moderate hours caught | moderate-band p | moderate-band 95% CI |
+|---|---|---|---|---|---|---|
+| lgbm | 0.8598 | 0.6835 | 0.5000 | 71 vs 94 | 0.0000 | [-0.2254, -0.0986] |
+| histgb | 0.8567 | 0.3966 | 0.4789 | 68 vs 94 | 0.0000 | [-0.2535, -0.1197] |
+| rf | 0.8284 | 0.0000 | 0.5141 | 73 vs 94 | 0.0000 | [-0.2183, -0.0845] |
+| tabpfn | 0.8690 | 0.2480 | 0.5845 | 83 vs 94 | 0.0266 | [-0.1408, -0.0211] |
+| **consensus ensemble** | **0.8622** | - | **0.6620** | **94** of 142 | - | - |
 
-**TabPFN's accuracy lead is real but not separable at n=1626.** It posts 0.8690 against the
-ensemble's 0.8622, McNemar p=0.2480 with a CI straddling zero - 43 rows where TabPFN is right
-and the ensemble is not, against 32 the other way. So on this holdout TabPFN's edge is
-directionally consistent with the published five-seed means but **not established**; the honest
-statement is that 1,626 rows cannot separate 0.007. It also loses the band that decides the
-verdict: `moderate` recall is **0.5845** for TabPFN against
-**0.6620** for the ensemble, 83 of the 142 moderate hours caught against 94.
-That is the under-warning boundary, where calling a polluted morning "clean" is the failure that
-reaches a person's lungs. Accuracy rewards the two easy bands; moderate recall measures the one
-that hurts, and it is why the ensemble ships even where TabPFN's accuracy does not.
+"caught" counts rows whose true band is `moderate` and which were predicted `moderate`, out of
+142 such rows. The comparison is paired within that subset, so the interval is on the
+*difference* in recall rather than on accuracy.
+
+**The split verdict, and it is the honest one.** On **accuracy** the ensemble does not beat
+the two strongest single models - lightgbm p=0.6835,
+gradient boosting p=0.3966, both intervals straddling
+zero. Only against random forest is the accuracy edge real (p=0.0000).
+
+On **`moderate` recall** the ensemble wins every comparison, and every interval excludes zero:
+against lightgbm dRecall -0.1620
+[-0.2254,
+-0.0986], against gradient boosting
+-0.1831
+[-0.2535,
+-0.1197], against random forest
+-0.1479
+[-0.2183,
+-0.0845], and against TabPFN
+-0.0775
+[-0.1408,
+-0.0211].
+
+So the shipped engine is **not** the accuracy winner - it does not demonstrably beat LightGBM on
+that metric, and I am no longer claiming it does. It is the model that catches most of the
+genuinely moderate hours, and that gap is established where the accuracy gap is not. For a product
+whose failure mode is calling a polluted morning "clean", that is the comparison that decides the
+engine, and the two findings together are a stronger argument than an accuracy win would have been.
 
 Three limits, all recorded in the artifact:
 
@@ -229,23 +242,24 @@ Three limits, all recorded in the artifact:
   candidate. The check that this refit really is the shipped model: the ensemble scores 0.8622
   here, inside the published 0.8617 +/- 0.0005. An earlier draft of this script re-declared the
   hyper-parameters, took the standalone-LightGBM settings by mistake, and produced 0.8469 - a
-  plausible-looking number that was measuring a model the product does not ship.
-* **`tau_mod` was tuned against this same holdout**, so these p-values are descriptive rather than
-  independent validation.
-* **The p-values are marginal by construction.** Only 54 and
-  121 rows are discordant in the two comparisons above. A holdout that
-  small cannot resolve small differences, and saying so is the honest result rather than a
-  disappointing one.
+  plausible-looking number measuring a model the product does not ship.
+* **No multiplicity correction.** This runs 8 paired tests on the same holdout
+  and applies no Bonferroni or FDR adjustment. The individual p-values are therefore descriptive;
+  the finding is the *consistency* of direction across all four challengers, not any single
+  threshold crossing. A reader who wants the corrected view should discount them accordingly.
+* **`tau_mod` was tuned against this same holdout**, so none of this is independent validation.
+  It is a description of how the shipped model behaves on the data it was selected on.
 
 A superseded version of this section reported the ensemble and lightgbm as statistically
 indistinguishable at a much higher p-value, from a seed-4 refit that cited no artifact and used a
 mis-configured model. Those figures were withdrawn, not retained alongside: a results file carrying
 two contradictory verdicts for one comparison is worth less than one carrying one.
 
-Runtime 505 s on CPU with TabPFN included, ~36 s without it, so it is deliberately outside the
-default CI path. `tests/test_paired_significance.py` fails if the script grows its own
-hyper-parameter block, if the seed-0 refit drifts outside the published seed band, if the withdrawn
-figures reappear, or if any p-value or moderate recall here stops matching the artifact.
+Runtime 373 s on CPU with TabPFN included, ~185 s without it, so it is
+deliberately outside the default CI path. `tests/test_paired_significance.py` fails if the script
+grows its own hyper-parameter block, if the seed-0 refit drifts outside the published seed band, if
+the withdrawn figures reappear, or if any p-value, moderate recall or safety-band interval here
+stops matching the artifact.
 
 ---
 

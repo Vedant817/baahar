@@ -646,6 +646,50 @@ def check_significance(md: str, raw_path: Path | None, out: Problem) -> None:
                     f"significance {name}: discordant counts {c_right}/{r_right} do not appear in RESULTS.md"
                 )
 
+        # 3. The safety band. This is the comparison the engine choice rests on,
+        # so its figures are checked as strictly as the accuracy ones. A document
+        # that attaches a binomial-SE argument to accuracy and then quotes a
+        # safety-band recall with no interval is being inconsistent about which of
+        # its own numbers it thinks is precise.
+        mb = comp.get("moderate_band")
+        if mb and mb.get("n_moderate_rows"):
+            # Check the paired "<challenger> vs <ensemble>" form, not the bare
+            # digits. A two-digit count like 71 occurs inside plenty of unrelated
+            # decimals elsewhere in this document, so a bare-digit check would
+            # keep passing after the disclosure had been deleted -- which is the
+            # exact failure this gate exists to prevent.
+            chal_c = mb.get("challenger_caught")
+            ens_c = mb.get("ensemble_caught")
+            pair = f"{chal_c} vs {ens_c}"
+            if pair not in md:
+                out.add(
+                    f"significance {name}: moderate-band count {pair} does not appear in RESULTS.md"
+                )
+            else:
+                checked += 1
+
+            p_mod = mb.get("mcnemar", {}).get("p_value_exact_two_sided")
+            if p_mod is not None:
+                token = f"{p_mod:.4f}"
+                if token not in md:
+                    out.add(
+                        f"significance {name}: moderate-band McNemar p-value {token} does "
+                        "not appear in RESULTS.md"
+                    )
+                else:
+                    checked += 1
+
+            boot = mb.get("paired_bootstrap", {})
+            lo, hi = boot.get("ci95_low"), boot.get("ci95_high")
+            if lo is not None and hi is not None:
+                if f"{lo:+.4f}" not in md or f"{hi:+.4f}" not in md:
+                    out.add(
+                        f"significance {name}: moderate-band interval "
+                        f"[{lo:+.4f}, {hi:+.4f}] does not appear in RESULTS.md"
+                    )
+                else:
+                    checked += 2
+
     # 3. Disclosures
     match = re.search(r"^#+\s*Paired significance[^\n]*", md, re.MULTILINE | re.IGNORECASE)
     if not match:

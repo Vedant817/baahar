@@ -236,6 +236,8 @@ def test_significance_gate_fails_if_claim_removed_while_artifact_remains():
         ("wrong_p_value", "McNemar p-value"),
         ("wrong_accuracy", "holdout accuracy"),
         ("wrong_moderate_recall", "moderate recall"),
+        ("drop_band_count", "moderate-band count"),
+        ("wrong_band_interval", "moderate-band interval"),
     ],
 )
 def test_significance_gate_notices_dropped_disclosure_or_wrong_number(omission, expected_error):
@@ -264,6 +266,17 @@ def test_significance_gate_notices_dropped_disclosure_or_wrong_number(omission, 
         md = md.replace("0.8622", "0.8999")
     elif omission == "wrong_moderate_recall":
         md = md.replace("0.6620", "0.7500")
+    elif omission == "drop_band_count":
+        payload = json.loads(sig_path.read_text(encoding="utf-8"))
+        mb = next(iter(payload["comparisons"].values()))["moderate_band"]
+        md = md.replace(
+            f"{mb['challenger_caught']} vs {mb['ensemble_caught']}", "an unstated number"
+        )
+    elif omission == "wrong_band_interval":
+        payload = json.loads(sig_path.read_text(encoding="utf-8"))
+        mb = next(iter(payload["comparisons"].values()))["moderate_band"]
+        old = f"{mb['paired_bootstrap']['ci95_low']:+.4f}"
+        md = md.replace(old, "+0.0001")
 
     out = check_results.Problem()
     check_results.check_significance(md, sig_path, out)
