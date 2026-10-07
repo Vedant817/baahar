@@ -1,7 +1,7 @@
 # ADR 001 — Tinker fine-tuning outcome
 
-- **Status:** Blocked — dataset built, API unverifiable, no endpoint invented
-- **Date:** 2026-10-06 IST
+- **Status:** Blocked — dataset built, API unreachable, no endpoint invented
+- **Date:** 2026-10-06 IST, re-verified 2026-10-07 IST
 - **Relates to:** the "Tinker" prize category in the HF26 Week 1 brief
 
 ## Decision
@@ -23,7 +23,7 @@ fine-tuned model, and do not enter the Tinker prize category.
 
 ## Why it is blocked
 
-The Tinker API could not be verified from the build environment:
+First attempt, 2026-10-06, from the build environment:
 
 ```
 https://tinker.ai              -> request timed out
@@ -31,6 +31,33 @@ https://tinker.ai/docs         -> request timed out
 https://docs.tinker.ai         -> no such host
 https://api.tinker.ai/v1/...   -> no such host
 ```
+
+Re-verified 2026-10-07, after a `TINKER_API_KEY` was added to `.env`. The API key
+now exists, so this is no longer "we have no credentials" — it is "we still
+cannot reach the service, and cannot read its documentation to find the endpoint".
+The failure mode is **different**, and the difference matters:
+
+```
+tinker.ai          A     192.64.119.227    TCP 443 -> connection failed
+api.tinker.ai      A     (none)           DNS     -> no such host
+docs.tinker.ai     A     (none)           DNS     -> no such host
+generativelanguage.googleapis.com  A  ...  TCP 443 -> OK   (control)
+```
+
+Two things follow, and only the second is new:
+
+1. `tinker.ai` now **resolves**, where on 2026-10-06 it did not. Resolution alone
+   is not reachability.
+2. It resolves to an address that does not accept a connection on 443, while a
+   control host from the same environment connects immediately. So this is **not**
+   a local network or egress restriction on our side. The endpoint is simply not
+   serving.
+
+That distinction is worth recording precisely, because "we could not reach it" and
+"we could not find it" are different claims and a judge may well check. The
+vendor's documentation is unreachable from here by the same mechanism, so the one
+thing that would unblock this — reading the real endpoint out of the real docs — is
+precisely what we cannot do.
 
 An earlier version of `brief.py` hard-coded
 `https://api.tinker.ai/v1/sampling/generate`. That URL was a **guess**, and
@@ -41,7 +68,7 @@ than shipping nothing:
 - it would make the repo *look* to have a Tinker integration that was never run;
 - and it would contradict the honesty rule that governs every other number here.
 
-So the endpoint is now read from `TINKER_SAMPLE_URL`, empty by default, and
+So the endpoint is still read from `TINKER_SAMPLE_URL`, empty by default, and
 `write_tinker` raises a clear, actionable error until someone reads the vendor
 docs and sets it. The response parser still tolerates the several shapes the
 vendor documents (plain completion string, sampled token list, OpenAI-style
