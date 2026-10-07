@@ -348,7 +348,7 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 
 - Everything that needs no key: the whole product, the web UI, Pocket Mode, the
   journal (including the species sighting question), the CLI, the seasonal species
-  cues, and 540 offline tests.
+  cues, and 545 offline tests.
 - **TabPFN ran for real across 5 seeds.** With `TABPFN_TOKEN` configured, TabPFN 9.1.0
   was evaluated on the 1,626-row chronological holdout on 28 features (13 base + 15 past-hour lags):
   **0.8708 +/- 0.0023 acc / 0.6193 +/- 0.0020 macro-F1** (4 supported bands).

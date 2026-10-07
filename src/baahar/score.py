@@ -845,6 +845,11 @@ def _headline(decision: Decision, best: SlotScore) -> str:
     if decision is Decision.GO:
         return f"Go at {when}."
     if decision is Decision.WAIT:
-        return f"Wait for {when}."
+        # pick_best sorts GO ahead of WAIT, so a WAIT landing here means no hour
+        # in the window is a GO at all. Saying "Wait for 22:00" in that case
+        # reads as a recommendation for an hour we are not recommending -- the
+        # user is told to hold off for the exact slot the table below marks
+        # WAIT. State the absence instead.
+        return f"No GO hour in this window. Best is {when}, and it is only a WAIT."
     reason = best.reasons[0] if best.reasons else "conditions are poor all window"
     return f"Skip it. {reason}"

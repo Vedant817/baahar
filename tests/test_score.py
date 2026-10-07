@@ -594,6 +594,47 @@ class TestFeatures:
         assert BAND_ORDINALS["hazardous"] > BAND_ORDINALS["good"]
 
 
+class TestHeadline:
+    """The headline is the only line most people read.
+
+    It must never recommend an hour the table underneath marks as anything other
+    than GO. Using the product in offline mode surfaced this: with a fixture
+    window where every hour is WAIT, the old headline read "Wait for 22:00"
+    while 22:00 was itself a WAIT in the table two lines below.
+    """
+
+    def test_go_headline_names_a_go_hour(self, go_slot, night_slot) -> None:
+        plan = build_plan([night_slot, go_slot], scorer="heuristic")
+        assert plan.overall is Decision.GO
+        assert plan.headline == f"Go at {plan.best_time.strftime('%H:%M')}."
+
+    def test_wait_headline_never_names_an_hour_as_the_recommendation(
+        self, night_slot, slot
+    ) -> None:
+        """A WAIT window must say there is no GO hour, not point at one."""
+        slots = [night_slot, slot(1, pm25=120.0), slot(2, pm25=130.0)]
+        plan = build_plan(slots, scorer="heuristic")
+        assert plan.overall is Decision.WAIT
+        assert "No GO hour" in plan.headline
+        # The hour it names as "best" must not be presented as a GO.
+        assert "Go at" not in plan.headline
+
+    def test_wait_headline_does_not_say_wait_for(self, night_slot, slot) -> None:
+        """The old wording survived in committed acceptance artifacts; this is the
+        regression test for the behaviour itself, not for the old string."""
+        plan = build_plan([night_slot, slot(1, pm25=120.0)], scorer="heuristic")
+        assert "Wait for" not in plan.headline
+
+    def test_skip_headline_leads_with_the_reason(self, hazardous_slot) -> None:
+        plan = build_plan([hazardous_slot], scorer="heuristic")
+        assert plan.overall is Decision.SKIP
+        assert plan.headline.startswith("Skip it.")
+
+    def test_empty_window_is_not_reported_as_a_recommendation(self) -> None:
+        plan = build_plan([], scorer="heuristic")
+        assert plan.headline == "No usable hours in the window."
+
+
 class TestSplits:
     def test_time_split_is_chronological_and_disjoint(self, slot) -> None:
         slots = [slot(h) for h in range(24)]
