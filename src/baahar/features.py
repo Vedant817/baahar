@@ -2,9 +2,9 @@
 
 Design notes (the eval discipline starts here, not in the write-up):
 
-* **No target leakage.** Features are built from hour *t* only. The label for
-  hour *t* is assigned at *t* too. Nothing downstream of the split may read
-  hour *t+1* .
+* **No target leakage.** Features are built from hour *t* and past hours t-1..t-6 only.
+  The label for hour *t* is assigned at *t* too. Nothing downstream of the split may read
+  hour *t+1*.
 * **Time-based split, never shuffled.** Air quality is strongly autocorrelated;
   a random shuffle puts neighbouring hours on both sides of the split and
   inflates every metric. :func:`time_split` cuts chronologically.
@@ -25,21 +25,8 @@ from typing import Any
 from .models import Decision, HourSlot
 from .weather import weather_category
 
-#: Ordered feature names. Frozen because a trained TabPFN model's column
-#: ordering is part of its contract -- appending is safe, reordering is not.
-#:
-#: **These are the same 13 columns the eval uses**, and that is the whole point.
-#: They used to diverge: the archive dataset stored `hour` and `month` while the
-#: library built `hour_sin`/`hour_cos`, `naqi_band_ordinal` and `heat_index_flag`
-#: -- 13 columns against 15. A model fitted by `scripts/run_eval.py` could then
-#: never be used by the app, because the X matrices did not match. It failed at
-#: predict time with "X has 13 features, but TabPFNClassifier is expecting 15",
-#: `auto` silently fell back to the heuristic, and the published table described a
-#: pipeline the product did not run.
-#:
-#: `scripts/run_eval.py` imports this tuple rather than redeclaring it, so the two
-#: cannot drift apart again.
-FEATURE_NAMES: tuple[str, ...] = (
+#: Base 13 columns.
+BASE_FEATURE_NAMES: tuple[str, ...] = (
     "naqi",
     "pm25",
     "pm10",
@@ -54,6 +41,28 @@ FEATURE_NAMES: tuple[str, ...] = (
     "hour",
     "month",
 )
+
+#: 15 lag and difference features derived strictly from hours t-1 .. t-6.
+LAG_FEATURE_NAMES: tuple[str, ...] = (
+    "naqi_lag1",
+    "naqi_lag3",
+    "naqi_lag6",
+    "naqi_diff1",
+    "naqi_diff3",
+    "naqi_diff6",
+    "naqi_rate6",
+    "pm25_lag1",
+    "pm25_diff3",
+    "pm10_diff3",
+    "temp_diff3",
+    "wind_lag1",
+    "wind_diff1",
+    "naqi_rolling3",
+    "naqi_rolling6",
+)
+
+#: Column order for model feature vectors (13 base + 15 lag/difference features).
+FEATURE_NAMES: tuple[str, ...] = BASE_FEATURE_NAMES + LAG_FEATURE_NAMES
 
 #: Column order for the TabPFN X matrix. Same as :data:`FEATURE_NAMES`; named
 #: separately because "the model's column contract" is a different idea from
@@ -81,6 +90,40 @@ COMPACT_FEATURE_NAMES: tuple[str, ...] = (
     "month_sin",
     "month_cos",
 )
+
+#: Default imputation medians computed strictly from the training partition
+#: (first 80% chronologically). Shared by fit and serve to eliminate skew on
+#: edge cases (e.g. the first 6 hours of any forecast window).
+DEFAULT_IMPUTATION_MEDIANS: dict[str, float] = {
+    "naqi": 95.1,
+    "pm25": 23.9,
+    "pm10": 28.1,
+    "temp_c": 23.7,
+    "apparent_c": 24.6,
+    "precip_mm": 0.0,
+    "precip_prob": 0.0,
+    "humidity": 63.0,
+    "wind_kmh": 10.4,
+    "uv_index": 0.0,
+    "is_day": 1.0,
+    "hour": 11.5,
+    "month": 5.0,
+    "naqi_lag1": 95.1,
+    "naqi_lag3": 95.1,
+    "naqi_lag6": 95.1,
+    "naqi_diff1": -1.47,
+    "naqi_diff3": -5.15,
+    "naqi_diff6": -7.23,
+    "naqi_rate6": -1.205,
+    "pm25_lag1": 23.9,
+    "pm25_diff3": -0.1,
+    "pm10_diff3": 0.0,
+    "temp_diff3": -0.7,
+    "wind_lag1": 10.4,
+    "wind_diff1": 0.0,
+    "naqi_rolling3": 96.4067,
+    "naqi_rolling6": 98.7467,
+}
 
 #: Ordinal encoding of NAQI bands, worst last.
 BAND_ORDINALS: dict[str, int] = {
@@ -111,70 +154,6 @@ def _f(value: float | None) -> float:
     keeps "we do not know" distinguishable from "we measured a real number".
     """
     return float("nan") if value is None else float(value)
-
-
-def features_from_slot(slot: HourSlot) -> dict[str, float]:
-    """Build one feature row from a joined hour.
-
-    Keys include both :data:`FEATURE_NAMES` and :data:`COMPACT_FEATURE_NAMES`,
-    so the dict can feed TabPFN, LightGBM, or the consensus ensemble without reordering.
-    Derived extras that the heuristic and the UI find useful are included too.
-
-    The ``naqi`` column is the **effective** reading
-    (:attr:`~baahar.models.HourlyAir.naqi_effective`): the higher of the hour's
-    instantaneous value and its trailing-mean value. Not the instantaneous one,
-    because a model trained on optimistic air is a model that learns to send
-    people out on the hours the CPCB day average says to stay in.
-    """
-    air = slot.air
-    weather = slot.weather
-    hour = weather.time.hour
-    month = float(weather.time.month)
-    band = air.naqi_effective_band or ""
-
-    temp = _f(weather.temp_c)
-    humidity = _f(weather.humidity)
-    wind = _f(weather.wind_kmh)
-    pm25 = _f(air.pm25)
-    pm10 = _f(air.pm10)
-    naqi_effective = _f(air.naqi_effective)
-    naqi_instant = _f(air.naqi)
-
-    compact = compact_features_from_row(
-        {
-            "temp_c": temp,
-            "humidity": humidity,
-            "wind_kmh": wind,
-            "pm25": pm25,
-            "pm10": pm10,
-            "naqi": naqi_effective,
-            "naqi_instant": naqi_instant,
-            "hour": hour,
-            "month": month,
-        }
-    )
-
-    return {
-        # -- model columns, in FEATURE_NAMES order -----------------------------
-        "naqi": naqi_effective,
-        "pm25": pm25,
-        "pm10": pm10,
-        "temp_c": temp,
-        "apparent_c": _f(weather.apparent_c),
-        "precip_mm": _f(weather.precip_mm),
-        "precip_prob": _f(weather.precip_prob),
-        "humidity": humidity,
-        "wind_kmh": wind,
-        "uv_index": _f(weather.uv_index),
-        "is_day": float(weather.is_day or 0),
-        "hour": float(hour),
-        "month": month,
-        # -- compact 17-feature set additions ----------------------------------
-        **compact,
-        # -- derived, for the policy and the UI, not for the model -------------
-        "naqi_band_ordinal": float(BAND_ORDINALS.get(band, -1)),
-        "heat_index_flag": heat_index_flag(weather.apparent_c),
-    }
 
 
 def compact_features_from_row(row: dict[str, Any]) -> dict[str, float]:
@@ -236,15 +215,207 @@ def compact_features_from_row(row: dict[str, Any]) -> dict[str, float]:
     }
 
 
-def row_from_slot(slot: HourSlot, order: Sequence[str] = TABPFN_FEATURE_ORDER) -> list[float]:
-    feats = features_from_slot(slot)
+def features_from_rows(
+    rows: Sequence[dict[str, Any]],
+    *,
+    impute_missing: bool = False,
+) -> list[dict[str, float]]:
+    """Derive base, compact, and lag features across an ordered sequence of row dicts.
+
+    Lag and difference features read strictly from hours t-1 .. t-6 (past hours,
+    before the hour being predicted - strictly no leakage into future hours).
+    """
+    n = len(rows)
+    if n == 0:
+        return []
+
+    naqis = [
+        _f(r.get("naqi")) if r.get("naqi") is not None else _f(r.get("naqi_effective"))
+        for r in rows
+    ]
+    pm25s = [_f(r.get("pm25")) for r in rows]
+    pm10s = [_f(r.get("pm10")) for r in rows]
+    temps = [_f(r.get("temp_c")) for r in rows]
+    winds = [_f(r.get("wind_kmh")) for r in rows]
+
+    out: list[dict[str, float]] = []
+    for i, r in enumerate(rows):
+        temp = temps[i]
+        humidity = _f(r.get("humidity"))
+        wind = winds[i]
+        pm25 = pm25s[i]
+        pm10 = pm10s[i]
+        naqi_val = naqis[i]
+        naqi_instant = _f(r.get("naqi_instant", naqi_val))
+        hour = _f(r.get("hour"))
+        month = _f(r.get("month"))
+        band = r.get("naqi_effective_band") or ""
+
+        compact = compact_features_from_row(
+            {
+                "temp_c": temp,
+                "humidity": humidity,
+                "wind_kmh": wind,
+                "pm25": pm25,
+                "pm10": pm10,
+                "naqi": naqi_val,
+                "naqi_instant": naqi_instant,
+                "hour": hour,
+                "month": month,
+            }
+        )
+
+        n_now = naqi_val
+        l1 = naqis[i - 1] if i >= 1 else float("nan")
+        l3 = naqis[i - 3] if i >= 3 else float("nan")
+        l6 = naqis[i - 6] if i >= 6 else float("nan")
+
+        d1 = n_now - l1 if not math.isnan(l1) and not math.isnan(n_now) else float("nan")
+        d3 = n_now - l3 if not math.isnan(l3) and not math.isnan(n_now) else float("nan")
+        d6 = n_now - l6 if not math.isnan(l6) and not math.isnan(n_now) else float("nan")
+        r6 = (n_now - l6) / 6.0 if not math.isnan(l6) and not math.isnan(n_now) else float("nan")
+
+        p25_l1 = pm25s[i - 1] if i >= 1 else float("nan")
+        p25_d3 = (
+            pm25 - pm25s[i - 3]
+            if i >= 3 and not math.isnan(pm25) and not math.isnan(pm25s[i - 3])
+            else float("nan")
+        )
+        p10_d3 = (
+            pm10 - pm10s[i - 3]
+            if i >= 3 and not math.isnan(pm10) and not math.isnan(pm10s[i - 3])
+            else float("nan")
+        )
+        t_d3 = (
+            temp - temps[i - 3]
+            if i >= 3 and not math.isnan(temp) and not math.isnan(temps[i - 3])
+            else float("nan")
+        )
+        w_l1 = winds[i - 1] if i >= 1 else float("nan")
+        w_d1 = (
+            wind - winds[i - 1]
+            if i >= 1 and not math.isnan(wind) and not math.isnan(winds[i - 1])
+            else float("nan")
+        )
+
+        sub3 = [naqis[j] for j in range(max(0, i - 2), i + 1) if not math.isnan(naqis[j])]
+        roll3 = sum(sub3) / len(sub3) if sub3 else float("nan")
+
+        sub6 = [naqis[j] for j in range(max(0, i - 5), i + 1) if not math.isnan(naqis[j])]
+        roll6 = sum(sub6) / len(sub6) if sub6 else float("nan")
+
+        lags: dict[str, float] = {
+            "naqi_lag1": l1,
+            "naqi_lag3": l3,
+            "naqi_lag6": l6,
+            "naqi_diff1": d1,
+            "naqi_diff3": d3,
+            "naqi_diff6": d6,
+            "naqi_rate6": r6,
+            "pm25_lag1": p25_l1,
+            "pm25_diff3": p25_d3,
+            "pm10_diff3": p10_d3,
+            "temp_diff3": t_d3,
+            "wind_lag1": w_l1,
+            "wind_diff1": w_d1,
+            "naqi_rolling3": roll3,
+            "naqi_rolling6": roll6,
+        }
+
+        if impute_missing:
+            for k, v in lags.items():
+                if math.isnan(v):
+                    lags[k] = DEFAULT_IMPUTATION_MEDIANS.get(k, 0.0)
+
+        row_dict: dict[str, float] = {
+            "naqi": naqi_val,
+            "pm25": pm25,
+            "pm10": pm10,
+            "temp_c": temp,
+            "apparent_c": _f(r.get("apparent_c")),
+            "precip_mm": _f(r.get("precip_mm")),
+            "precip_prob": _f(r.get("precip_prob")),
+            "humidity": humidity,
+            "wind_kmh": wind,
+            "uv_index": _f(r.get("uv_index")),
+            "is_day": float(r.get("is_day") or 0.0),
+            "hour": float(hour),
+            "month": month,
+            **lags,
+            **compact,
+            "naqi_band_ordinal": float(BAND_ORDINALS.get(band, -1)),
+            "heat_index_flag": heat_index_flag(r.get("apparent_c")),
+        }
+        out.append(row_dict)
+
+    return out
+
+
+def _row_dict_from_slot(slot: HourSlot) -> dict[str, Any]:
+    air = slot.air
+    weather = slot.weather
+    return {
+        "naqi": _f(air.naqi_effective),
+        "naqi_instant": _f(air.naqi),
+        "pm25": _f(air.pm25),
+        "pm10": _f(air.pm10),
+        "temp_c": _f(weather.temp_c),
+        "apparent_c": _f(weather.apparent_c),
+        "precip_mm": _f(weather.precip_mm),
+        "precip_prob": _f(weather.precip_prob),
+        "humidity": _f(weather.humidity),
+        "wind_kmh": _f(weather.wind_kmh),
+        "uv_index": _f(weather.uv_index),
+        "is_day": float(weather.is_day or 0),
+        "hour": float(weather.time.hour),
+        "month": float(weather.time.month),
+        "naqi_effective_band": air.naqi_effective_band or "",
+    }
+
+
+def features_from_slots(
+    slots: Sequence[HourSlot],
+    history: Sequence[HourSlot] | None = None,
+    *,
+    impute_missing: bool = False,
+) -> list[dict[str, float]]:
+    """Derive features across an ordered sequence of HourSlot objects."""
+    hist = list(history or ())
+    combined = hist + list(slots)
+    rows = [_row_dict_from_slot(s) for s in combined]
+    derived = features_from_rows(rows, impute_missing=impute_missing)
+    return derived[len(hist) :]
+
+
+def features_from_slot(
+    slot: HourSlot,
+    history: Sequence[HourSlot] | None = None,
+) -> dict[str, float]:
+    """Build one feature row from a joined hour.
+
+    When no history is provided, missing lag values are explicitly imputed using
+    DEFAULT_IMPUTATION_MEDIANS.
+    """
+    return features_from_slots([slot], history=history, impute_missing=True)[0]
+
+
+def row_from_slot(
+    slot: HourSlot,
+    order: Sequence[str] = TABPFN_FEATURE_ORDER,
+    history: Sequence[HourSlot] | None = None,
+) -> list[float]:
+    feats = features_from_slot(slot, history=history)
     return [feats[name] for name in order]
 
 
 def matrix_from_slots(
-    slots: Sequence[HourSlot], order: Sequence[str] = TABPFN_FEATURE_ORDER
+    slots: Sequence[HourSlot],
+    order: Sequence[str] = TABPFN_FEATURE_ORDER,
+    history: Sequence[HourSlot] | None = None,
 ) -> list[list[float]]:
-    return [row_from_slot(slot, order) for slot in slots]
+    """Extract ordered feature matrix from a sequence of HourSlots."""
+    feats = features_from_slots(slots, history=history, impute_missing=False)
+    return [[f[name] for name in order] for f in feats]
 
 
 # ---------------------------------------------------------------------------
@@ -368,11 +539,12 @@ class LabelledRow:
 def build_dataset(slots: Sequence[HourSlot]) -> list[LabelledRow]:
     """Feature rows + policy labels for a chronological run of hours."""
     rows: list[LabelledRow] = []
-    for slot in slots:
+    feats_list = features_from_slots(slots)
+    for slot, feats in zip(slots, feats_list, strict=True):
         decision, reasons = heuristic_decision(slot)
         rows.append(
             LabelledRow(
-                features=features_from_slot(slot),
+                features=feats,
                 label=decision.value,
                 time=slot.weather.time.isoformat(),
                 meta={

@@ -6,7 +6,14 @@ import numpy as np
 import pytest
 
 from baahar import score
-from baahar.features import COMPACT_FEATURE_NAMES, TABPFN_FEATURE_ORDER, features_from_slot
+from baahar.features import (
+    COMPACT_FEATURE_NAMES,
+    TABPFN_FEATURE_ORDER,
+    _row_dict_from_slot,
+    features_from_slot,
+    features_from_slots,
+    matrix_from_slots,
+)
 
 
 class RecordingModel:
@@ -57,8 +64,8 @@ def test_width_mismatch_names_contract_and_fix(go_slot, scorer, component):
     for required in (
         "Feature width mismatch",
         component,
-        "expects 13",
-        "matrix has 17",
+        f"expects {len(TABPFN_FEATURE_ORDER)}",
+        f"matrix has {len(COMPACT_FEATURE_NAMES)}",
         "_model.pkl",
         "scripts/run_eval.py",
         "feature_order",
@@ -101,8 +108,43 @@ def test_eval_compact_matrix_uses_serving_derivation(go_slot, monkeypatch):
     monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "scripts"))
     import run_eval
 
+    from conftest import make_slot
+
     values = features_from_slot(go_slot)
     row = {name: values[name] for name in TABPFN_FEATURE_ORDER}
     row.update(naqi_instant=go_slot.air.naqi, target_band="good")
     x, _ = run_eval.to_matrix([row], COMPACT_FEATURE_NAMES)
     np.testing.assert_allclose(x[0], [values[n] for n in COMPACT_FEATURE_NAMES])
+
+    # 1. Train/Serve Identity: run_eval.to_matrix and matrix_from_slots produce identical 28 features
+    slots = [make_slot(i, temp_c=22.0 + i, pm25=25.0 + 3.0 * i) for i in range(12)]
+    eval_rows = [_row_dict_from_slot(s) for s in slots]
+    for r in eval_rows:
+        r["target_band"] = "good"
+    x_eval, _ = run_eval.to_matrix(eval_rows, TABPFN_FEATURE_ORDER)
+    x_serve = np.array(matrix_from_slots(slots, TABPFN_FEATURE_ORDER), dtype="float64")
+    np.testing.assert_allclose(x_eval, x_serve, equal_nan=True)
+
+    # 2. Strict No-Leakage Guard: modifying future hours t+1..t+6 does not alter features at hour t
+    t = 5
+    slots_perturbed = [
+        make_slot(
+            i,
+            temp_c=(99.0 if i > t else 22.0 + i),
+            pm25=(250.0 if i > t else 25.0 + 3.0 * i),
+            wind_kmh=(50.0 if i > t else 8.0),
+        )
+        for i in range(12)
+    ]
+    orig_t = matrix_from_slots(slots, TABPFN_FEATURE_ORDER)[t]
+    perturbed_t = matrix_from_slots(slots_perturbed, TABPFN_FEATURE_ORDER)[t]
+    np.testing.assert_allclose(orig_t, perturbed_t, equal_nan=True)
+
+    # 3. No-History Edge Cases: single slot and short window impute finite defaults cleanly
+    single_dict = features_from_slot(go_slot)
+    for name in TABPFN_FEATURE_ORDER:
+        assert not np.isnan(single_dict[name]), f"{name} is NaN in single slot"
+    short_feats = features_from_slots(slots[:2], impute_missing=True)
+    for row_f in short_feats:
+        for name in TABPFN_FEATURE_ORDER:
+            assert not np.isnan(row_f[name]), f"{name} is NaN in short imputed window"

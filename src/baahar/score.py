@@ -219,11 +219,15 @@ def _model_components(model: Any) -> list[tuple[str, Any]]:
 
 
 def _feature_order(model: Any, artifact: Any) -> tuple[str, ...]:
-    from .features import COMPACT_FEATURE_NAMES, TABPFN_FEATURE_ORDER
+    from .features import (
+        BASE_FEATURE_NAMES,
+        COMPACT_FEATURE_NAMES,
+        TABPFN_FEATURE_ORDER,
+    )
 
     if isinstance(model, dict) and "feature_order" in model:
         order = tuple(model["feature_order"])
-        known = set(COMPACT_FEATURE_NAMES) | set(TABPFN_FEATURE_ORDER)
+        known = set(COMPACT_FEATURE_NAMES) | set(TABPFN_FEATURE_ORDER) | set(BASE_FEATURE_NAMES)
         if not order or len(set(order)) != len(order) or any(n not in known for n in order):
             raise ValueError(
                 f"Invalid feature_order in artifact {artifact}; re-run scripts/run_eval.py"
@@ -232,12 +236,12 @@ def _feature_order(model: Any, artifact: Any) -> tuple[str, ...]:
     for _, component in _model_components(model):
         expected = getattr(component, "n_features_in_", None)
         if expected is not None:
-            for order in (TABPFN_FEATURE_ORDER, COMPACT_FEATURE_NAMES):
+            for order in (TABPFN_FEATURE_ORDER, BASE_FEATURE_NAMES, COMPACT_FEATURE_NAMES):
                 if int(expected) == len(order):
                     return order
             raise ValueError(
                 f"Artifact {artifact} expects {expected} features; supported legacy widths are "
-                f"{len(TABPFN_FEATURE_ORDER)} and {len(COMPACT_FEATURE_NAMES)}; "
+                f"{len(TABPFN_FEATURE_ORDER)}, {len(BASE_FEATURE_NAMES)} and {len(COMPACT_FEATURE_NAMES)}; "
                 "re-run scripts/run_eval.py to record feature_order"
             )
     raise ValueError(
@@ -280,14 +284,14 @@ def score_lgbm(slots: Sequence[HourSlot], model: Any | None = None) -> list[Slot
     artifact = get_settings().lgbm_model_path or DEFAULT_LGBM_ARTIFACT
     order = _feature_order(model, artifact)
 
-    x = np.array(
-        [[features_from_slot(s)[name] for name in order] for s in slots],
-        dtype="float64",
-    )
+    from .features import DEFAULT_IMPUTATION_MEDIANS, matrix_from_slots
+
+    x = np.array(matrix_from_slots(slots, order=order), dtype="float64")
     _validate_width(model, x, artifact)
     if np.isnan(x).any():
-        medians = np.nanmedian(x, axis=0)
-        medians = np.where(np.isnan(medians), 0.0, medians)
+        medians = model.get("medians") if isinstance(model, dict) and "medians" in model else None
+        if medians is None:
+            medians = np.array([DEFAULT_IMPUTATION_MEDIANS.get(n, 0.0) for n in order])
         inds = np.where(np.isnan(x))
         x[inds] = np.take(medians, inds[1])
 
@@ -318,14 +322,11 @@ def score_lgbm(slots: Sequence[HourSlot], model: Any | None = None) -> list[Slot
 # Consensus Ensemble scorer
 # ---------------------------------------------------------------------------
 def ensemble_available() -> tuple[bool, str]:
-    """Whether all components for consensus ensemble are importable and available."""
+    """Whether LightGBM, HistGB, and RF are importable and available."""
     try:
         import lightgbm  # noqa: F401
         import numpy  # noqa: F401
-        from sklearn.ensemble import (  # noqa: F401
-            HistGradientBoostingClassifier,
-            RandomForestClassifier,
-        )
+        import sklearn  # noqa: F401
     except ImportError as exc:
         return False, f"not installed ({exc.name or exc})"
     return True, "installed and available"
@@ -389,14 +390,14 @@ def score_ensemble(
     artifact = get_settings().ensemble_model_path or DEFAULT_ENSEMBLE_ARTIFACT
     order = _feature_order(model, artifact)
 
-    x = np.array(
-        [[features_from_slot(s)[name] for name in order] for s in slots],
-        dtype="float64",
-    )
+    from .features import DEFAULT_IMPUTATION_MEDIANS, matrix_from_slots
+
+    x = np.array(matrix_from_slots(slots, order=order), dtype="float64")
     _validate_width(model, x, artifact)
     if np.isnan(x).any():
-        medians = np.nanmedian(x, axis=0)
-        medians = np.where(np.isnan(medians), 0.0, medians)
+        medians = model.get("medians") if isinstance(model, dict) and "medians" in model else None
+        if medians is None:
+            medians = np.array([DEFAULT_IMPUTATION_MEDIANS.get(n, 0.0) for n in order])
         inds = np.where(np.isnan(x))
         x[inds] = np.take(medians, inds[1])
 
@@ -531,8 +532,9 @@ def fit_tabpfn(rows: Sequence[Any], *, seed: int = 0):
     )
     y = np.array([list(TABPFN_LABELS).index(_to_decision(row.label)) for row in rows])
     if np.isnan(x).any():
-        medians = np.nanmedian(x, axis=0)
-        medians = np.where(np.isnan(medians), 0.0, medians)
+        from .features import DEFAULT_IMPUTATION_MEDIANS
+
+        medians = np.array([DEFAULT_IMPUTATION_MEDIANS.get(n, 0.0) for n in TABPFN_FEATURE_ORDER])
         inds = np.where(np.isnan(x))
         x[inds] = np.take(medians, inds[1])
 
@@ -567,7 +569,7 @@ def score_tabpfn(slots: Sequence[HourSlot], model: Any | None = None) -> list[Sl
         log.warning("TabPFN model found but numpy is unavailable (%s); using policy", exc)
         return score_heuristic(slots)
 
-    from .features import TABPFN_FEATURE_ORDER
+    from .features import DEFAULT_IMPUTATION_MEDIANS, TABPFN_FEATURE_ORDER, matrix_from_slots
 
     expected = getattr(model, "n_features_in_", None)
     if expected is not None and int(expected) != len(TABPFN_FEATURE_ORDER):
@@ -582,12 +584,15 @@ def score_tabpfn(slots: Sequence[HourSlot], model: Any | None = None) -> list[Sl
         )
 
     x = np.array(
-        [[features_from_slot(s)[name] for name in TABPFN_FEATURE_ORDER] for s in slots],
+        matrix_from_slots(slots, order=TABPFN_FEATURE_ORDER),
         dtype="float32",
     )
     if np.isnan(x).any():
-        medians = np.nanmedian(x, axis=0)
-        medians = np.where(np.isnan(medians), 0.0, medians)
+        medians = model.get("medians") if isinstance(model, dict) and "medians" in model else None
+        if medians is None:
+            medians = np.array(
+                [DEFAULT_IMPUTATION_MEDIANS.get(n, 0.0) for n in TABPFN_FEATURE_ORDER]
+            )
         inds = np.where(np.isnan(x))
         x[inds] = np.take(medians, inds[1])
 
@@ -651,16 +656,7 @@ def save_tabpfn_model(model: Any, path: Any | None = None) -> str:
 def choose_scorer(
     requested: str = "auto", *, fit_on: Sequence[Any] | None = None
 ) -> tuple[str, str]:
-    """Resolve a scorer request into ``(scorer_name, note)``.
-
-    Scorer options:
-    - ``heuristic``: Pure deterministic rules. Always available.
-    - ``lgbm``: LightGBM gradient boosted trees classifier.
-    - ``ensemble``: Calibrated soft-voting blend of LightGBM, HistGB, and RF.
-    - ``tabpfn``: TabPFN foundation model.
-    - ``auto``: Opportunistically uses consensus ensemble, LightGBM, or TabPFN
-      if models are available and fitted, falling back safely to heuristic.
-    """
+    """Resolve a scorer request into ``(scorer_name, note)``."""
     requested = (requested or "auto").lower()
 
     if requested == "heuristic":

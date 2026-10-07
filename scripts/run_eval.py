@@ -56,6 +56,8 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
+import numpy as np
+
 from baahar.config import EVAL_DATA_DIR, EVAL_RAW_DIR, get_settings
 from baahar.features import (
     BAND_ORDINALS,
@@ -63,7 +65,7 @@ from baahar.features import (
     NAQI_SKIP,
     PRECIP_SKIP_MM,
     TABPFN_FEATURE_ORDER,
-    compact_features_from_row,
+    features_from_rows,
 )
 from baahar.score import (
     CPU_LARGE_DATASET_ENV,
@@ -120,10 +122,8 @@ def _coerce(value) -> float:
 
 
 def to_matrix(rows: list[dict], feature_columns=None):
-    import numpy as np
-
     columns = FEATURE_COLUMNS if feature_columns is None else feature_columns
-    derived = [{**r, **compact_features_from_row(r)} for r in rows]
+    derived = features_from_rows(rows)
     x = np.array([[_coerce(r.get(c)) for c in columns] for r in derived], dtype="float64")
     y = np.array([BAND_ORDINALS.get(r["target_band"], -1) for r in rows], dtype="int64")
     return x, y
@@ -131,8 +131,6 @@ def to_matrix(rows: list[dict], feature_columns=None):
 
 def impute(x, medians=None):
     """Median-impute NaNs. TabPFN rejects NaN; sklearn pipelines want it too."""
-    import numpy as np
-
     if medians is None:
         medians = np.nanmedian(x, axis=0)
         medians = np.where(np.isnan(medians), 0.0, medians)
@@ -169,7 +167,7 @@ def prf(cm) -> dict:
             "f1": round(f1, 4),
             "support": support,
         }
-    correct = sum(cm[i][i] for i in range(len(cm)))
+    correct = sum(cm[i][i] for i in range(len(cm)) if i < len(cm[i]))
     total = sum(sum(row) for row in cm)
     f1s = [v["f1"] for v in per.values() if v["support"] > 0]
     return {
@@ -289,8 +287,6 @@ def fit_predict(
     t0 = time.perf_counter()
 
     if name == "majority":
-        import numpy as np
-
         counts = np.bincount(y_train, minlength=6)
         majority = int(counts.argmax())
         return (
@@ -347,8 +343,6 @@ def fit_predict(
         # not an unreasonable one.
         os.environ.setdefault(CPU_LARGE_DATASET_ENV, "1")
 
-        import numpy as np
-
         try:
             from tabpfn import TabPFNClassifier
         except ImportError as exc:
@@ -363,10 +357,7 @@ def fit_predict(
                 "See docs/NEEDS_HUMAN.md for the 3 steps."
             )
         # TabPFN lifts its own >5000-row CPU guard via an env var rather than a
-        # constructor flag. Measured on this machine: 6,504 rows fit in ~2 s and
-        # 1,626 predictions take ~310 s, so this is a five-minute eval, not an
-        # unreasonable one. Setting it here (not in the caller's shell) keeps CI
-        # and a judge's clone behaving identically.
+        # constructor flag. Setting it here keeps CI and a judge's clone behaving identically.
         clf = TabPFNClassifier(device="cpu", random_state=seed)
         clf.fit(x_train, y_train)
         probs = clf.predict_proba(x_test)
@@ -415,7 +406,6 @@ def fit_predict(
         )
 
     if name == "ensemble":
-        import numpy as np
         from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
         from sklearn.utils.class_weight import compute_sample_weight
 
@@ -485,6 +475,7 @@ def fit_predict(
             "rf": clf_rf,
             "weights": (0.50, 0.35, 0.15),
             "tau_mod": tau_mod,
+            "medians": medians,
         }
         try:
             artifact = save_ensemble_model(
@@ -531,8 +522,7 @@ def holdout_support(rows: list[dict]) -> dict:
 
     Explicitly reporting the zero-support classes matters: a macro-F1 that
     silently averages over only the classes that happen to be present reads as
-    broader coverage than it is.
-    """
+    broader coverage than it is.\n"""
     counts = Counter(r["target_band"] for r in rows)
     return {band: {"n": counts.get(band, 0), "present": counts.get(band, 0) > 0} for band in BANDS}
 
@@ -556,12 +546,14 @@ def main(argv: list[str] | None = None) -> int:
     rows = load_rows(Path(args.rows))
 
     x_all, y_all = to_matrix(rows, feature_columns)
-    x_all, medians = impute(x_all)
 
     # Chronological cut. The holdout is the *most recent* slice, which is the
     # only split that resembles deployment: train on the past, predict the future.
     cut = int(len(rows) * (1 - args.holdout))
-    x_train, x_test = x_all[:cut], x_all[cut:]
+    x_train_raw, x_test_raw = x_all[:cut], x_all[cut:]
+    x_train, medians = impute(x_train_raw)
+    x_test, _ = impute(x_test_raw, medians=medians)
+    x_all = np.vstack([x_train, x_test])
     y_train, y_test = y_all[:cut], y_all[cut:]
     train_rows, test_rows = rows[:cut], rows[cut:]
 
@@ -702,7 +694,7 @@ def main(argv: list[str] | None = None) -> int:
                 "naqi": NAQI_FEATURE_NOTE,
                 "target": LABEL_NOTE,
                 "feature_set": args.feature_set,
-                "derived": "compact_features_from_row in baahar.features; hour-t only",
+                "derived": "compact_features_from_row and features_from_rows in baahar.features",
                 "n_features": len(feature_columns),
             },
             "classes": BANDS,
