@@ -105,6 +105,42 @@ def binomial_se(n: int, p: float = 0.85) -> float:
     return float(np.sqrt(p * (1 - p) / n))
 
 
+def moderate_band_test(
+    reference_pred: np.ndarray, challenger_pred: np.ndarray, yte: np.ndarray
+) -> dict:
+    """Paired test on the `moderate` band only, which is what decides the engine.
+
+    Accuracy is dominated by `good` and `satisfactory`, which are easy and nearly
+    balanced. The number that actually matters for an air-safety product is how
+    many of the genuinely moderate hours get called moderate, so it gets its own
+    interval rather than inheriting the accuracy one.
+
+    Restricted to rows whose true band is `moderate`: on those rows "correct"
+    means "predicted moderate". McNemar then compares the two models on that
+    subset, and the bootstrap resamples *within* the subset so the interval is on
+    the recall difference rather than on accuracy.
+    """
+    subset = yte == 2
+    n = int(subset.sum())
+    if n == 0:
+        return {"n_moderate_rows": 0, "note": "the holdout has no moderate rows"}
+
+    ref = reference_pred[subset] == 2
+    chal = challenger_pred[subset] == 2
+    boot = paired_bootstrap(ref, chal)
+    return {
+        "n_moderate_rows": n,
+        "ensemble_recall": round(float(ref.mean()), 6),
+        "challenger_recall": round(float(chal.mean()), 6),
+        "ensemble_caught": int(ref.sum()),
+        "challenger_caught": int(chal.sum()),
+        "mcnemar": mcnemar_exact(ref, chal),
+        "paired_bootstrap": boot,
+        "binomial_se_ensemble": round(binomial_se(n, float(ref.mean())), 6),
+        "binomial_se_challenger": round(binomial_se(n, float(chal.mean())), 6),
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--rows", default="data/eval/gono_rows.jsonl")
@@ -162,6 +198,7 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("the reference model failed to fit; refusing to publish a comparison")
 
     ens_ok = predictions["ensemble"] == yte
+    n_challengers = len(predictions) - 1
     payload = {
         "run_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "task": "paired significance test on the chronological holdout",
@@ -183,7 +220,16 @@ def main(argv: list[str] | None = None) -> int:
             "descriptive rather than as independent validation.",
             "McNemar counts discordant rows only; the bootstrap resamples rows and so "
             "assumes those rows are exchangeable.",
+            f"This run makes {n_challengers} accuracy comparisons and {n_challengers} "
+            "moderate-band ones, and applies no Bonferroni or FDR correction. Treat the "
+            "individual p-values as descriptive and the consistency of direction across "
+            "challengers as the finding, not any single threshold crossing.",
+            "Moderate recall is measured only on the rows whose true band is moderate, so "
+            "its interval is wider than the accuracy one. A holdout that size cannot "
+            "resolve small differences in that band either.",
         ],
+        "n_comparisons": 2 * n_challengers,
+        "n_challengers": n_challengers,
     }
 
     for name, pred in predictions.items():
@@ -197,6 +243,8 @@ def main(argv: list[str] | None = None) -> int:
             "moderate_recall": round(
                 float(((pred == 2) & (yte == 2)).sum() / max(1, (yte == 2).sum())), 6
             ),
+            # The deciding metric gets its own paired test and its own interval.
+            "moderate_band": moderate_band_test(predictions["ensemble"], pred, yte),
         }
 
     payload["holdout_accuracy"]["_moderate_recall_ensemble"] = round(
@@ -239,6 +287,16 @@ def main(argv: list[str] | None = None) -> int:
             f"[{comp['paired_bootstrap']['ci95_low']:+.4f}, {comp['paired_bootstrap']['ci95_high']:+.4f}]  "
             f"modR {comp['moderate_recall']:.4f}"
         )
+        mb = comp.get("moderate_band", {})
+        if mb.get("n_moderate_rows"):
+            print(
+                f"     {'':12s} moderate band (n={mb['n_moderate_rows']}): "
+                f"ensemble {mb['ensemble_caught']} vs {mb['challenger_caught']} caught, "
+                f"McNemar p={mb['mcnemar']['p_value_exact_two_sided']:.4f}, "
+                f"dRecall {mb['paired_bootstrap']['delta_accuracy']:+.4f} "
+                f"[{mb['paired_bootstrap']['ci95_low']:+.4f}, "
+                f"{mb['paired_bootstrap']['ci95_high']:+.4f}]"
+            )
     for name, why in skipped.items():
         print(f"  skipped {name}: {why}")
     print(f"elapsed {payload['elapsed_seconds']} s")

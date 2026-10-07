@@ -174,6 +174,62 @@ def test_results_quotes_every_moderate_recall() -> None:
         assert f"{r:.4f}" in text, f"RESULTS.md does not quote moderate recall for {name} ({r})"
 
 
+def test_every_challenger_has_a_paired_test_on_the_safety_band() -> None:
+    """The deciding metric needs its own interval, not the accuracy one.
+
+    Accuracy is dominated by two easy bands. Quoting a recall with no uncertainty
+    while attaching a binomial-SE argument to accuracy elsewhere in the same
+    document would be inconsistent about which number we trust.
+    """
+    a = _artifact()
+    for name, comp in a["comparisons"].items():
+        mb = comp.get("moderate_band")
+        assert mb, f"{name} has no paired test restricted to the moderate band"
+        assert mb["n_moderate_rows"] > 0
+        assert "mcnemar" in mb and "paired_bootstrap" in mb
+        assert "ci95_low" in mb["paired_bootstrap"]
+
+
+def test_the_artifact_admits_it_did_not_correct_for_multiplicity() -> None:
+    """Eight comparisons without a correction must say so.
+
+    Asserted on the substance -- a named correction that is explicitly *not*
+    applied -- rather than on any single keyword, so rewording the caveat cannot
+    quietly drop the disclosure.
+    """
+    a = _artifact()
+    joined = " ".join(a["caveats"]).lower()
+    assert a.get("n_comparisons", 0) >= 2
+    assert a.get("n_challengers", 0) >= 1
+    named = [k for k in ("bonferroni", "fdr", "benjamini", "holm", "tukey") if k in joined]
+    assert named, (
+        "the artifact must name a multiplicity correction and state that it is not applied"
+    )
+    assert "no " in joined and "correction" in joined, (
+        "the artifact must say that no correction was applied, not merely name the methods"
+    )
+    assert str(a["n_comparisons"]) in joined or "comparisons" in joined, (
+        "the artifact must state how many comparisons it makes"
+    )
+
+
+def test_results_reports_the_safety_band_counts() -> None:
+    """The raw caught counts, in the paired form, so the claim is checkable by hand.
+
+    Checking for the bare digits would pass on coincidence -- "71" occurs inside
+    plenty of unrelated decimals in this document. The published form is
+    "<challenger> vs <ensemble>", so that is what is asserted.
+    """
+    a = _artifact()
+    text = _text()
+    for name, comp in a["comparisons"].items():
+        mb = comp["moderate_band"]
+        pair = f"{mb['challenger_caught']} vs {mb['ensemble_caught']}"
+        assert pair in text, (
+            f"RESULTS.md does not report the moderate-band caught counts for {name} as {pair!r}"
+        )
+
+
 def test_the_withdrawn_contradictory_verdicts_are_gone() -> None:
     """The earlier, un-artifacted seed-4 numbers must not survive anywhere.
 
