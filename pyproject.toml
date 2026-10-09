@@ -73,6 +73,7 @@ include = [
 # ---------------------------------------------------------------------------
 
 [dependency-groups]
+modal = ["modal>=1.6.1,<2"]
 # The default development environment: tests, lint, and the lightweight tabular
 # baselines the eval compares TabPFN against. All of this installs in seconds.
 dev = [
