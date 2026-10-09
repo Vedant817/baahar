@@ -152,7 +152,7 @@ def _headline_for(plan: OutdoorPlan, park_name: str | None) -> tuple[str, str]:
     if plan.overall is Decision.WAIT:
         when = _next_hint(plan)
         if when:
-            return ("Not yet.", f"Rest until {when}. Then outside.")
+            return ("Not yet.", f"Forecast window {when}. Recheck conditions before walking.")
         # `pick_best` ranks GO above WAIT across the full scored window.
         # A planner-produced WAIT therefore has no clean hour to promise.
         return ("Not yet.", "No clean hour left in this window.")
@@ -223,11 +223,18 @@ def build_pocket(plan: OutdoorPlan, walk_minutes: int | None = None) -> PocketMo
     minutes = walk_minutes or settings.walk_minutes
     park_name = plan.park.name if plan.park else None
     headline, subline = _headline_for(plan, park_name)
+    from .walk import eligibility
+
+    allowed, permission_reason = eligibility(plan)
+    if not allowed and plan.overall is Decision.GO:
+        headline = "Not yet."
+        when = plan.best_time.strftime("%H:%M") if plan.best_time else "the selected hour"
+        subline = f"Forecast window {when}. Refresh conditions before walking."
     pool = _cue_pool(plan)
     notice = pool[0].text if pool else _CUES_DEFAULT[0]
 
     return PocketMode(
-        active=plan.overall is not Decision.SKIP,
+        active=allowed,
         headline=headline,
         # No fallback needed: every branch of `_headline_for` returns a subline,
         # including the WAIT one that has no hour to name. The old `or _next_hint()`
@@ -237,7 +244,7 @@ def build_pocket(plan: OutdoorPlan, walk_minutes: int | None = None) -> PocketMo
         walk_minutes=minutes,
         notice_this=notice,
         park_name=park_name,
-        safety_note=_safety_note(plan),
+        safety_note=_safety_note(plan) if allowed else permission_reason,
         # Provenance of `notice_this` and nothing else. Empty for a hand-written
         # cue, because claiming a data source for a line the author wrote would be
         # a lie. The front end uses `cue_evidence` for the shuffle button, since

@@ -5,12 +5,14 @@ Pins the behavioural contracts introduced in WP3:
 2. WAIT plans without a future clean hour honestly state no clean hour remains,
    rather than making vague promises ("until the window opens").
 3. WAIT plans with a future clean hour name the exact human-readable time (constructed plans only).
-4. GO plans enable pocket mode (active=True).
+4. Only a fresh current-hour GO with live inputs enables pocket mode.
 """
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
+
+import pytest
 
 from baahar.models import (
     DataSource,
@@ -78,7 +80,7 @@ def _make_plan(
     best_slot = _make_hour_slot(best_time) if best_time else None
     return OutdoorPlan(
         city="Bengaluru",
-        generated_at=datetime(2026, 10, 6, 8, 0, tzinfo=UTC),
+        generated_at=datetime(2026, 10, 6, 10, 0, tzinfo=UTC),
         window_hours=len(slots),
         overall=overall,
         best_slot=best_slot,
@@ -92,6 +94,12 @@ def _make_plan(
 
 
 class TestPocketHonesty:
+    @pytest.fixture(autouse=True)
+    def clock(self, monkeypatch):
+        from baahar import walk
+
+        monkeypatch.setattr(walk, "utc_now", lambda: datetime(2026, 10, 6, 10, 0, tzinfo=UTC))
+
     def test_skip_plan_is_not_active(self) -> None:
         t0 = datetime(2026, 10, 6, 10, 0)
         slot = _make_slot_score(t0, Decision.SKIP)
@@ -109,7 +117,7 @@ class TestPocketHonesty:
         plan = _make_plan(Decision.WAIT, slots, best_time=t0)
         pocket = build_pocket(plan)
 
-        assert pocket.active is True
+        assert pocket.active is False
         assert pocket.headline == "Not yet."
         assert pocket.subline == "No clean hour left in this window."
 
@@ -125,12 +133,12 @@ class TestPocketHonesty:
         plan = _make_plan(Decision.WAIT, slots, best_time=t0)
         pocket = build_pocket(plan)
 
-        assert pocket.active is True
+        assert pocket.active is False
         assert pocket.headline == "Not yet."
-        assert pocket.subline == "Rest until 19:20. Then outside."
+        assert pocket.subline == "Forecast window 19:20. Recheck conditions before walking."
 
     def test_go_plan_is_active_with_park_invitation(self) -> None:
-        t0 = datetime(2026, 10, 6, 10, 0)
+        t0 = datetime(2026, 10, 6, 10, 0, tzinfo=UTC)
         slot = _make_slot_score(t0, Decision.GO)
         plan = _make_plan(Decision.GO, [slot], best_time=t0)
         pocket = build_pocket(plan)
@@ -176,7 +184,10 @@ class TestPlannerWaitInvariant:
         assert len(plan.slots) < len(scores)
         assert plan.overall is Decision.GO
         assert plan.best_time == later_go.time
-        assert build_pocket(plan).headline == "Phone in pocket."
+        pocket = build_pocket(plan)
+        assert pocket.headline == "Not yet."
+        assert pocket.active is False
+        assert "Refresh conditions" in pocket.subline
 
     def test_real_wait_has_no_go_in_full_scored_window(self, slot):
         hours = [slot(i, is_day=0) for i in range(24)]
