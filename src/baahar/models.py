@@ -240,6 +240,8 @@ class OutdoorPlan(BaseModel):
     window_hours: int
     overall: Decision
     best_slot: HourSlot | None
+    current_slot: HourSlot | None = None
+    current_decision: Decision | None = None
     best_time: datetime | None
     headline: str
     slots: list[SlotScore] = Field(default_factory=list)
