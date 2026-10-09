@@ -1,0 +1,60 @@
+{
+  "2025-01": {
+    "satisfactory": 459,
+    "moderate": 274,
+    "good": 7,
+    "poor": 4
+  },
+  "2025-02": {
+    "satisfactory": 379,
+    "moderate": 284,
+    "good": 3,
+    "poor": 6
+  },
+  "2025-03": {
+    "good": 44,
+    "satisfactory": 364,
+    "moderate": 264,
+    "poor": 67,
+    "severe": 5
+  },
+  "2025-04": {
+    "satisfactory": 332,
+    "moderate": 241,
+    "poor": 119,
+    "good": 20,
+    "severe": 8
+  },
+  "2025-05": {
+    "satisfactory": 315,
+    "moderate": 189,
+    "poor": 32,
+    "severe": 14,
+    "good": 194
+  },
+  "2025-06": {
+    "good": 376,
+    "satisfactory": 324,
+    "moderate": 20
+  },
+  "2025-07": {
+    "good": 528,
+    "satisfactory": 216
+  },
+  "2025-08": {
+    "good": 480,
+    "satisfactory": 260,
+    "moderate": 4
+  },
+  "2025-09": {
+    "good": 445,
+    "satisfactory": 262,
+    "moderate": 13
+  },
+  "2025-10": {
+    "good": 344,
+    "satisfactory": 323,
+    "moderate": 68,
+    "poor": 3
+  }
+}

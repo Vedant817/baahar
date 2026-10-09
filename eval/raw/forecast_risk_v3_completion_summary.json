@@ -1,0 +1,2145 @@
+{
+  "status": "COMPLETED",
+  "call_id": "fc-01M4EANGW0531QG8A4ZP7EAHQK",
+  "app_id": "ap-GG9w1wGAh04JTEZ6fb39vJ",
+  "raw_result_sha256": "5b1ed6d639e14daec988e36ff7ab87f1382810ef47f3f4b7d37ecd9732702e2d",
+  "dataset": {
+    "rows_sha256": "064684cdc77b2612a5e9910528eacf6340677a7cdb8f238effff9918cce55951",
+    "row_count": 32826,
+    "excluded_history_n": 30,
+    "excluded_quality_n": 0,
+    "source_fixtures": [
+      {
+        "path": "data/samples/archival_aq_2023-01-01_2023-12-31.json",
+        "sha256": "80e2095817debe677445dfc694b99dfa0f9bcc39ead3f1f5bf7ff58b70d92bf0"
+      },
+      {
+        "path": "data/samples/archival_aq_2024-01-01_2024-12-31.json",
+        "sha256": "81ab6e6b0c1027fc203772aaa0e5a92e30ce42d89dfd4f4c584c41c7bdde7fb7"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-01-01_2025-10-31.json",
+        "sha256": "a9c677e876d844c9ebe1ff25fc439e9b7755e489bd26dc03a5d4ee14af4b2d5c"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-11-01_2025-12-31.json",
+        "sha256": "443d5d398a13d44a83bd613ecfd68f99497f84081877e67862c55c0d65595b30"
+      },
+      {
+        "path": "data/samples/archival_aq_2026-01-01_2026-09-30.json",
+        "sha256": "3323aeb31e3f513b23f7b759be7cc7e3ceadf3f9348f937e11e76fa7225102ff"
+      },
+      {
+        "path": "data/samples/archival_wx_2023-01-01_2023-12-31.json",
+        "sha256": "3d71fbd3972525ab52d8613357a7ce8680ef2d40882649cb5eb14357fe41ab7c"
+      },
+      {
+        "path": "data/samples/archival_wx_2024-01-01_2024-12-31.json",
+        "sha256": "e0f0c92cdc67454504372e9292ff5c895d467a7b0d55b937322837970a923c9b"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-01-01_2025-10-31.json",
+        "sha256": "8d7e98f8a9c9cefe1a54a38779e7e367bdab294f96afc25e1f2291ec4e86bf4a"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-11-01_2025-12-31.json",
+        "sha256": "7779cce7765fbfc341212dc5d216e6b2cc95a4b0a4bd4dfe4eca56b99ce4810d"
+      },
+      {
+        "path": "data/samples/archival_wx_2026-01-01_2026-09-30.json",
+        "sha256": "726d32e9ff366b8a0d1e954008c35d75894538fc5078e8ee94d969eb6c9e0528"
+      }
+    ],
+    "source_kind": "CAMS/ERA5 modelled archive"
+  },
+  "resolved_partitions": {
+    "historical_train": [
+      "2023-01-01",
+      "2024-01-01"
+    ],
+    "expanded_train": [
+      "2023-01-01",
+      "2025-06-01"
+    ],
+    "diagnostic_pollution": [
+      "2026-02-01",
+      "2026-05-01"
+    ],
+    "diagnostic_other_seasons": [
+      "2026-05-01",
+      "2026-10-01"
+    ]
+  },
+  "partition_support": {
+    "historical_train": {
+      "n": 8748,
+      "bands": {
+        "moderate": 1836,
+        "satisfactory": 4373,
+        "good": 2423,
+        "poor": 116
+      },
+      "first_time": "2023-01-01T06:00",
+      "last_time": "2023-12-31T17:00",
+      "poor_or_worse_episodes": {
+        "positive_hours": 116,
+        "episode_count": 35,
+        "episode_sizes": [
+          3,
+          3,
+          3,
+          1,
+          5,
+          1,
+          5,
+          5,
+          7,
+          4,
+          2,
+          4,
+          4,
+          4,
+          2,
+          7,
+          1,
+          5,
+          3,
+          3,
+          2,
+          4,
+          3,
+          2,
+          4,
+          5,
+          1,
+          3,
+          3,
+          1,
+          2,
+          3,
+          4,
+          4,
+          3
+        ],
+        "largest_episode_fraction": 0.0603448275862069,
+        "separation_hours": 6
+      },
+      "severe_or_worse_episodes": {
+        "positive_hours": 0,
+        "episode_count": 0,
+        "episode_sizes": [],
+        "largest_episode_fraction": null,
+        "separation_hours": 6
+      }
+    },
+    "expanded_train": {
+      "n": 21132,
+      "bands": {
+        "moderate": 4810,
+        "satisfactory": 10504,
+        "good": 5349,
+        "poor": 442,
+        "severe": 27
+      },
+      "first_time": "2023-01-01T06:00",
+      "last_time": "2025-05-31T17:00",
+      "poor_or_worse_episodes": {
+        "positive_hours": 469,
+        "episode_count": 115,
+        "episode_sizes": [
+          3,
+          3,
+          3,
+          1,
+          5,
+          1,
+          5,
+          5,
+          7,
+          4,
+          2,
+          4,
+          4,
+          4,
+          2,
+          7,
+          1,
+          5,
+          3,
+          3,
+          2,
+          4,
+          3,
+          2,
+          4,
+          5,
+          1,
+          3,
+          3,
+          1,
+          2,
+          3,
+          4,
+          4,
+          3,
+          3,
+          1,
+          2,
+          3,
+          3,
+          5,
+          2,
+          1,
+          2,
+          4,
+          2,
+          3,
+          2,
+          3,
+          3,
+          2,
+          2,
+          5,
+          5,
+          3,
+          5,
+          5,
+          5,
+          5,
+          2,
+          3,
+          2,
+          2,
+          4,
+          5,
+          3,
+          1,
+          1,
+          3,
+          1,
+          1,
+          3,
+          1,
+          6,
+          8,
+          8,
+          7,
+          1,
+          5,
+          2,
+          4,
+          6,
+          6,
+          6,
+          7,
+          6,
+          5,
+          2,
+          3,
+          6,
+          5,
+          6,
+          5,
+          8,
+          8,
+          7,
+          9,
+          8,
+          7,
+          7,
+          3,
+          6,
+          7,
+          5,
+          6,
+          4,
+          3,
+          7,
+          9,
+          8,
+          8,
+          5,
+          5,
+          4,
+          7
+        ],
+        "largest_episode_fraction": 0.019189765458422176,
+        "separation_hours": 6
+      },
+      "severe_or_worse_episodes": {
+        "positive_hours": 27,
+        "episode_count": 6,
+        "episode_sizes": [
+          5,
+          6,
+          2,
+          6,
+          5,
+          3
+        ],
+        "largest_episode_fraction": 0.2222222222222222,
+        "separation_hours": 6
+      }
+    },
+    "diagnostic_pollution": {
+      "n": 2130,
+      "bands": {
+        "satisfactory": 996,
+        "moderate": 854,
+        "poor": 237,
+        "good": 32,
+        "severe": 11
+      },
+      "first_time": "2026-02-01T00:00",
+      "last_time": "2026-04-30T17:00",
+      "poor_or_worse_episodes": {
+        "positive_hours": 248,
+        "episode_count": 49,
+        "episode_sizes": [
+          7,
+          1,
+          3,
+          5,
+          3,
+          5,
+          2,
+          7,
+          7,
+          4,
+          6,
+          7,
+          7,
+          6,
+          1,
+          1,
+          5,
+          7,
+          5,
+          6,
+          7,
+          7,
+          2,
+          7,
+          3,
+          3,
+          7,
+          6,
+          6,
+          7,
+          6,
+          2,
+          5,
+          5,
+          6,
+          5,
+          5,
+          3,
+          6,
+          8,
+          3,
+          3,
+          3,
+          4,
+          6,
+          8,
+          7,
+          7,
+          6
+        ],
+        "largest_episode_fraction": 0.03225806451612903,
+        "separation_hours": 6
+      },
+      "severe_or_worse_episodes": {
+        "positive_hours": 11,
+        "episode_count": 4,
+        "episode_sizes": [
+          4,
+          3,
+          2,
+          2
+        ],
+        "largest_episode_fraction": 0.36363636363636365,
+        "separation_hours": 6
+      }
+    },
+    "diagnostic_other_seasons": {
+      "n": 3666,
+      "bands": {
+        "satisfactory": 1506,
+        "moderate": 383,
+        "poor": 21,
+        "severe": 2,
+        "good": 1754
+      },
+      "first_time": "2026-05-01T00:00",
+      "last_time": "2026-09-30T17:00",
+      "poor_or_worse_episodes": {
+        "positive_hours": 23,
+        "episode_count": 7,
+        "episode_sizes": [
+          7,
+          3,
+          5,
+          1,
+          4,
+          1,
+          2
+        ],
+        "largest_episode_fraction": 0.30434782608695654,
+        "separation_hours": 6
+      },
+      "severe_or_worse_episodes": {
+        "positive_hours": 2,
+        "episode_count": 1,
+        "episode_sizes": [
+          2
+        ],
+        "largest_episode_fraction": 1.0,
+        "separation_hours": 6
+      }
+    }
+  },
+  "periods": [
+    {
+      "partition": "diagnostic_pollution",
+      "n": 2130,
+      "models": {
+        "historical_train_ordinary": {
+          "classification": {
+            "accuracy": 0.7366,
+            "macro_f1": 0.4258,
+            "per_class": {
+              "good": {
+                "precision": 0.6429,
+                "recall": 0.2812,
+                "f1": 0.3913,
+                "support": 32
+              },
+              "satisfactory": {
+                "precision": 0.7857,
+                "recall": 0.9167,
+                "f1": 0.8462,
+                "support": 996
+              },
+              "moderate": {
+                "precision": 0.6757,
+                "recall": 0.7272,
+                "f1": 0.7005,
+                "support": 854
+              },
+              "poor": {
+                "precision": 0.7429,
+                "recall": 0.1097,
+                "f1": 0.1912,
+                "support": 237
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 11
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 2130
+          },
+          "risk": {
+            "n": 2130,
+            "positive_support": 248,
+            "negative_support": 1882,
+            "misses": 221,
+            "recall": 0.10887096774193548,
+            "false_alarms": 8,
+            "false_alarm_rate": 0.004250797024442083,
+            "precision": 0.7714285714285715,
+            "brier": 0.09235654591520559,
+            "ece_10_bins": 0.092930699542378,
+            "reliability_bins": [
+              {
+                "n": 2014,
+                "probability": 0.0035666490414289595,
+                "observed": 0.07994041708043693
+              },
+              {
+                "n": 33,
+                "probability": 0.14390527000128484,
+                "observed": 0.7878787878787878
+              },
+              {
+                "n": 15,
+                "probability": 0.2414361525385128,
+                "observed": 0.6
+              },
+              {
+                "n": 14,
+                "probability": 0.3619283105999248,
+                "observed": 0.5714285714285714
+              },
+              {
+                "n": 19,
+                "probability": 0.4411613468010486,
+                "observed": 0.8947368421052632
+              },
+              {
+                "n": 14,
+                "probability": 0.552017422196086,
+                "observed": 0.8571428571428571
+              },
+              {
+                "n": 10,
+                "probability": 0.6607244838608889,
+                "observed": 0.6
+              },
+              {
+                "n": 6,
+                "probability": 0.7176007134028812,
+                "observed": 0.8333333333333334
+              },
+              {
+                "n": 4,
+                "probability": 0.8316797406918915,
+                "observed": 0.75
+              },
+              {
+                "n": 1,
+                "probability": 0.9550162797719531,
+                "observed": 1.0
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 2130,
+            "positive_support": 11,
+            "negative_support": 2119,
+            "misses": 11,
+            "recall": 0.0,
+            "false_alarms": 0,
+            "false_alarm_rate": 0.0,
+            "precision": null,
+            "brier": 0.005164319248826291,
+            "ece_10_bins": 0.005164319248826291,
+            "reliability_bins": [
+              {
+                "n": 2130,
+                "probability": 0.0,
+                "observed": 0.005164319248826291
+              }
+            ]
+          },
+          "training_partition": "historical_train",
+          "training_unsupported_classes": {
+            "severe": 11
+          },
+          "probability_note": "uncalibrated class probabilities"
+        },
+        "historical_train_risk_weighted": {
+          "classification": {
+            "accuracy": 0.7423,
+            "macro_f1": 0.4606,
+            "per_class": {
+              "good": {
+                "precision": 0.6471,
+                "recall": 0.3438,
+                "f1": 0.449,
+                "support": 32
+              },
+              "satisfactory": {
+                "precision": 0.7884,
+                "recall": 0.9127,
+                "f1": 0.846,
+                "support": 996
+              },
+              "moderate": {
+                "precision": 0.6872,
+                "recall": 0.7201,
+                "f1": 0.7033,
+                "support": 854
+              },
+              "poor": {
+                "precision": 0.7077,
+                "recall": 0.1941,
+                "f1": 0.3046,
+                "support": 237
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 11
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 2130
+          },
+          "risk": {
+            "n": 2130,
+            "positive_support": 248,
+            "negative_support": 1882,
+            "misses": 200,
+            "recall": 0.1935483870967742,
+            "false_alarms": 17,
+            "false_alarm_rate": 0.009032943676939426,
+            "precision": 0.7384615384615385,
+            "brier": 0.08826206062895899,
+            "ece_10_bins": 0.08687921084383847,
+            "reliability_bins": [
+              {
+                "n": 1986,
+                "probability": 0.003635226485113737,
+                "observed": 0.07301107754279959
+              },
+              {
+                "n": 37,
+                "probability": 0.14052970565181636,
+                "observed": 0.7027027027027027
+              },
+              {
+                "n": 19,
+                "probability": 0.2320796337335526,
+                "observed": 0.7368421052631579
+              },
+              {
+                "n": 15,
+                "probability": 0.3376942157287358,
+                "observed": 0.5333333333333333
+              },
+              {
+                "n": 8,
+                "probability": 0.43576888704549976,
+                "observed": 0.875
+              },
+              {
+                "n": 22,
+                "probability": 0.5491523227889448,
+                "observed": 0.7272727272727273
+              },
+              {
+                "n": 9,
+                "probability": 0.6483834356800515,
+                "observed": 0.8888888888888888
+              },
+              {
+                "n": 11,
+                "probability": 0.7479529552462677,
+                "observed": 0.6363636363636364
+              },
+              {
+                "n": 16,
+                "probability": 0.8431118336794473,
+                "observed": 0.6875
+              },
+              {
+                "n": 7,
+                "probability": 0.9474979364369596,
+                "observed": 0.8571428571428571
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 2130,
+            "positive_support": 11,
+            "negative_support": 2119,
+            "misses": 11,
+            "recall": 0.0,
+            "false_alarms": 0,
+            "false_alarm_rate": 0.0,
+            "precision": null,
+            "brier": 0.005164319248826291,
+            "ece_10_bins": 0.005164319248826291,
+            "reliability_bins": [
+              {
+                "n": 2130,
+                "probability": 0.0,
+                "observed": 0.005164319248826291
+              }
+            ]
+          },
+          "training_partition": "historical_train",
+          "training_unsupported_classes": {
+            "severe": 11
+          },
+          "probability_note": "uncalibrated class probabilities"
+        },
+        "expanded_train_ordinary": {
+          "classification": {
+            "accuracy": 0.7592,
+            "macro_f1": 0.4653,
+            "per_class": {
+              "good": {
+                "precision": 0.7778,
+                "recall": 0.2188,
+                "f1": 0.3415,
+                "support": 32
+              },
+              "satisfactory": {
+                "precision": 0.8122,
+                "recall": 0.8986,
+                "f1": 0.8532,
+                "support": 996
+              },
+              "moderate": {
+                "precision": 0.7042,
+                "recall": 0.7611,
+                "f1": 0.7316,
+                "support": 854
+              },
+              "poor": {
+                "precision": 0.7386,
+                "recall": 0.2743,
+                "f1": 0.4,
+                "support": 237
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 11
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 2130
+          },
+          "risk": {
+            "n": 2130,
+            "positive_support": 248,
+            "negative_support": 1882,
+            "misses": 174,
+            "recall": 0.29838709677419356,
+            "false_alarms": 22,
+            "false_alarm_rate": 0.011689691817215728,
+            "precision": 0.7708333333333334,
+            "brier": 0.07135216631830942,
+            "ece_10_bins": 0.06518035121266504,
+            "reliability_bins": [
+              {
+                "n": 1868,
+                "probability": 0.004806564876622048,
+                "observed": 0.04336188436830835
+              },
+              {
+                "n": 71,
+                "probability": 0.13977041124259773,
+                "observed": 0.5211267605633803
+              },
+              {
+                "n": 41,
+                "probability": 0.2411231208381404,
+                "observed": 0.5121951219512195
+              },
+              {
+                "n": 34,
+                "probability": 0.354588709927685,
+                "observed": 0.6176470588235294
+              },
+              {
+                "n": 19,
+                "probability": 0.4460561504256407,
+                "observed": 0.6842105263157895
+              },
+              {
+                "n": 18,
+                "probability": 0.5531744791161559,
+                "observed": 0.7222222222222222
+              },
+              {
+                "n": 12,
+                "probability": 0.6553460265952912,
+                "observed": 0.8333333333333334
+              },
+              {
+                "n": 19,
+                "probability": 0.755614773439343,
+                "observed": 0.8947368421052632
+              },
+              {
+                "n": 33,
+                "probability": 0.8566038351344872,
+                "observed": 0.8181818181818182
+              },
+              {
+                "n": 15,
+                "probability": 0.9375792333244602,
+                "observed": 0.5333333333333333
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 2130,
+            "positive_support": 11,
+            "negative_support": 2119,
+            "misses": 11,
+            "recall": 0.0,
+            "false_alarms": 8,
+            "false_alarm_rate": 0.0037753657385559227,
+            "precision": 0.0,
+            "brier": 0.0072074213112837265,
+            "ece_10_bins": 0.008677178117454096,
+            "reliability_bins": [
+              {
+                "n": 2105,
+                "probability": 0.000667743201765723,
+                "observed": 0.005225653206650831
+              },
+              {
+                "n": 9,
+                "probability": 0.14798631856660427,
+                "observed": 0.0
+              },
+              {
+                "n": 6,
+                "probability": 0.23737154726757823,
+                "observed": 0.0
+              },
+              {
+                "n": 3,
+                "probability": 0.44627778690848774,
+                "observed": 0.0
+              },
+              {
+                "n": 1,
+                "probability": 0.5951533570428724,
+                "observed": 0.0
+              },
+              {
+                "n": 4,
+                "probability": 0.6370854386698952,
+                "observed": 0.0
+              },
+              {
+                "n": 2,
+                "probability": 0.8247771033706248,
+                "observed": 0.0
+              }
+            ]
+          },
+          "training_partition": "expanded_train",
+          "training_unsupported_classes": {},
+          "probability_note": "uncalibrated class probabilities"
+        },
+        "expanded_train_risk_weighted": {
+          "classification": {
+            "accuracy": 0.7638,
+            "macro_f1": 0.4848,
+            "per_class": {
+              "good": {
+                "precision": 0.7778,
+                "recall": 0.2188,
+                "f1": 0.3415,
+                "support": 32
+              },
+              "satisfactory": {
+                "precision": 0.8114,
+                "recall": 0.8986,
+                "f1": 0.8528,
+                "support": 996
+              },
+              "moderate": {
+                "precision": 0.7223,
+                "recall": 0.74,
+                "f1": 0.7311,
+                "support": 854
+              },
+              "poor": {
+                "precision": 0.6838,
+                "recall": 0.3924,
+                "f1": 0.4987,
+                "support": 237
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 11
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 2130
+          },
+          "risk": {
+            "n": 2130,
+            "positive_support": 248,
+            "negative_support": 1882,
+            "misses": 144,
+            "recall": 0.41935483870967744,
+            "false_alarms": 39,
+            "false_alarm_rate": 0.020722635494155154,
+            "precision": 0.7272727272727273,
+            "brier": 0.0647336471674297,
+            "ece_10_bins": 0.048659839941299625,
+            "reliability_bins": [
+              {
+                "n": 1814,
+                "probability": 0.005501908486632079,
+                "observed": 0.034178610804851156
+              },
+              {
+                "n": 66,
+                "probability": 0.14383360461287692,
+                "observed": 0.3939393939393939
+              },
+              {
+                "n": 40,
+                "probability": 0.2476242053509859,
+                "observed": 0.425
+              },
+              {
+                "n": 43,
+                "probability": 0.35620953593854204,
+                "observed": 0.5813953488372093
+              },
+              {
+                "n": 24,
+                "probability": 0.44919823645526963,
+                "observed": 0.5833333333333334
+              },
+              {
+                "n": 23,
+                "probability": 0.5576488840179631,
+                "observed": 0.6521739130434783
+              },
+              {
+                "n": 23,
+                "probability": 0.6450599831356201,
+                "observed": 0.6086956521739131
+              },
+              {
+                "n": 25,
+                "probability": 0.7481829441036616,
+                "observed": 0.76
+              },
+              {
+                "n": 30,
+                "probability": 0.8618159159031185,
+                "observed": 0.9
+              },
+              {
+                "n": 42,
+                "probability": 0.9445302549635921,
+                "observed": 0.6904761904761905
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 2130,
+            "positive_support": 11,
+            "negative_support": 2119,
+            "misses": 11,
+            "recall": 0.0,
+            "false_alarms": 7,
+            "false_alarm_rate": 0.0033034450212364322,
+            "precision": 0.0,
+            "brier": 0.007386770690038263,
+            "ece_10_bins": 0.007870394046288403,
+            "reliability_bins": [
+              {
+                "n": 2104,
+                "probability": 0.0006894099134027105,
+                "observed": 0.004752851711026616
+              },
+              {
+                "n": 10,
+                "probability": 0.138375283242101,
+                "observed": 0.1
+              },
+              {
+                "n": 3,
+                "probability": 0.23107229236467908,
+                "observed": 0.0
+              },
+              {
+                "n": 6,
+                "probability": 0.3392258600211961,
+                "observed": 0.0
+              },
+              {
+                "n": 1,
+                "probability": 0.47291470321342816,
+                "observed": 0.0
+              },
+              {
+                "n": 2,
+                "probability": 0.6406849205367765,
+                "observed": 0.0
+              },
+              {
+                "n": 1,
+                "probability": 0.767985769437824,
+                "observed": 0.0
+              },
+              {
+                "n": 3,
+                "probability": 0.859954197675525,
+                "observed": 0.0
+              }
+            ]
+          },
+          "training_partition": "expanded_train",
+          "training_unsupported_classes": {},
+          "probability_note": "uncalibrated class probabilities"
+        },
+        "expanded_ensemble": {
+          "classification": {
+            "accuracy": 0.7488,
+            "macro_f1": 0.4837,
+            "per_class": {
+              "good": {
+                "precision": 0.8889,
+                "recall": 0.25,
+                "f1": 0.3902,
+                "support": 32
+              },
+              "satisfactory": {
+                "precision": 0.8462,
+                "recall": 0.8062,
+                "f1": 0.8257,
+                "support": 996
+              },
+              "moderate": {
+                "precision": 0.6695,
+                "recall": 0.8232,
+                "f1": 0.7384,
+                "support": 854
+              },
+              "poor": {
+                "precision": 0.7232,
+                "recall": 0.3418,
+                "f1": 0.4642,
+                "support": 237
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 11
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 2130
+          },
+          "risk": {
+            "n": 2130,
+            "positive_support": 248,
+            "negative_support": 1882,
+            "misses": 155,
+            "recall": 0.375,
+            "false_alarms": 29,
+            "false_alarm_rate": 0.015409139213602551,
+            "precision": 0.7622950819672131,
+            "brier": 0.0863849765258216,
+            "ece_10_bins": 0.0863849765258216,
+            "reliability_bins": [
+              {
+                "n": 2008,
+                "probability": 0.0,
+                "observed": 0.07719123505976096
+              },
+              {
+                "n": 122,
+                "probability": 1.0,
+                "observed": 0.7622950819672131
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 2130,
+            "positive_support": 11,
+            "negative_support": 2119,
+            "misses": 11,
+            "recall": 0.0,
+            "false_alarms": 10,
+            "false_alarm_rate": 0.004719207173194903,
+            "precision": 0.0,
+            "brier": 0.009859154929577466,
+            "ece_10_bins": 0.009859154929577466,
+            "reliability_bins": [
+              {
+                "n": 2120,
+                "probability": 0.0,
+                "observed": 0.005188679245283019
+              },
+              {
+                "n": 10,
+                "probability": 1.0,
+                "observed": 0.0
+              }
+            ]
+          },
+          "training_partition": "expanded_train",
+          "training_unsupported_classes": {},
+          "probability_note": "binary band decisions, not calibrated probabilities"
+        },
+        "instantaneous_persistence": {
+          "classification": {
+            "accuracy": 0.3864,
+            "macro_f1": 0.2113,
+            "per_class": {
+              "good": {
+                "precision": 0.125,
+                "recall": 0.125,
+                "f1": 0.125,
+                "support": 32
+              },
+              "satisfactory": {
+                "precision": 0.4745,
+                "recall": 0.4759,
+                "f1": 0.4752,
+                "support": 996
+              },
+              "moderate": {
+                "precision": 0.3854,
+                "recall": 0.3841,
+                "f1": 0.3848,
+                "support": 854
+              },
+              "poor": {
+                "precision": 0.0717,
+                "recall": 0.0717,
+                "f1": 0.0717,
+                "support": 237
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 11
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 2130
+          },
+          "risk": {
+            "n": 2130,
+            "positive_support": 248,
+            "negative_support": 1882,
+            "misses": 231,
+            "recall": 0.06854838709677419,
+            "false_alarms": 231,
+            "false_alarm_rate": 0.12274176408076515,
+            "precision": 0.06854838709677419,
+            "brier": 0.21690140845070421,
+            "ece_10_bins": 0.21690140845070421,
+            "reliability_bins": [
+              {
+                "n": 1882,
+                "probability": 0.0,
+                "observed": 0.12274176408076515
+              },
+              {
+                "n": 248,
+                "probability": 1.0,
+                "observed": 0.06854838709677419
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 2130,
+            "positive_support": 11,
+            "negative_support": 2119,
+            "misses": 11,
+            "recall": 0.0,
+            "false_alarms": 11,
+            "false_alarm_rate": 0.005191127890514393,
+            "precision": 0.0,
+            "brier": 0.010328638497652582,
+            "ece_10_bins": 0.010328638497652582,
+            "reliability_bins": [
+              {
+                "n": 2119,
+                "probability": 0.0,
+                "observed": 0.005191127890514393
+              },
+              {
+                "n": 11,
+                "probability": 1.0,
+                "observed": 0.0
+              }
+            ]
+          },
+          "training_partition": null,
+          "training_unsupported_classes": {},
+          "probability_note": "binary band decisions, not calibrated probabilities"
+        },
+        "conservative_persistence_diagnostic": {
+          "classification": {
+            "accuracy": 0.2812,
+            "macro_f1": 0.1381,
+            "per_class": {
+              "good": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 32
+              },
+              "satisfactory": {
+                "precision": 0.3119,
+                "recall": 0.2139,
+                "f1": 0.2537,
+                "support": 996
+              },
+              "moderate": {
+                "precision": 0.3295,
+                "recall": 0.4321,
+                "f1": 0.3739,
+                "support": 854
+              },
+              "poor": {
+                "precision": 0.0559,
+                "recall": 0.0717,
+                "f1": 0.0628,
+                "support": 237
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 11
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 2130
+          },
+          "risk": {
+            "n": 2130,
+            "positive_support": 248,
+            "negative_support": 1882,
+            "misses": 231,
+            "recall": 0.06854838709677419,
+            "false_alarms": 298,
+            "false_alarm_rate": 0.15834218916046758,
+            "precision": 0.05396825396825397,
+            "brier": 0.24835680751173708,
+            "ece_10_bins": 0.24835680751173708,
+            "reliability_bins": [
+              {
+                "n": 1815,
+                "probability": 0.0,
+                "observed": 0.12727272727272726
+              },
+              {
+                "n": 315,
+                "probability": 1.0,
+                "observed": 0.05396825396825397
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 2130,
+            "positive_support": 11,
+            "negative_support": 2119,
+            "misses": 11,
+            "recall": 0.0,
+            "false_alarms": 11,
+            "false_alarm_rate": 0.005191127890514393,
+            "precision": 0.0,
+            "brier": 0.010328638497652582,
+            "ece_10_bins": 0.010328638497652582,
+            "reliability_bins": [
+              {
+                "n": 2119,
+                "probability": 0.0,
+                "observed": 0.005191127890514393
+              },
+              {
+                "n": 11,
+                "probability": 1.0,
+                "observed": 0.0
+              }
+            ]
+          },
+          "training_partition": null,
+          "training_unsupported_classes": {},
+          "probability_note": "binary band decisions, not calibrated probabilities"
+        }
+      }
+    },
+    {
+      "partition": "diagnostic_other_seasons",
+      "n": 3666,
+      "models": {
+        "historical_train_ordinary": {
+          "classification": {
+            "accuracy": 0.8183,
+            "macro_f1": 0.5075,
+            "per_class": {
+              "good": {
+                "precision": 0.8413,
+                "recall": 0.9128,
+                "f1": 0.8756,
+                "support": 1754
+              },
+              "satisfactory": {
+                "precision": 0.7975,
+                "recall": 0.7742,
+                "f1": 0.7857,
+                "support": 1506
+              },
+              "moderate": {
+                "precision": 0.7904,
+                "recall": 0.6005,
+                "f1": 0.6825,
+                "support": 383
+              },
+              "poor": {
+                "precision": 0.3,
+                "recall": 0.1429,
+                "f1": 0.1935,
+                "support": 21
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 2
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 3666
+          },
+          "risk": {
+            "n": 3666,
+            "positive_support": 23,
+            "negative_support": 3643,
+            "misses": 19,
+            "recall": 0.17391304347826086,
+            "false_alarms": 6,
+            "false_alarm_rate": 0.0016469942355201758,
+            "precision": 0.4,
+            "brier": 0.00588566930650825,
+            "ece_10_bins": 0.005862833794598898,
+            "reliability_bins": [
+              {
+                "n": 3644,
+                "probability": 0.0003707762179864809,
+                "observed": 0.0043907793633369925
+              },
+              {
+                "n": 9,
+                "probability": 0.13603695052951903,
+                "observed": 0.3333333333333333
+              },
+              {
+                "n": 2,
+                "probability": 0.35758538414828883,
+                "observed": 0.0
+              },
+              {
+                "n": 1,
+                "probability": 0.4282973929420945,
+                "observed": 0.0
+              },
+              {
+                "n": 2,
+                "probability": 0.5313773179488888,
+                "observed": 0.0
+              },
+              {
+                "n": 4,
+                "probability": 0.634116781014824,
+                "observed": 0.5
+              },
+              {
+                "n": 2,
+                "probability": 0.739571690448857,
+                "observed": 1.0
+              },
+              {
+                "n": 1,
+                "probability": 0.8952827981178069,
+                "observed": 0.0
+              },
+              {
+                "n": 1,
+                "probability": 0.9097604456921287,
+                "observed": 0.0
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 3666,
+            "positive_support": 2,
+            "negative_support": 3664,
+            "misses": 2,
+            "recall": 0.0,
+            "false_alarms": 0,
+            "false_alarm_rate": 0.0,
+            "precision": null,
+            "brier": 0.0005455537370430987,
+            "ece_10_bins": 0.0005455537370430987,
+            "reliability_bins": [
+              {
+                "n": 3666,
+                "probability": 0.0,
+                "observed": 0.0005455537370430987
+              }
+            ]
+          },
+          "training_partition": "historical_train",
+          "training_unsupported_classes": {
+            "severe": 2
+          },
+          "probability_note": "uncalibrated class probabilities"
+        },
+        "historical_train_risk_weighted": {
+          "classification": {
+            "accuracy": 0.8151,
+            "macro_f1": 0.5001,
+            "per_class": {
+              "good": {
+                "precision": 0.8395,
+                "recall": 0.9128,
+                "f1": 0.8746,
+                "support": 1754
+              },
+              "satisfactory": {
+                "precision": 0.7952,
+                "recall": 0.7709,
+                "f1": 0.7829,
+                "support": 1506
+              },
+              "moderate": {
+                "precision": 0.7797,
+                "recall": 0.5822,
+                "f1": 0.6667,
+                "support": 383
+              },
+              "poor": {
+                "precision": 0.2308,
+                "recall": 0.1429,
+                "f1": 0.1765,
+                "support": 21
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 2
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 3666
+          },
+          "risk": {
+            "n": 3666,
+            "positive_support": 23,
+            "negative_support": 3643,
+            "misses": 20,
+            "recall": 0.13043478260869565,
+            "false_alarms": 10,
+            "false_alarm_rate": 0.002744990392533626,
+            "precision": 0.23076923076923078,
+            "brier": 0.006412240593025877,
+            "ece_10_bins": 0.00636472961810521,
+            "reliability_bins": [
+              {
+                "n": 3639,
+                "probability": 0.000400382593639519,
+                "observed": 0.003572410002748008
+              },
+              {
+                "n": 7,
+                "probability": 0.14192322074921185,
+                "observed": 0.7142857142857143
+              },
+              {
+                "n": 5,
+                "probability": 0.24860636719074808,
+                "observed": 0.2
+              },
+              {
+                "n": 1,
+                "probability": 0.3973028930831083,
+                "observed": 0.0
+              },
+              {
+                "n": 1,
+                "probability": 0.46404126542419677,
+                "observed": 1.0
+              },
+              {
+                "n": 3,
+                "probability": 0.5496504825077485,
+                "observed": 0.3333333333333333
+              },
+              {
+                "n": 2,
+                "probability": 0.650347093395442,
+                "observed": 0.0
+              },
+              {
+                "n": 3,
+                "probability": 0.7522850781635038,
+                "observed": 0.3333333333333333
+              },
+              {
+                "n": 3,
+                "probability": 0.8254301550194715,
+                "observed": 0.3333333333333333
+              },
+              {
+                "n": 2,
+                "probability": 0.9622343929983417,
+                "observed": 0.0
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 3666,
+            "positive_support": 2,
+            "negative_support": 3664,
+            "misses": 2,
+            "recall": 0.0,
+            "false_alarms": 0,
+            "false_alarm_rate": 0.0,
+            "precision": null,
+            "brier": 0.0005455537370430987,
+            "ece_10_bins": 0.0005455537370430987,
+            "reliability_bins": [
+              {
+                "n": 3666,
+                "probability": 0.0,
+                "observed": 0.0005455537370430987
+              }
+            ]
+          },
+          "training_partition": "historical_train",
+          "training_unsupported_classes": {
+            "severe": 2
+          },
+          "probability_note": "uncalibrated class probabilities"
+        },
+        "expanded_train_ordinary": {
+          "classification": {
+            "accuracy": 0.8301,
+            "macro_f1": 0.5612,
+            "per_class": {
+              "good": {
+                "precision": 0.8618,
+                "recall": 0.9173,
+                "f1": 0.8887,
+                "support": 1754
+              },
+              "satisfactory": {
+                "precision": 0.8077,
+                "recall": 0.7948,
+                "f1": 0.8012,
+                "support": 1506
+              },
+              "moderate": {
+                "precision": 0.7747,
+                "recall": 0.5927,
+                "f1": 0.6716,
+                "support": 383
+              },
+              "poor": {
+                "precision": 0.4167,
+                "recall": 0.4762,
+                "f1": 0.4444,
+                "support": 21
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 2
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 3666
+          },
+          "risk": {
+            "n": 3666,
+            "positive_support": 23,
+            "negative_support": 3643,
+            "misses": 13,
+            "recall": 0.43478260869565216,
+            "false_alarms": 14,
+            "false_alarm_rate": 0.0038429865495470767,
+            "precision": 0.4166666666666667,
+            "brier": 0.004791723931826211,
+            "ece_10_bins": 0.0033027505037626164,
+            "reliability_bins": [
+              {
+                "n": 3609,
+                "probability": 0.0008345389994311172,
+                "observed": 0.0011083402604599613
+              },
+              {
+                "n": 13,
+                "probability": 0.13392229123859026,
+                "observed": 0.07692307692307693
+              },
+              {
+                "n": 10,
+                "probability": 0.24321547634152335,
+                "observed": 0.3
+              },
+              {
+                "n": 7,
+                "probability": 0.3570073342414387,
+                "observed": 0.5714285714285714
+              },
+              {
+                "n": 4,
+                "probability": 0.44899726147960217,
+                "observed": 0.25
+              },
+              {
+                "n": 5,
+                "probability": 0.5576030380383442,
+                "observed": 0.4
+              },
+              {
+                "n": 4,
+                "probability": 0.6526753409808825,
+                "observed": 0.5
+              },
+              {
+                "n": 5,
+                "probability": 0.7345376808235625,
+                "observed": 0.2
+              },
+              {
+                "n": 5,
+                "probability": 0.8331065218508821,
+                "observed": 0.2
+              },
+              {
+                "n": 4,
+                "probability": 0.9307439251653993,
+                "observed": 1.0
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 3666,
+            "positive_support": 2,
+            "negative_support": 3664,
+            "misses": 2,
+            "recall": 0.0,
+            "false_alarms": 0,
+            "false_alarm_rate": 0.0,
+            "precision": null,
+            "brier": 0.0005627970537656302,
+            "ece_10_bins": 0.0005215250032547489,
+            "reliability_bins": [
+              {
+                "n": 3664,
+                "probability": 0.00011250383034386568,
+                "observed": 0.0005458515283842794
+              },
+              {
+                "n": 2,
+                "probability": 0.16206234815591664,
+                "observed": 0.0
+              }
+            ]
+          },
+          "training_partition": "expanded_train",
+          "training_unsupported_classes": {},
+          "probability_note": "uncalibrated class probabilities"
+        },
+        "expanded_train_risk_weighted": {
+          "classification": {
+            "accuracy": 0.8295,
+            "macro_f1": 0.569,
+            "per_class": {
+              "good": {
+                "precision": 0.8592,
+                "recall": 0.9151,
+                "f1": 0.8863,
+                "support": 1754
+              },
+              "satisfactory": {
+                "precision": 0.8077,
+                "recall": 0.7948,
+                "f1": 0.8012,
+                "support": 1506
+              },
+              "moderate": {
+                "precision": 0.7909,
+                "recall": 0.5927,
+                "f1": 0.6776,
+                "support": 383
+              },
+              "poor": {
+                "precision": 0.4138,
+                "recall": 0.5714,
+                "f1": 0.48,
+                "support": 21
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 2
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 3666
+          },
+          "risk": {
+            "n": 3666,
+            "positive_support": 23,
+            "negative_support": 3643,
+            "misses": 11,
+            "recall": 0.5217391304347826,
+            "false_alarms": 17,
+            "false_alarm_rate": 0.004666483667307164,
+            "precision": 0.41379310344827586,
+            "brier": 0.005545058670314219,
+            "ece_10_bins": 0.004596973865701263,
+            "reliability_bins": [
+              {
+                "n": 3594,
+                "probability": 0.0009117784864821724,
+                "observed": 0.0005564830272676684
+              },
+              {
+                "n": 23,
+                "probability": 0.13915238129778992,
+                "observed": 0.21739130434782608
+              },
+              {
+                "n": 9,
+                "probability": 0.24498769753196015,
+                "observed": 0.1111111111111111
+              },
+              {
+                "n": 7,
+                "probability": 0.3509051499274472,
+                "observed": 0.2857142857142857
+              },
+              {
+                "n": 6,
+                "probability": 0.46440317853300467,
+                "observed": 0.16666666666666666
+              },
+              {
+                "n": 6,
+                "probability": 0.5600965813474867,
+                "observed": 0.6666666666666666
+              },
+              {
+                "n": 2,
+                "probability": 0.649715186459898,
+                "observed": 0.0
+              },
+              {
+                "n": 5,
+                "probability": 0.7569247820314281,
+                "observed": 0.2
+              },
+              {
+                "n": 7,
+                "probability": 0.8690459850309831,
+                "observed": 0.42857142857142855
+              },
+              {
+                "n": 7,
+                "probability": 0.9316625703437674,
+                "observed": 0.5714285714285714
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 3666,
+            "positive_support": 2,
+            "negative_support": 3664,
+            "misses": 2,
+            "recall": 0.0,
+            "false_alarms": 0,
+            "false_alarm_rate": 0.0,
+            "precision": null,
+            "brier": 0.0006280375330901184,
+            "ece_10_bins": 0.0007047651118167823,
+            "reliability_bins": [
+              {
+                "n": 3662,
+                "probability": 0.00011430771637227959,
+                "observed": 0.0005461496450027307
+              },
+              {
+                "n": 2,
+                "probability": 0.15478496919213391,
+                "observed": 0.0
+              },
+              {
+                "n": 2,
+                "probability": 0.3463469094456721,
+                "observed": 0.0
+              }
+            ]
+          },
+          "training_partition": "expanded_train",
+          "training_unsupported_classes": {},
+          "probability_note": "uncalibrated class probabilities"
+        },
+        "expanded_ensemble": {
+          "classification": {
+            "accuracy": 0.8271,
+            "macro_f1": 0.5683,
+            "per_class": {
+              "good": {
+                "precision": 0.855,
+                "recall": 0.9213,
+                "f1": 0.8869,
+                "support": 1754
+              },
+              "satisfactory": {
+                "precision": 0.822,
+                "recall": 0.7636,
+                "f1": 0.7917,
+                "support": 1506
+              },
+              "moderate": {
+                "precision": 0.7265,
+                "recall": 0.6658,
+                "f1": 0.6948,
+                "support": 383
+              },
+              "poor": {
+                "precision": 0.4231,
+                "recall": 0.5238,
+                "f1": 0.4681,
+                "support": 21
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 2
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 3666
+          },
+          "risk": {
+            "n": 3666,
+            "positive_support": 23,
+            "negative_support": 3643,
+            "misses": 12,
+            "recall": 0.4782608695652174,
+            "false_alarms": 15,
+            "false_alarm_rate": 0.0041174855888004395,
+            "precision": 0.4230769230769231,
+            "brier": 0.007364975450081833,
+            "ece_10_bins": 0.007364975450081833,
+            "reliability_bins": [
+              {
+                "n": 3640,
+                "probability": 0.0,
+                "observed": 0.0032967032967032967
+              },
+              {
+                "n": 26,
+                "probability": 1.0,
+                "observed": 0.4230769230769231
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 3666,
+            "positive_support": 2,
+            "negative_support": 3664,
+            "misses": 2,
+            "recall": 0.0,
+            "false_alarms": 0,
+            "false_alarm_rate": 0.0,
+            "precision": null,
+            "brier": 0.0005455537370430987,
+            "ece_10_bins": 0.0005455537370430987,
+            "reliability_bins": [
+              {
+                "n": 3666,
+                "probability": 0.0,
+                "observed": 0.0005455537370430987
+              }
+            ]
+          },
+          "training_partition": "expanded_train",
+          "training_unsupported_classes": {},
+          "probability_note": "binary band decisions, not calibrated probabilities"
+        },
+        "instantaneous_persistence": {
+          "classification": {
+            "accuracy": 0.4506,
+            "macro_f1": 0.2491,
+            "per_class": {
+              "good": {
+                "precision": 0.5656,
+                "recall": 0.5656,
+                "f1": 0.5656,
+                "support": 1754
+              },
+              "satisfactory": {
+                "precision": 0.3709,
+                "recall": 0.3712,
+                "f1": 0.3711,
+                "support": 1506
+              },
+              "moderate": {
+                "precision": 0.2618,
+                "recall": 0.2611,
+                "f1": 0.2614,
+                "support": 383
+              },
+              "poor": {
+                "precision": 0.0476,
+                "recall": 0.0476,
+                "f1": 0.0476,
+                "support": 21
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 2
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 3666
+          },
+          "risk": {
+            "n": 3666,
+            "positive_support": 23,
+            "negative_support": 3643,
+            "misses": 22,
+            "recall": 0.043478260869565216,
+            "false_alarms": 22,
+            "false_alarm_rate": 0.0060389788635739775,
+            "precision": 0.043478260869565216,
+            "brier": 0.012002182214948172,
+            "ece_10_bins": 0.012002182214948172,
+            "reliability_bins": [
+              {
+                "n": 3643,
+                "probability": 0.0,
+                "observed": 0.0060389788635739775
+              },
+              {
+                "n": 23,
+                "probability": 1.0,
+                "observed": 0.043478260869565216
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 3666,
+            "positive_support": 2,
+            "negative_support": 3664,
+            "misses": 2,
+            "recall": 0.0,
+            "false_alarms": 2,
+            "false_alarm_rate": 0.0005458515283842794,
+            "precision": 0.0,
+            "brier": 0.0010911074740861974,
+            "ece_10_bins": 0.0010911074740861974,
+            "reliability_bins": [
+              {
+                "n": 3664,
+                "probability": 0.0,
+                "observed": 0.0005458515283842794
+              },
+              {
+                "n": 2,
+                "probability": 1.0,
+                "observed": 0.0
+              }
+            ]
+          },
+          "training_partition": null,
+          "training_unsupported_classes": {},
+          "probability_note": "binary band decisions, not calibrated probabilities"
+        },
+        "conservative_persistence_diagnostic": {
+          "classification": {
+            "accuracy": 0.3325,
+            "macro_f1": 0.1959,
+            "per_class": {
+              "good": {
+                "precision": 0.4584,
+                "recall": 0.3421,
+                "f1": 0.3918,
+                "support": 1754
+              },
+              "satisfactory": {
+                "precision": 0.2826,
+                "recall": 0.3406,
+                "f1": 0.3089,
+                "support": 1506
+              },
+              "moderate": {
+                "precision": 0.2031,
+                "recall": 0.2742,
+                "f1": 0.2333,
+                "support": 383
+              },
+              "poor": {
+                "precision": 0.0435,
+                "recall": 0.0476,
+                "f1": 0.0455,
+                "support": 21
+              },
+              "severe": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 2
+              },
+              "hazardous": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 0
+              }
+            },
+            "n": 3666
+          },
+          "risk": {
+            "n": 3666,
+            "positive_support": 23,
+            "negative_support": 3643,
+            "misses": 22,
+            "recall": 0.043478260869565216,
+            "false_alarms": 24,
+            "false_alarm_rate": 0.006587976942080703,
+            "precision": 0.04,
+            "brier": 0.012547735951991271,
+            "ece_10_bins": 0.012547735951991271,
+            "reliability_bins": [
+              {
+                "n": 3641,
+                "probability": 0.0,
+                "observed": 0.006042296072507553
+              },
+              {
+                "n": 25,
+                "probability": 1.0,
+                "observed": 0.04
+              }
+            ]
+          },
+          "severe_or_worse": {
+            "n": 3666,
+            "positive_support": 2,
+            "negative_support": 3664,
+            "misses": 2,
+            "recall": 0.0,
+            "false_alarms": 2,
+            "false_alarm_rate": 0.0005458515283842794,
+            "precision": 0.0,
+            "brier": 0.0010911074740861974,
+            "ece_10_bins": 0.0010911074740861974,
+            "reliability_bins": [
+              {
+                "n": 3664,
+                "probability": 0.0,
+                "observed": 0.0005458515283842794
+              },
+              {
+                "n": 2,
+                "probability": 1.0,
+                "observed": 0.0
+              }
+            ]
+          },
+          "training_partition": null,
+          "training_unsupported_classes": {},
+          "probability_note": "binary band decisions, not calibrated probabilities"
+        }
+      }
+    }
+  ],
+  "limitations": "Consumed archive diagnostics. V2 evaluated 2025 periods now included in training; 2026 archive and windows have informed prior research. No pristine holdout, calibration or automatic promotion. Fixed configurations; hourly severe support is correlated, episode counts must be reported.",
+  "disposition": "RESEARCH_ONLY_NO_PROMOTION",
+  "measured_findings": [
+    {
+      "partition": "diagnostic_pollution",
+      "accuracy_delta": 0.0215,
+      "macro_f1_delta": 0.0242,
+      "poor_misses_old": 200,
+      "poor_misses_new": 144,
+      "poor_false_alarms_old": 17,
+      "poor_false_alarms_new": 39,
+      "severe_misses": 11,
+      "severe_support": 11
+    },
+    {
+      "partition": "diagnostic_other_seasons",
+      "accuracy_delta": 0.0144,
+      "macro_f1_delta": 0.0689,
+      "poor_misses_old": 20,
+      "poor_misses_new": 11,
+      "poor_false_alarms_old": 10,
+      "poor_false_alarms_new": 17,
+      "severe_misses": 2,
+      "severe_support": 2
+    }
+  ],
+  "measured_disposition": "Expanded risk-weighted training improves accuracy and poor+ recall on both consumed periods; severe recall remains zero on all 13 severe evaluation hours. No qualified model adoption. Hazardous performance unmeasured."
+}
