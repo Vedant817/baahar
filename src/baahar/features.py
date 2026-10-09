@@ -466,10 +466,10 @@ def heuristic_decision(slot: HourSlot) -> tuple[Decision, list[str]]:
     # policy was before it started reading the trailing mean too.
     value = air.naqi_effective
     if value is None:
-        return Decision.SKIP, ["No air-quality reading for this hour -- not guessing."]
+        reasons.append("No air-quality reading for this hour -- not guessing.")
 
     naqi = value
-    if naqi >= NAQI_SKIP:
+    if naqi is not None and naqi >= NAQI_SKIP:
         reasons.append(f"NAQI {naqi:.0f} is Severe or worse.")
 
     apparent = weather.apparent_c
@@ -493,8 +493,16 @@ def heuristic_decision(slot: HourSlot) -> tuple[Decision, list[str]]:
     if category is not None and category.value == "thunderstorm":
         reasons.append("Thunderstorm forecast.")
 
+    def _with_night(rs: list[str]) -> list[str]:
+        text = " ".join(rs).lower()
+        if not weather.is_day and not any(
+            tok in text for tok in ("night", "gate", "shut", "closed")
+        ):
+            rs = rs + ["Night-time; park gates may be shut."]
+        return rs
+
     if reasons:
-        return Decision.SKIP, reasons
+        return Decision.SKIP, _with_night(reasons)
 
     if naqi >= NAQI_WAIT:
         reasons.append(f"NAQI {naqi:.0f} is Poor -- fine if you must, not ideal.")
@@ -504,7 +512,7 @@ def heuristic_decision(slot: HourSlot) -> tuple[Decision, list[str]]:
         reasons.append(f"{prob:.0f}% chance of rain.")
 
     if reasons:
-        return Decision.WAIT, reasons
+        return Decision.WAIT, _with_night(reasons)
 
     if air.naqi_uses_trailing_mean:
         # Say so rather than letting a number that disagrees with the
