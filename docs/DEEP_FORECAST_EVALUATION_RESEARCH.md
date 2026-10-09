@@ -1,0 +1,15 @@
+# Evaluation of the deep pollutant study
+
+This document defines interpretation before the first deep-model call. The protocol is [DEEP_POLLUTANT_STUDY_PROTOCOL.md](DEEP_POLLUTANT_STUDY_PROTOCOL.md). All findings must trace to the fetched raw artifact; this document contains no invented scores.
+
+The supervised quantity is each modeled pollutant concentration. Report MAE and RMSE for each pollutant and forecast horizon where available, in physical units, with sample counts. Training standardized MAE selects checkpoints; it must not replace physical-unit errors. The downstream instantaneous maximum sub-index proxy amplifies different pollutant errors nonlinearly: good average regression error does not establish rare-onset detection.
+
+Report band accuracy, macro-F1 with per-class support, confusion matrix, Poor-or-worse (ordinal >=3), Very Poor-or-worse (>=4) and Severe (>=5) misses, recall, precision, false positives, false alarm rate and denominators. A zero-positive-support class has unmeasured recall, not perfect recall. Group positive hours separated by at most six hours into descriptive episodes; report any-hit, full-hit and completely missed episodes, including matched reference/candidate paired improvements. Correlated hours and these groups are not independent event samples.
+
+Evaluate all three TCN seeds, their concentration-average ensemble, the matched LightGBM regressors and matched persistence on each period. Do not select the best diagnostic seed and imply it was preregistered. Expose whether a gain is concentrated in one season or causes a false-alarm/accuracy regression in the other. The paired utility gate uses the new matched tree baseline; old v4/v5/v6 numbers are contextual comparisons on a different eligible subset.
+
+Point forecasts have no supplied calibrated class probabilities. Their Brier score, ECE and reliability bins must be **null/unavailable**, rather than computed on binary predictions and described as calibration. If numeric risk rankings are evaluated with average precision, label them ranking scores, not probabilities or calibrated certainty. Empirical uncertainty from three seeds is not an independently validated prediction interval.
+
+These are retrospective consumed diagnostics on modeled archive data. No fresh independent human-authored cases, station observation validation, prospective test, medical efficacy, field test or billed-cost measurement is established. Longer training cannot repair absent development positive support. Future work should prioritize distinct rare episodes with proper observation/forecast provenance and a genuinely reserved future period, then assess candidate suitability without reusing it for tuning. The deterministic runtime safety boundary remains unchanged.
+
+The reporter writes a new deep-study completion artifact and an append-only measured section in qualification/results/post documents once a completed result exists. It corrects category naming in the new explanation without editing prior raw results or old loop state. A research gain is never an automatic serving artifact or deployment authorization.

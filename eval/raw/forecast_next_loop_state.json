@@ -1,0 +1,10 @@
+{
+  "max_iterations": 7,
+  "plateau_patience": 2,
+  "completed_iterations": 2,
+  "consecutive_no_gain": 2,
+  "stopped": true,
+  "stop_reason": "two_consecutive_no_gain",
+  "last_run_id": "forecast_risk_v6",
+  "disposition": "FINITE_RETROSPECTIVE_RESEARCH_NO_AUTOMATIC_ADOPTION"
+}

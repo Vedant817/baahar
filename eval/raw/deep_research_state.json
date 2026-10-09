@@ -1,0 +1,222 @@
+{
+  "study": "deep_pollutant_forecasting",
+  "status": "GPU_LINEAR_V2_COMPLETED_STATION_SUPPORT_V1_SUBMITTED",
+  "current_manifest": "eval/raw/pollutant_linear_v2_gpu_manifest.json",
+  "call_id": "fc-01M4FTBBWBW3T3PVG117M4KSTR",
+  "app_id": "ap-mfPHT0qPcuLooRX6AiFKZy",
+  "completed_studies": [
+    {
+      "manifest": "eval/raw/pollutant_sequence_v1_manifest.json",
+      "status": "COMPLETED",
+      "summary": "eval/raw/pollutant_sequence_v1_completion_summary.json",
+      "selected_candidate": "tcn_fixed_mean",
+      "research_utility_gate_passed": true,
+      "disposition": "RESEARCH_ONLY_NO_AUTOMATIC_PROMOTION"
+    },
+    {
+      "manifest": "eval/raw/pollutant_sequence_v2_manifest.json",
+      "status": "COMPLETED",
+      "summary": "eval/raw/pollutant_sequence_v2_completion_summary.json",
+      "selected_candidate": "tcn_fixed_mean",
+      "research_utility_gate_passed": false,
+      "disposition": "REJECTED_AS_INCUMBENT_RESEARCH_ONLY"
+    },
+    {
+      "manifest": "eval/raw/pollutant_sequence_v3_manifest.json",
+      "status": "COMPLETED",
+      "summary": "eval/raw/pollutant_sequence_v3_completion_summary.json",
+      "selected_candidate": "tcn_fixed_mean",
+      "research_utility_gate_passed": true,
+      "disposition": "RESEARCH_ONLY_NO_AUTOMATIC_PROMOTION"
+    },
+    {
+      "manifest": "eval/raw/pollutant_sequence_v4_manifest.json",
+      "status": "COMPLETED",
+      "summary": "eval/raw/pollutant_sequence_v4_completion_summary.json",
+      "selected_candidate": "tcn_fixed_mean",
+      "research_utility_gate_passed": false,
+      "disposition": "RESEARCH_ONLY_REJECTED_BY_PAIRED_EPISODE_GATE"
+    },
+    {
+      "manifest": "eval/raw/pollutant_sequence_v5_manifest.json",
+      "status": "COMPLETED",
+      "summary": "eval/raw/pollutant_sequence_v5_completion_summary.json",
+      "selected_candidate": "tcn_fixed_mean",
+      "research_utility_gate_passed": false,
+      "disposition": "RESEARCH_ONLY_REJECTED_BY_FROZEN_V3_GATE"
+    },
+    {
+      "manifest": "eval/raw/pollutant_linear_v2_gpu_manifest.json",
+      "status": "COMPLETED",
+      "summary": "eval/raw/pollutant_linear_v2_gpu_completion_summary.json",
+      "research_utility_gate_passed": false,
+      "disposition": "REJECTED_BY_FROZEN_V3_GATE_RESEARCH_ONLY"
+    }
+  ],
+  "historical_loop_preserved": true,
+  "continued_research_authorized": true,
+  "last_observed_at": "2026-10-09T07:53:15.771641+00:00",
+  "last_remote_progress": {
+    "status": "COMPLETED",
+    "gpu_name": "Tesla T4",
+    "elapsed_seconds": 16.09369168
+  },
+  "per_call_timeout_seconds": 7200,
+  "incumbent": "pollutant_sequence_v3:tcn_fixed_mean",
+  "next_review": "Fixed full-origin linear comparator justified by measured onset/ozone development evidence; station support audit independently prepares new observational study",
+  "support_audit": {
+    "manifest": "eval/raw/pollutant_context_support_v1_manifest.json",
+    "status": "COMPLETED",
+    "call_id": "fc-01M4FK0MTAX6ZMYG4MJ5S3WEZ4",
+    "app_id": "ap-WvQPIWiaSDVO8kdHtQE8Rf",
+    "submitted_at": "2026-10-09T05:43:31.457831+00:00",
+    "result": "eval/raw/pollutant_context_support_v1_results.json",
+    "result_sha256": "06a1eef0213970d5b11f937ae7fe0332a29ae55d5e44903a025cf368ef1475fc",
+    "timeout_seconds": 600,
+    "scope": "Read-only phase-local exact finite six-gas support at 24/48/72-hour history lengths; no training",
+    "completion_observed_at": "2026-10-09T05:49:21.002719+00:00"
+  },
+  "context_review_status": {
+    "status": "COMPLETED",
+    "reviewers": [
+      "context_audit_model",
+      "context_audit_data",
+      "context_audit_eval"
+    ],
+    "report": "docs/POLLUTANT_CONTEXT_SUPPORT_V1_REVIEW.md",
+    "decision": "No model fit yet; test development-only incremental value of lags 24-48 first"
+  },
+  "current_review_status": {
+    "status": "COMPLETED",
+    "reviewers": [
+      "v4_objective_review",
+      "v4_integrity_review",
+      "v4_direction_review"
+    ],
+    "report": "docs/POLLUTANT_SEQUENCE_V4_RESEARCH_REVIEWS.md"
+  },
+  "historical_review_limitations": [
+    "Native agents failed with provider usage limit",
+    "Alternate Claude review failed authentication; no completed secondary v2 review",
+    "Grok review failed: usage balance exhausted (402); no completed secondary review"
+  ],
+  "current_result_review": {
+    "model": "COMPLETED_V4",
+    "integrity": "COMPLETED_V4",
+    "data": "COMPLETED_V4"
+  },
+  "lag_probe": {
+    "status": "COMPLETED",
+    "result": "eval/raw/pollutant_lag_probe_v1_results.json",
+    "summary": "eval/raw/pollutant_lag_probe_v1_summary.md",
+    "context_followup_supported": false,
+    "result_sha256": "656b4c8eefca8a2c7c2daf15bc8b6f03516a05ca7596d6d2aded975288a7dc06"
+  },
+  "v5": {
+    "status": "COMPLETED",
+    "manifest": "eval/raw/pollutant_sequence_v5_manifest.json",
+    "result": "eval/raw/pollutant_sequence_v5_results.json",
+    "summary": "eval/raw/pollutant_sequence_v5_completion_summary.json",
+    "result_sha256": "11a66e6931ba7423034764929ffb9682f1570bbf9f2bc70e821754b388887236",
+    "call_id": "fc-01M4FMJNYMR2C9JAGEFEGAW3RR",
+    "app_id": "ap-qj0hAO0A5lbz4VspwjGJKJ",
+    "research_utility_gate_passed": false,
+    "elapsed_seconds": 277.374722133,
+    "training_weight_support": {
+      "weighted_origins": 296,
+      "eligible_origins": 19663
+    },
+    "error_analysis": "eval/raw/pollutant_sequence_v5_error_analysis.json",
+    "result_reviews": "docs/POLLUTANT_SEQUENCE_V5_RESULT_REVIEWS.md"
+  },
+  "v5_research_reviews": {
+    "status": "COMPLETED",
+    "reviewers": [
+      "lag_result_objective",
+      "lag_result_data",
+      "lag_result_integrity"
+    ],
+    "report": "docs/POLLUTANT_SEQUENCE_V5_RESEARCH_REVIEWS.md"
+  },
+  "last_remote_progress_study": "pollutant_linear_v2_gpu",
+  "v5_result_review_status": {
+    "status": "COMPLETED",
+    "reviewers": [
+      "v5_result_model_review",
+      "v5_result_data_review",
+      "v5_result_eval_review"
+    ],
+    "report": "docs/POLLUTANT_SEQUENCE_V5_RESULT_REVIEWS.md",
+    "decision": "Reject V5; no additional fit on the same consumed archive; obtain station-aligned extreme episode support"
+  },
+  "continued_execution_plan": "docs/CONTINUED_RESEARCH_EXECUTION.md",
+  "target_contract_audit": {
+    "status": "COMPLETED",
+    "manifest": "eval/raw/pollutant_target_contract_v1_manifest.json",
+    "result": "eval/raw/pollutant_target_contract_v1_results.json",
+    "summary": "eval/raw/pollutant_target_contract_v1_summary.md",
+    "call_id": "fc-01M4FQ5AR38P77DCWRDAZ9N2M3",
+    "app_id": "ap-EYjomUeIBrjTquMy5bYdOv",
+    "result_sha256": "6d4959dd5baa5aa450d6ad07621778c71c6238fb6a35d46c94676a93329c1915"
+  },
+  "linear_complementarity": {
+    "status": "COMPLETED",
+    "result": "eval/raw/linear_ozone_complementarity_v1.json",
+    "summary": "eval/raw/linear_ozone_complementarity_v1.md",
+    "scope": "Adaptive development-only fixed algorithm screen; no training or diagnostic selection"
+  },
+  "active_study": {
+    "name": "station_support_v1",
+    "status": "SUBMITTED",
+    "manifest": "eval/raw/station_support_v1_manifest.json",
+    "call_id": "fc-01M4FTEEQPE4A83G60KBVZ451P",
+    "app_id": "ap-nC2ixFEEAdI6xaYGFXBMax"
+  },
+  "reopened_reviews": {
+    "status": "COMPLETED",
+    "reviewers": [
+      "target_audit_reopened",
+      "data_sources_reopened",
+      "next_hypothesis_reopened"
+    ],
+    "report": "docs/REOPENED_TARGET_DATA_RESEARCH_REVIEWS.md"
+  },
+  "station_support_queue": {
+    "path": "eval/raw/station_support_v1_submission_queue.json",
+    "status": "SUBMITTED",
+    "source_sha256": {
+      "scripts/audit_station_support_modal.py": "ae3e4a23a2162a3301bee15138054cde8af411aedf3e2f3a168a7f1dd39e0001",
+      "docs/STATION_SUPPORT_V1_PROTOCOL.md": "bcf6f8a4d69caeefe8364f6626cdb6208c8646c3488e4b1f0e85e90e109b9b17",
+      "data/samples/station_source_probe_v1.json": "7146f1fd64e813b1bc6678370ca63e60068046e8abaf0cae2ff3d232610c73a8",
+      "src/baahar/naqi.py": "f755b308baef2fec28877c81f500e95d5b7dc9e1231dff677c208ca61b5b21dc",
+      "src/baahar/__init__.py": "5e8311583c6c5a260d36fbf0a578efdd08834872a75aabd642b57e50bee6cab4"
+    },
+    "call_id": "fc-01M4FTEEQPE4A83G60KBVZ451P",
+    "app_id": "ap-nC2ixFEEAdI6xaYGFXBMax"
+  },
+  "monitor": {
+    "enabled": true,
+    "scheduled_task_id": "scheduled-task:ca259257-99c5-486a-a61d-192a56a3ef8f",
+    "interval_seconds": 600,
+    "next_run_utc": "2026-10-09T08:03:55.000Z"
+  },
+  "linear_v1_failure": {
+    "manifest": "eval/raw/pollutant_linear_v1_manifest.json",
+    "call_id": "fc-01M4FQDNY8YWCV2VQ90CRFNKZE",
+    "app_id": "ap-WKqEXk9UEV8FEfre0BhVkz",
+    "reason": "Missing helper on module hydration",
+    "no_scores": true,
+    "stopped": true,
+    "log": "eval/raw/pollutant_linear_v1_startup_failure.log"
+  },
+  "linear_v2_gpu": {
+    "status": "COMPLETED",
+    "manifest": "eval/raw/pollutant_linear_v2_gpu_manifest.json",
+    "summary": "eval/raw/pollutant_linear_v2_gpu_completion_summary.json",
+    "call_id": "fc-01M4FTBBWBW3T3PVG117M4KSTR",
+    "app_id": "ap-mfPHT0qPcuLooRX6AiFKZy",
+    "research_utility_gate_passed": false,
+    "gpu_name": "Tesla T4",
+    "elapsed_seconds": 16.09369168
+  }
+}
