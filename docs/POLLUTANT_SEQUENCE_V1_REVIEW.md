@@ -1,0 +1,13 @@
+# V1 measured review and next experiment
+
+The completed fixed three-seed TCN ensemble passed the preregistered retrospective research utility gate against the matching LightGBM baseline. In the pollution diagnostic it missed 111/248 Poor+ hours versus the tree's 129/248, with 41 versus 27 false alarms. Accuracy decreased from 0.794495 to 0.788799. In the later diagnostic it missed 12/16 versus 13/16 Poor+ hours, with one versus six false alarms. Its accuracy increased from 0.839967 to 0.854516. These are tradeoffs, not a general safety qualification.
+
+The ensemble still missed all eleven eligible Very Poor+ pollution hours. Root recomputed ozone signed errors directly from the saved final-sixth-hour pollutant predictions: mean prediction-minus-actual error on Very Poor+ development hours was -35.949356 micrograms/m3 (22 hours), and on Very Poor+ pollution diagnostic hours -29.786771 (11 hours). The saved outputs do not contain predictions for every horizon, so these numbers describe the sixth-hour endpoint only.
+
+The partial model-agent review recommended exactly one next change: standardized SmoothL1 to MSE. Quadratic penalties can make large residuals more influential, but may worsen ordinary-hour accuracy and false alarms. The data's sparse extreme support remains unchanged. An unchanged longer run is not justified by v1 checkpoint histories: best epochs were 20/27/20 and stopping epochs 28/35/28.
+
+V2 retains architecture, inputs, phase boundaries, preprocessing, seeds, optimizer and development MAE checkpoint selection. Its primary reference is the frozen **v1 fixed ensemble**, with identical origins/targets and a pinned raw-result SHA. Selecting whichever individual seed looks best on consumed diagnostics would invalidate the stated comparison. See [the distinct v2 protocol](POLLUTANT_SEQUENCE_V2_PROTOCOL.md).
+
+Review provenance: the model agent supplied the partial loss recommendation and tail-bias findings before its provider quota failed. The other native follow-up reviewers also failed on provider quota. A subsequently requested Claude review failed authentication. Root independently checked the quoted tail bias, implementation, unchanged-source hashes and paired-report sanity, and ran the full offline pytest suite and Ruff. No completed secondary v2 review is claimed.
+
+The two diagnostics are consumed CAMS/ERA5 modeled archive, not station or prospective evidence. No official Severe positives exist; later Very Poor+ recall is unmeasured. Historical raw `severe` means official Very Poor. Preserve raw artifacts and old counters. No automatic promotion, deployment, medical benefit, field-test evidence or measured billing follows from this review.
