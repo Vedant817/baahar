@@ -1,0 +1,8 @@
+{
+  "step": "remote_class_support_gate",
+  "consecutive_count": 1,
+  "terminal": true,
+  "call_id": "fc-01M4E7EEVJMY8PNNGS0AXBR3FC",
+  "observed_at": "2026-10-08T17:10:41.116202+00:00",
+  "reason": "Risk training/calibration lacks both classes; refusing fake calibration"
+}

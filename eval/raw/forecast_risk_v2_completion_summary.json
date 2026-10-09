@@ -1,0 +1,3685 @@
+{
+  "status": "COMPLETED",
+  "call_id": "fc-01M4E89CB1TT1N2GGXADVB367G",
+  "app_id": "ap-TEgQlUlHwlOtS47NVfVpta",
+  "selection": {
+    "band_weight": 4,
+    "band_development_gate_passed": true,
+    "binary_weight": 4,
+    "threshold": 0.1,
+    "risk_floor_enabled": true,
+    "development_trials": [
+      {
+        "kind": "weighted_band",
+        "weight": 1,
+        "accuracy": 0.8506172839506173,
+        "risk": {
+          "n": 1620,
+          "positive_support": 20,
+          "negative_support": 1600,
+          "misses": 19,
+          "recall": 0.05,
+          "false_alarms": 9,
+          "false_alarm_rate": 0.005625,
+          "precision": 0.1,
+          "brier": 0.015357432102306154,
+          "ece_10_bins": 0.014537458385401394,
+          "reliability_bins": [
+            {
+              "n": 1588,
+              "probability": 0.0016515991009896781,
+              "observed": 0.009445843828715366
+            },
+            {
+              "n": 12,
+              "probability": 0.12996791748913436,
+              "observed": 0.16666666666666666
+            },
+            {
+              "n": 5,
+              "probability": 0.24743967032876535,
+              "observed": 0.4
+            },
+            {
+              "n": 2,
+              "probability": 0.363084243101044,
+              "observed": 0.0
+            },
+            {
+              "n": 3,
+              "probability": 0.4466003678137542,
+              "observed": 0.0
+            },
+            {
+              "n": 1,
+              "probability": 0.5802739549357322,
+              "observed": 1.0
+            },
+            {
+              "n": 1,
+              "probability": 0.6752382262027646,
+              "observed": 0.0
+            },
+            {
+              "n": 1,
+              "probability": 0.70160168880554,
+              "observed": 0.0
+            },
+            {
+              "n": 6,
+              "probability": 0.8668442153956245,
+              "observed": 0.0
+            },
+            {
+              "n": 1,
+              "probability": 0.9066344761456375,
+              "observed": 0.0
+            }
+          ]
+        },
+        "eligible": true,
+        "fit_seconds": 6.7580858139999975
+      },
+      {
+        "kind": "binary_risk",
+        "weight": 1,
+        "selected": {
+          "threshold": 0.1,
+          "metrics": {
+            "n": 1620,
+            "positive_support": 20,
+            "negative_support": 1600,
+            "misses": 14,
+            "recall": 0.3,
+            "false_alarms": 28,
+            "false_alarm_rate": 0.0175,
+            "precision": 0.17647058823529413,
+            "brier": 0.014511798180568138,
+            "ece_10_bins": 0.012906632724550882,
+            "reliability_bins": [
+              {
+                "n": 1586,
+                "probability": 0.0015676674581836534,
+                "observed": 0.008827238335435058
+              },
+              {
+                "n": 13,
+                "probability": 0.13405976160227107,
+                "observed": 0.15384615384615385
+              },
+              {
+                "n": 6,
+                "probability": 0.2225400630200586,
+                "observed": 0.16666666666666666
+              },
+              {
+                "n": 3,
+                "probability": 0.3324636269216017,
+                "observed": 0.6666666666666666
+              },
+              {
+                "n": 2,
+                "probability": 0.4536570755985649,
+                "observed": 0.0
+              },
+              {
+                "n": 1,
+                "probability": 0.5950003356551944,
+                "observed": 0.0
+              },
+              {
+                "n": 2,
+                "probability": 0.6666432186719398,
+                "observed": 0.5
+              },
+              {
+                "n": 2,
+                "probability": 0.7351461995971514,
+                "observed": 0.0
+              },
+              {
+                "n": 2,
+                "probability": 0.8461318744806772,
+                "observed": 0.0
+              },
+              {
+                "n": 3,
+                "probability": 0.9339453111912722,
+                "observed": 0.0
+              }
+            ]
+          },
+          "accuracy": 0.03271604938271605,
+          "eligible": true
+        },
+        "threshold_trials": [
+          {
+            "threshold": 0.1,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 14,
+              "recall": 0.3,
+              "false_alarms": 28,
+              "false_alarm_rate": 0.0175,
+              "precision": 0.17647058823529413,
+              "brier": 0.014511798180568138,
+              "ece_10_bins": 0.012906632724550882,
+              "reliability_bins": [
+                {
+                  "n": 1586,
+                  "probability": 0.0015676674581836534,
+                  "observed": 0.008827238335435058
+                },
+                {
+                  "n": 13,
+                  "probability": 0.13405976160227107,
+                  "observed": 0.15384615384615385
+                },
+                {
+                  "n": 6,
+                  "probability": 0.2225400630200586,
+                  "observed": 0.16666666666666666
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3324636269216017,
+                  "observed": 0.6666666666666666
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4536570755985649,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5950003356551944,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6666432186719398,
+                  "observed": 0.5
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7351461995971514,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8461318744806772,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.9339453111912722,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.03271604938271605,
+            "eligible": true
+          },
+          {
+            "threshold": 0.2,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 16,
+              "recall": 0.2,
+              "false_alarms": 17,
+              "false_alarm_rate": 0.010625,
+              "precision": 0.19047619047619047,
+              "brier": 0.014511798180568138,
+              "ece_10_bins": 0.012906632724550882,
+              "reliability_bins": [
+                {
+                  "n": 1586,
+                  "probability": 0.0015676674581836534,
+                  "observed": 0.008827238335435058
+                },
+                {
+                  "n": 13,
+                  "probability": 0.13405976160227107,
+                  "observed": 0.15384615384615385
+                },
+                {
+                  "n": 6,
+                  "probability": 0.2225400630200586,
+                  "observed": 0.16666666666666666
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3324636269216017,
+                  "observed": 0.6666666666666666
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4536570755985649,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5950003356551944,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6666432186719398,
+                  "observed": 0.5
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7351461995971514,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8461318744806772,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.9339453111912722,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.03148148148148148,
+            "eligible": true
+          },
+          {
+            "threshold": 0.3,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 17,
+              "recall": 0.15,
+              "false_alarms": 12,
+              "false_alarm_rate": 0.0075,
+              "precision": 0.2,
+              "brier": 0.014511798180568138,
+              "ece_10_bins": 0.012906632724550882,
+              "reliability_bins": [
+                {
+                  "n": 1586,
+                  "probability": 0.0015676674581836534,
+                  "observed": 0.008827238335435058
+                },
+                {
+                  "n": 13,
+                  "probability": 0.13405976160227107,
+                  "observed": 0.15384615384615385
+                },
+                {
+                  "n": 6,
+                  "probability": 0.2225400630200586,
+                  "observed": 0.16666666666666666
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3324636269216017,
+                  "observed": 0.6666666666666666
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4536570755985649,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5950003356551944,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6666432186719398,
+                  "observed": 0.5
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7351461995971514,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8461318744806772,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.9339453111912722,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.030864197530864196,
+            "eligible": true
+          },
+          {
+            "threshold": 0.4,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 19,
+              "recall": 0.05,
+              "false_alarms": 11,
+              "false_alarm_rate": 0.006875,
+              "precision": 0.08333333333333333,
+              "brier": 0.014511798180568138,
+              "ece_10_bins": 0.012906632724550882,
+              "reliability_bins": [
+                {
+                  "n": 1586,
+                  "probability": 0.0015676674581836534,
+                  "observed": 0.008827238335435058
+                },
+                {
+                  "n": 13,
+                  "probability": 0.13405976160227107,
+                  "observed": 0.15384615384615385
+                },
+                {
+                  "n": 6,
+                  "probability": 0.2225400630200586,
+                  "observed": 0.16666666666666666
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3324636269216017,
+                  "observed": 0.6666666666666666
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4536570755985649,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5950003356551944,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6666432186719398,
+                  "observed": 0.5
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7351461995971514,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8461318744806772,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.9339453111912722,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.02962962962962963,
+            "eligible": true
+          },
+          {
+            "threshold": 0.5,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 19,
+              "recall": 0.05,
+              "false_alarms": 9,
+              "false_alarm_rate": 0.005625,
+              "precision": 0.1,
+              "brier": 0.014511798180568138,
+              "ece_10_bins": 0.012906632724550882,
+              "reliability_bins": [
+                {
+                  "n": 1586,
+                  "probability": 0.0015676674581836534,
+                  "observed": 0.008827238335435058
+                },
+                {
+                  "n": 13,
+                  "probability": 0.13405976160227107,
+                  "observed": 0.15384615384615385
+                },
+                {
+                  "n": 6,
+                  "probability": 0.2225400630200586,
+                  "observed": 0.16666666666666666
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3324636269216017,
+                  "observed": 0.6666666666666666
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4536570755985649,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5950003356551944,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6666432186719398,
+                  "observed": 0.5
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7351461995971514,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8461318744806772,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.9339453111912722,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.02962962962962963,
+            "eligible": true
+          },
+          {
+            "threshold": 0.6,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 19,
+              "recall": 0.05,
+              "false_alarms": 8,
+              "false_alarm_rate": 0.005,
+              "precision": 0.1111111111111111,
+              "brier": 0.014511798180568138,
+              "ece_10_bins": 0.012906632724550882,
+              "reliability_bins": [
+                {
+                  "n": 1586,
+                  "probability": 0.0015676674581836534,
+                  "observed": 0.008827238335435058
+                },
+                {
+                  "n": 13,
+                  "probability": 0.13405976160227107,
+                  "observed": 0.15384615384615385
+                },
+                {
+                  "n": 6,
+                  "probability": 0.2225400630200586,
+                  "observed": 0.16666666666666666
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3324636269216017,
+                  "observed": 0.6666666666666666
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4536570755985649,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5950003356551944,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6666432186719398,
+                  "observed": 0.5
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7351461995971514,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8461318744806772,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.9339453111912722,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.02962962962962963,
+            "eligible": true
+          },
+          {
+            "threshold": 0.7,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 20,
+              "recall": 0.0,
+              "false_alarms": 7,
+              "false_alarm_rate": 0.004375,
+              "precision": 0.0,
+              "brier": 0.014511798180568138,
+              "ece_10_bins": 0.012906632724550882,
+              "reliability_bins": [
+                {
+                  "n": 1586,
+                  "probability": 0.0015676674581836534,
+                  "observed": 0.008827238335435058
+                },
+                {
+                  "n": 13,
+                  "probability": 0.13405976160227107,
+                  "observed": 0.15384615384615385
+                },
+                {
+                  "n": 6,
+                  "probability": 0.2225400630200586,
+                  "observed": 0.16666666666666666
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3324636269216017,
+                  "observed": 0.6666666666666666
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4536570755985649,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5950003356551944,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6666432186719398,
+                  "observed": 0.5
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7351461995971514,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8461318744806772,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.9339453111912722,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.029012345679012345,
+            "eligible": true
+          },
+          {
+            "threshold": 0.8,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 20,
+              "recall": 0.0,
+              "false_alarms": 5,
+              "false_alarm_rate": 0.003125,
+              "precision": 0.0,
+              "brier": 0.014511798180568138,
+              "ece_10_bins": 0.012906632724550882,
+              "reliability_bins": [
+                {
+                  "n": 1586,
+                  "probability": 0.0015676674581836534,
+                  "observed": 0.008827238335435058
+                },
+                {
+                  "n": 13,
+                  "probability": 0.13405976160227107,
+                  "observed": 0.15384615384615385
+                },
+                {
+                  "n": 6,
+                  "probability": 0.2225400630200586,
+                  "observed": 0.16666666666666666
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3324636269216017,
+                  "observed": 0.6666666666666666
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4536570755985649,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5950003356551944,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6666432186719398,
+                  "observed": 0.5
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7351461995971514,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8461318744806772,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.9339453111912722,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.029012345679012345,
+            "eligible": true
+          },
+          {
+            "threshold": 0.9,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 20,
+              "recall": 0.0,
+              "false_alarms": 3,
+              "false_alarm_rate": 0.001875,
+              "precision": 0.0,
+              "brier": 0.014511798180568138,
+              "ece_10_bins": 0.012906632724550882,
+              "reliability_bins": [
+                {
+                  "n": 1586,
+                  "probability": 0.0015676674581836534,
+                  "observed": 0.008827238335435058
+                },
+                {
+                  "n": 13,
+                  "probability": 0.13405976160227107,
+                  "observed": 0.15384615384615385
+                },
+                {
+                  "n": 6,
+                  "probability": 0.2225400630200586,
+                  "observed": 0.16666666666666666
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3324636269216017,
+                  "observed": 0.6666666666666666
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4536570755985649,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5950003356551944,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6666432186719398,
+                  "observed": 0.5
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7351461995971514,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8461318744806772,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.9339453111912722,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.029012345679012345,
+            "eligible": true
+          }
+        ]
+      },
+      {
+        "kind": "weighted_band",
+        "weight": 2,
+        "accuracy": 0.8493827160493828,
+        "risk": {
+          "n": 1620,
+          "positive_support": 20,
+          "negative_support": 1600,
+          "misses": 19,
+          "recall": 0.05,
+          "false_alarms": 12,
+          "false_alarm_rate": 0.0075,
+          "precision": 0.07692307692307693,
+          "brier": 0.015564996250393372,
+          "ece_10_bins": 0.014902089635108137,
+          "reliability_bins": [
+            {
+              "n": 1585,
+              "probability": 0.0017792197301267397,
+              "observed": 0.00946372239747634
+            },
+            {
+              "n": 14,
+              "probability": 0.1464301646775907,
+              "observed": 0.14285714285714285
+            },
+            {
+              "n": 5,
+              "probability": 0.2324710210824797,
+              "observed": 0.0
+            },
+            {
+              "n": 3,
+              "probability": 0.3611858129785476,
+              "observed": 0.6666666666666666
+            },
+            {
+              "n": 1,
+              "probability": 0.5600808947809514,
+              "observed": 0.0
+            },
+            {
+              "n": 4,
+              "probability": 0.6348214099232936,
+              "observed": 0.0
+            },
+            {
+              "n": 1,
+              "probability": 0.7864650225696722,
+              "observed": 1.0
+            },
+            {
+              "n": 7,
+              "probability": 0.9313895710369406,
+              "observed": 0.0
+            }
+          ]
+        },
+        "eligible": true,
+        "fit_seconds": 6.783299853000017
+      },
+      {
+        "kind": "binary_risk",
+        "weight": 2,
+        "selected": {
+          "threshold": 0.1,
+          "metrics": {
+            "n": 1620,
+            "positive_support": 20,
+            "negative_support": 1600,
+            "misses": 14,
+            "recall": 0.3,
+            "false_alarms": 29,
+            "false_alarm_rate": 0.018125,
+            "precision": 0.17142857142857143,
+            "brier": 0.014934989660390745,
+            "ece_10_bins": 0.014772093188770536,
+            "reliability_bins": [
+              {
+                "n": 1585,
+                "probability": 0.0016475891291848146,
+                "observed": 0.008832807570977918
+              },
+              {
+                "n": 14,
+                "probability": 0.14470249595127513,
+                "observed": 0.21428571428571427
+              },
+              {
+                "n": 5,
+                "probability": 0.24194873381611898,
+                "observed": 0.0
+              },
+              {
+                "n": 3,
+                "probability": 0.342177816038083,
+                "observed": 0.0
+              },
+              {
+                "n": 2,
+                "probability": 0.4056600827175584,
+                "observed": 1.0
+              },
+              {
+                "n": 2,
+                "probability": 0.5846467944360288,
+                "observed": 0.0
+              },
+              {
+                "n": 2,
+                "probability": 0.7685011566892848,
+                "observed": 0.5
+              },
+              {
+                "n": 1,
+                "probability": 0.8574083606804159,
+                "observed": 0.0
+              },
+              {
+                "n": 6,
+                "probability": 0.9298989106988801,
+                "observed": 0.0
+              }
+            ]
+          },
+          "accuracy": 0.03271604938271605,
+          "eligible": true
+        },
+        "threshold_trials": [
+          {
+            "threshold": 0.1,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 14,
+              "recall": 0.3,
+              "false_alarms": 29,
+              "false_alarm_rate": 0.018125,
+              "precision": 0.17142857142857143,
+              "brier": 0.014934989660390745,
+              "ece_10_bins": 0.014772093188770536,
+              "reliability_bins": [
+                {
+                  "n": 1585,
+                  "probability": 0.0016475891291848146,
+                  "observed": 0.008832807570977918
+                },
+                {
+                  "n": 14,
+                  "probability": 0.14470249595127513,
+                  "observed": 0.21428571428571427
+                },
+                {
+                  "n": 5,
+                  "probability": 0.24194873381611898,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.342177816038083,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4056600827175584,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.5846467944360288,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7685011566892848,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.8574083606804159,
+                  "observed": 0.0
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9298989106988801,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.03271604938271605,
+            "eligible": true
+          },
+          {
+            "threshold": 0.2,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 17,
+              "recall": 0.15,
+              "false_alarms": 18,
+              "false_alarm_rate": 0.01125,
+              "precision": 0.14285714285714285,
+              "brier": 0.014934989660390745,
+              "ece_10_bins": 0.014772093188770536,
+              "reliability_bins": [
+                {
+                  "n": 1585,
+                  "probability": 0.0016475891291848146,
+                  "observed": 0.008832807570977918
+                },
+                {
+                  "n": 14,
+                  "probability": 0.14470249595127513,
+                  "observed": 0.21428571428571427
+                },
+                {
+                  "n": 5,
+                  "probability": 0.24194873381611898,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.342177816038083,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4056600827175584,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.5846467944360288,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7685011566892848,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.8574083606804159,
+                  "observed": 0.0
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9298989106988801,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.030864197530864196,
+            "eligible": true
+          },
+          {
+            "threshold": 0.3,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 17,
+              "recall": 0.15,
+              "false_alarms": 13,
+              "false_alarm_rate": 0.008125,
+              "precision": 0.1875,
+              "brier": 0.014934989660390745,
+              "ece_10_bins": 0.014772093188770536,
+              "reliability_bins": [
+                {
+                  "n": 1585,
+                  "probability": 0.0016475891291848146,
+                  "observed": 0.008832807570977918
+                },
+                {
+                  "n": 14,
+                  "probability": 0.14470249595127513,
+                  "observed": 0.21428571428571427
+                },
+                {
+                  "n": 5,
+                  "probability": 0.24194873381611898,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.342177816038083,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4056600827175584,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.5846467944360288,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7685011566892848,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.8574083606804159,
+                  "observed": 0.0
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9298989106988801,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.030864197530864196,
+            "eligible": true
+          },
+          {
+            "threshold": 0.4,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 17,
+              "recall": 0.15,
+              "false_alarms": 10,
+              "false_alarm_rate": 0.00625,
+              "precision": 0.23076923076923078,
+              "brier": 0.014934989660390745,
+              "ece_10_bins": 0.014772093188770536,
+              "reliability_bins": [
+                {
+                  "n": 1585,
+                  "probability": 0.0016475891291848146,
+                  "observed": 0.008832807570977918
+                },
+                {
+                  "n": 14,
+                  "probability": 0.14470249595127513,
+                  "observed": 0.21428571428571427
+                },
+                {
+                  "n": 5,
+                  "probability": 0.24194873381611898,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.342177816038083,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4056600827175584,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.5846467944360288,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7685011566892848,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.8574083606804159,
+                  "observed": 0.0
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9298989106988801,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.030864197530864196,
+            "eligible": true
+          },
+          {
+            "threshold": 0.5,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 19,
+              "recall": 0.05,
+              "false_alarms": 10,
+              "false_alarm_rate": 0.00625,
+              "precision": 0.09090909090909091,
+              "brier": 0.014934989660390745,
+              "ece_10_bins": 0.014772093188770536,
+              "reliability_bins": [
+                {
+                  "n": 1585,
+                  "probability": 0.0016475891291848146,
+                  "observed": 0.008832807570977918
+                },
+                {
+                  "n": 14,
+                  "probability": 0.14470249595127513,
+                  "observed": 0.21428571428571427
+                },
+                {
+                  "n": 5,
+                  "probability": 0.24194873381611898,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.342177816038083,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4056600827175584,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.5846467944360288,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7685011566892848,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.8574083606804159,
+                  "observed": 0.0
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9298989106988801,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.02962962962962963,
+            "eligible": true
+          },
+          {
+            "threshold": 0.6,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 19,
+              "recall": 0.05,
+              "false_alarms": 8,
+              "false_alarm_rate": 0.005,
+              "precision": 0.1111111111111111,
+              "brier": 0.014934989660390745,
+              "ece_10_bins": 0.014772093188770536,
+              "reliability_bins": [
+                {
+                  "n": 1585,
+                  "probability": 0.0016475891291848146,
+                  "observed": 0.008832807570977918
+                },
+                {
+                  "n": 14,
+                  "probability": 0.14470249595127513,
+                  "observed": 0.21428571428571427
+                },
+                {
+                  "n": 5,
+                  "probability": 0.24194873381611898,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.342177816038083,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4056600827175584,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.5846467944360288,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7685011566892848,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.8574083606804159,
+                  "observed": 0.0
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9298989106988801,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.02962962962962963,
+            "eligible": true
+          },
+          {
+            "threshold": 0.7,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 19,
+              "recall": 0.05,
+              "false_alarms": 8,
+              "false_alarm_rate": 0.005,
+              "precision": 0.1111111111111111,
+              "brier": 0.014934989660390745,
+              "ece_10_bins": 0.014772093188770536,
+              "reliability_bins": [
+                {
+                  "n": 1585,
+                  "probability": 0.0016475891291848146,
+                  "observed": 0.008832807570977918
+                },
+                {
+                  "n": 14,
+                  "probability": 0.14470249595127513,
+                  "observed": 0.21428571428571427
+                },
+                {
+                  "n": 5,
+                  "probability": 0.24194873381611898,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.342177816038083,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4056600827175584,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.5846467944360288,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7685011566892848,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.8574083606804159,
+                  "observed": 0.0
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9298989106988801,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.02962962962962963,
+            "eligible": true
+          },
+          {
+            "threshold": 0.8,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 20,
+              "recall": 0.0,
+              "false_alarms": 7,
+              "false_alarm_rate": 0.004375,
+              "precision": 0.0,
+              "brier": 0.014934989660390745,
+              "ece_10_bins": 0.014772093188770536,
+              "reliability_bins": [
+                {
+                  "n": 1585,
+                  "probability": 0.0016475891291848146,
+                  "observed": 0.008832807570977918
+                },
+                {
+                  "n": 14,
+                  "probability": 0.14470249595127513,
+                  "observed": 0.21428571428571427
+                },
+                {
+                  "n": 5,
+                  "probability": 0.24194873381611898,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.342177816038083,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4056600827175584,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.5846467944360288,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7685011566892848,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.8574083606804159,
+                  "observed": 0.0
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9298989106988801,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.029012345679012345,
+            "eligible": true
+          },
+          {
+            "threshold": 0.9,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 20,
+              "recall": 0.0,
+              "false_alarms": 6,
+              "false_alarm_rate": 0.00375,
+              "precision": 0.0,
+              "brier": 0.014934989660390745,
+              "ece_10_bins": 0.014772093188770536,
+              "reliability_bins": [
+                {
+                  "n": 1585,
+                  "probability": 0.0016475891291848146,
+                  "observed": 0.008832807570977918
+                },
+                {
+                  "n": 14,
+                  "probability": 0.14470249595127513,
+                  "observed": 0.21428571428571427
+                },
+                {
+                  "n": 5,
+                  "probability": 0.24194873381611898,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.342177816038083,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4056600827175584,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.5846467944360288,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.7685011566892848,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.8574083606804159,
+                  "observed": 0.0
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9298989106988801,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.029012345679012345,
+            "eligible": true
+          }
+        ]
+      },
+      {
+        "kind": "weighted_band",
+        "weight": 4,
+        "accuracy": 0.8530864197530864,
+        "risk": {
+          "n": 1620,
+          "positive_support": 20,
+          "negative_support": 1600,
+          "misses": 18,
+          "recall": 0.1,
+          "false_alarms": 12,
+          "false_alarm_rate": 0.0075,
+          "precision": 0.14285714285714285,
+          "brier": 0.015489715930060453,
+          "ece_10_bins": 0.01354977979380131,
+          "reliability_bins": [
+            {
+              "n": 1583,
+              "probability": 0.0018172061210279698,
+              "observed": 0.0082122552116235
+            },
+            {
+              "n": 15,
+              "probability": 0.14317326312104636,
+              "observed": 0.2
+            },
+            {
+              "n": 5,
+              "probability": 0.2550461663144862,
+              "observed": 0.2
+            },
+            {
+              "n": 2,
+              "probability": 0.3352305428990803,
+              "observed": 0.0
+            },
+            {
+              "n": 1,
+              "probability": 0.49095374270287767,
+              "observed": 1.0
+            },
+            {
+              "n": 2,
+              "probability": 0.5449637252493669,
+              "observed": 0.5
+            },
+            {
+              "n": 3,
+              "probability": 0.6477105088692391,
+              "observed": 0.0
+            },
+            {
+              "n": 1,
+              "probability": 0.7029021383349805,
+              "observed": 0.0
+            },
+            {
+              "n": 1,
+              "probability": 0.8245776220619211,
+              "observed": 1.0
+            },
+            {
+              "n": 7,
+              "probability": 0.9441082620448389,
+              "observed": 0.0
+            }
+          ]
+        },
+        "eligible": true,
+        "fit_seconds": 6.815076359000045
+      },
+      {
+        "kind": "binary_risk",
+        "weight": 4,
+        "selected": {
+          "threshold": 0.1,
+          "metrics": {
+            "n": 1620,
+            "positive_support": 20,
+            "negative_support": 1600,
+            "misses": 12,
+            "recall": 0.4,
+            "false_alarms": 30,
+            "false_alarm_rate": 0.01875,
+            "precision": 0.21052631578947367,
+            "brier": 0.015331231635121054,
+            "ece_10_bins": 0.013996685850644322,
+            "reliability_bins": [
+              {
+                "n": 1582,
+                "probability": 0.0016501907295674407,
+                "observed": 0.007585335018963337
+              },
+              {
+                "n": 15,
+                "probability": 0.14914063906657526,
+                "observed": 0.3333333333333333
+              },
+              {
+                "n": 6,
+                "probability": 0.23533057867163773,
+                "observed": 0.0
+              },
+              {
+                "n": 3,
+                "probability": 0.3523340602273491,
+                "observed": 0.3333333333333333
+              },
+              {
+                "n": 2,
+                "probability": 0.4745646414870036,
+                "observed": 0.5
+              },
+              {
+                "n": 1,
+                "probability": 0.5094124001434477,
+                "observed": 0.0
+              },
+              {
+                "n": 1,
+                "probability": 0.604118711386856,
+                "observed": 0.0
+              },
+              {
+                "n": 2,
+                "probability": 0.759350910181126,
+                "observed": 0.0
+              },
+              {
+                "n": 2,
+                "probability": 0.8823765305342799,
+                "observed": 0.5
+              },
+              {
+                "n": 6,
+                "probability": 0.9342500059198567,
+                "observed": 0.0
+              }
+            ]
+          },
+          "accuracy": 0.033950617283950615,
+          "eligible": true
+        },
+        "threshold_trials": [
+          {
+            "threshold": 0.1,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 12,
+              "recall": 0.4,
+              "false_alarms": 30,
+              "false_alarm_rate": 0.01875,
+              "precision": 0.21052631578947367,
+              "brier": 0.015331231635121054,
+              "ece_10_bins": 0.013996685850644322,
+              "reliability_bins": [
+                {
+                  "n": 1582,
+                  "probability": 0.0016501907295674407,
+                  "observed": 0.007585335018963337
+                },
+                {
+                  "n": 15,
+                  "probability": 0.14914063906657526,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 6,
+                  "probability": 0.23533057867163773,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3523340602273491,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4745646414870036,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5094124001434477,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.604118711386856,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.759350910181126,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8823765305342799,
+                  "observed": 0.5
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9342500059198567,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.033950617283950615,
+            "eligible": true
+          },
+          {
+            "threshold": 0.2,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 17,
+              "recall": 0.15,
+              "false_alarms": 20,
+              "false_alarm_rate": 0.0125,
+              "precision": 0.13043478260869565,
+              "brier": 0.015331231635121054,
+              "ece_10_bins": 0.013996685850644322,
+              "reliability_bins": [
+                {
+                  "n": 1582,
+                  "probability": 0.0016501907295674407,
+                  "observed": 0.007585335018963337
+                },
+                {
+                  "n": 15,
+                  "probability": 0.14914063906657526,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 6,
+                  "probability": 0.23533057867163773,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3523340602273491,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4745646414870036,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5094124001434477,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.604118711386856,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.759350910181126,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8823765305342799,
+                  "observed": 0.5
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9342500059198567,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.030864197530864196,
+            "eligible": true
+          },
+          {
+            "threshold": 0.3,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 17,
+              "recall": 0.15,
+              "false_alarms": 14,
+              "false_alarm_rate": 0.00875,
+              "precision": 0.17647058823529413,
+              "brier": 0.015331231635121054,
+              "ece_10_bins": 0.013996685850644322,
+              "reliability_bins": [
+                {
+                  "n": 1582,
+                  "probability": 0.0016501907295674407,
+                  "observed": 0.007585335018963337
+                },
+                {
+                  "n": 15,
+                  "probability": 0.14914063906657526,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 6,
+                  "probability": 0.23533057867163773,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3523340602273491,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4745646414870036,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5094124001434477,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.604118711386856,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.759350910181126,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8823765305342799,
+                  "observed": 0.5
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9342500059198567,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.030864197530864196,
+            "eligible": true
+          },
+          {
+            "threshold": 0.4,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 18,
+              "recall": 0.1,
+              "false_alarms": 12,
+              "false_alarm_rate": 0.0075,
+              "precision": 0.14285714285714285,
+              "brier": 0.015331231635121054,
+              "ece_10_bins": 0.013996685850644322,
+              "reliability_bins": [
+                {
+                  "n": 1582,
+                  "probability": 0.0016501907295674407,
+                  "observed": 0.007585335018963337
+                },
+                {
+                  "n": 15,
+                  "probability": 0.14914063906657526,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 6,
+                  "probability": 0.23533057867163773,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3523340602273491,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4745646414870036,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5094124001434477,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.604118711386856,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.759350910181126,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8823765305342799,
+                  "observed": 0.5
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9342500059198567,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.030246913580246913,
+            "eligible": true
+          },
+          {
+            "threshold": 0.5,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 19,
+              "recall": 0.05,
+              "false_alarms": 11,
+              "false_alarm_rate": 0.006875,
+              "precision": 0.08333333333333333,
+              "brier": 0.015331231635121054,
+              "ece_10_bins": 0.013996685850644322,
+              "reliability_bins": [
+                {
+                  "n": 1582,
+                  "probability": 0.0016501907295674407,
+                  "observed": 0.007585335018963337
+                },
+                {
+                  "n": 15,
+                  "probability": 0.14914063906657526,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 6,
+                  "probability": 0.23533057867163773,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3523340602273491,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4745646414870036,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5094124001434477,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.604118711386856,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.759350910181126,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8823765305342799,
+                  "observed": 0.5
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9342500059198567,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.02962962962962963,
+            "eligible": true
+          },
+          {
+            "threshold": 0.6,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 19,
+              "recall": 0.05,
+              "false_alarms": 10,
+              "false_alarm_rate": 0.00625,
+              "precision": 0.09090909090909091,
+              "brier": 0.015331231635121054,
+              "ece_10_bins": 0.013996685850644322,
+              "reliability_bins": [
+                {
+                  "n": 1582,
+                  "probability": 0.0016501907295674407,
+                  "observed": 0.007585335018963337
+                },
+                {
+                  "n": 15,
+                  "probability": 0.14914063906657526,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 6,
+                  "probability": 0.23533057867163773,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3523340602273491,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4745646414870036,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5094124001434477,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.604118711386856,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.759350910181126,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8823765305342799,
+                  "observed": 0.5
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9342500059198567,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.02962962962962963,
+            "eligible": true
+          },
+          {
+            "threshold": 0.7,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 19,
+              "recall": 0.05,
+              "false_alarms": 9,
+              "false_alarm_rate": 0.005625,
+              "precision": 0.1,
+              "brier": 0.015331231635121054,
+              "ece_10_bins": 0.013996685850644322,
+              "reliability_bins": [
+                {
+                  "n": 1582,
+                  "probability": 0.0016501907295674407,
+                  "observed": 0.007585335018963337
+                },
+                {
+                  "n": 15,
+                  "probability": 0.14914063906657526,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 6,
+                  "probability": 0.23533057867163773,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3523340602273491,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4745646414870036,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5094124001434477,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.604118711386856,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.759350910181126,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8823765305342799,
+                  "observed": 0.5
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9342500059198567,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.02962962962962963,
+            "eligible": true
+          },
+          {
+            "threshold": 0.8,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 19,
+              "recall": 0.05,
+              "false_alarms": 7,
+              "false_alarm_rate": 0.004375,
+              "precision": 0.125,
+              "brier": 0.015331231635121054,
+              "ece_10_bins": 0.013996685850644322,
+              "reliability_bins": [
+                {
+                  "n": 1582,
+                  "probability": 0.0016501907295674407,
+                  "observed": 0.007585335018963337
+                },
+                {
+                  "n": 15,
+                  "probability": 0.14914063906657526,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 6,
+                  "probability": 0.23533057867163773,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3523340602273491,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4745646414870036,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5094124001434477,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.604118711386856,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.759350910181126,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8823765305342799,
+                  "observed": 0.5
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9342500059198567,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.02962962962962963,
+            "eligible": true
+          },
+          {
+            "threshold": 0.9,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 20,
+              "recall": 0.0,
+              "false_alarms": 6,
+              "false_alarm_rate": 0.00375,
+              "precision": 0.0,
+              "brier": 0.015331231635121054,
+              "ece_10_bins": 0.013996685850644322,
+              "reliability_bins": [
+                {
+                  "n": 1582,
+                  "probability": 0.0016501907295674407,
+                  "observed": 0.007585335018963337
+                },
+                {
+                  "n": 15,
+                  "probability": 0.14914063906657526,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 6,
+                  "probability": 0.23533057867163773,
+                  "observed": 0.0
+                },
+                {
+                  "n": 3,
+                  "probability": 0.3523340602273491,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "n": 2,
+                  "probability": 0.4745646414870036,
+                  "observed": 0.5
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5094124001434477,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.604118711386856,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.759350910181126,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8823765305342799,
+                  "observed": 0.5
+                },
+                {
+                  "n": 6,
+                  "probability": 0.9342500059198567,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.029012345679012345,
+            "eligible": true
+          }
+        ]
+      },
+      {
+        "kind": "weighted_band",
+        "weight": 8,
+        "accuracy": 0.8493827160493828,
+        "risk": {
+          "n": 1620,
+          "positive_support": 20,
+          "negative_support": 1600,
+          "misses": 18,
+          "recall": 0.1,
+          "false_alarms": 11,
+          "false_alarm_rate": 0.006875,
+          "precision": 0.15384615384615385,
+          "brier": 0.015341073689236368,
+          "ece_10_bins": 0.012474590355759787,
+          "reliability_bins": [
+            {
+              "n": 1574,
+              "probability": 0.001690828360845212,
+              "observed": 0.007623888182973317
+            },
+            {
+              "n": 19,
+              "probability": 0.13791581529184002,
+              "observed": 0.15789473684210525
+            },
+            {
+              "n": 6,
+              "probability": 0.2517647582401963,
+              "observed": 0.16666666666666666
+            },
+            {
+              "n": 4,
+              "probability": 0.36765290204932516,
+              "observed": 0.0
+            },
+            {
+              "n": 5,
+              "probability": 0.4546781741109182,
+              "observed": 0.4
+            },
+            {
+              "n": 2,
+              "probability": 0.5529484973947297,
+              "observed": 0.5
+            },
+            {
+              "n": 1,
+              "probability": 0.7074772500780322,
+              "observed": 0.0
+            },
+            {
+              "n": 2,
+              "probability": 0.8781565271022924,
+              "observed": 0.5
+            },
+            {
+              "n": 7,
+              "probability": 0.9523317685115761,
+              "observed": 0.0
+            }
+          ]
+        },
+        "eligible": true,
+        "fit_seconds": 6.795263255999998
+      },
+      {
+        "kind": "binary_risk",
+        "weight": 8,
+        "selected": {
+          "threshold": 0.1,
+          "metrics": {
+            "n": 1620,
+            "positive_support": 20,
+            "negative_support": 1600,
+            "misses": 12,
+            "recall": 0.4,
+            "false_alarms": 32,
+            "false_alarm_rate": 0.02,
+            "precision": 0.2,
+            "brier": 0.015606749735531087,
+            "ece_10_bins": 0.014025918916868397,
+            "reliability_bins": [
+              {
+                "n": 1580,
+                "probability": 0.0017450198783152647,
+                "observed": 0.007594936708860759
+              },
+              {
+                "n": 10,
+                "probability": 0.1360739142517536,
+                "observed": 0.1
+              },
+              {
+                "n": 10,
+                "probability": 0.24113664140076843,
+                "observed": 0.4
+              },
+              {
+                "n": 4,
+                "probability": 0.3352006629849373,
+                "observed": 0.25
+              },
+              {
+                "n": 3,
+                "probability": 0.44327796055304347,
+                "observed": 0.0
+              },
+              {
+                "n": 1,
+                "probability": 0.5230168801909199,
+                "observed": 1.0
+              },
+              {
+                "n": 2,
+                "probability": 0.6549907814483449,
+                "observed": 0.0
+              },
+              {
+                "n": 1,
+                "probability": 0.7047690722001075,
+                "observed": 0.0
+              },
+              {
+                "n": 2,
+                "probability": 0.8552503649485638,
+                "observed": 0.5
+              },
+              {
+                "n": 7,
+                "probability": 0.9509823294504549,
+                "observed": 0.0
+              }
+            ]
+          },
+          "accuracy": 0.033950617283950615,
+          "eligible": true
+        },
+        "threshold_trials": [
+          {
+            "threshold": 0.1,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 12,
+              "recall": 0.4,
+              "false_alarms": 32,
+              "false_alarm_rate": 0.02,
+              "precision": 0.2,
+              "brier": 0.015606749735531087,
+              "ece_10_bins": 0.014025918916868397,
+              "reliability_bins": [
+                {
+                  "n": 1580,
+                  "probability": 0.0017450198783152647,
+                  "observed": 0.007594936708860759
+                },
+                {
+                  "n": 10,
+                  "probability": 0.1360739142517536,
+                  "observed": 0.1
+                },
+                {
+                  "n": 10,
+                  "probability": 0.24113664140076843,
+                  "observed": 0.4
+                },
+                {
+                  "n": 4,
+                  "probability": 0.3352006629849373,
+                  "observed": 0.25
+                },
+                {
+                  "n": 3,
+                  "probability": 0.44327796055304347,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5230168801909199,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6549907814483449,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.7047690722001075,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8552503649485638,
+                  "observed": 0.5
+                },
+                {
+                  "n": 7,
+                  "probability": 0.9509823294504549,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.033950617283950615,
+            "eligible": true
+          },
+          {
+            "threshold": 0.2,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 13,
+              "recall": 0.35,
+              "false_alarms": 23,
+              "false_alarm_rate": 0.014375,
+              "precision": 0.23333333333333334,
+              "brier": 0.015606749735531087,
+              "ece_10_bins": 0.014025918916868397,
+              "reliability_bins": [
+                {
+                  "n": 1580,
+                  "probability": 0.0017450198783152647,
+                  "observed": 0.007594936708860759
+                },
+                {
+                  "n": 10,
+                  "probability": 0.1360739142517536,
+                  "observed": 0.1
+                },
+                {
+                  "n": 10,
+                  "probability": 0.24113664140076843,
+                  "observed": 0.4
+                },
+                {
+                  "n": 4,
+                  "probability": 0.3352006629849373,
+                  "observed": 0.25
+                },
+                {
+                  "n": 3,
+                  "probability": 0.44327796055304347,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5230168801909199,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6549907814483449,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.7047690722001075,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8552503649485638,
+                  "observed": 0.5
+                },
+                {
+                  "n": 7,
+                  "probability": 0.9509823294504549,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.03333333333333333,
+            "eligible": true
+          },
+          {
+            "threshold": 0.3,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 17,
+              "recall": 0.15,
+              "false_alarms": 17,
+              "false_alarm_rate": 0.010625,
+              "precision": 0.15,
+              "brier": 0.015606749735531087,
+              "ece_10_bins": 0.014025918916868397,
+              "reliability_bins": [
+                {
+                  "n": 1580,
+                  "probability": 0.0017450198783152647,
+                  "observed": 0.007594936708860759
+                },
+                {
+                  "n": 10,
+                  "probability": 0.1360739142517536,
+                  "observed": 0.1
+                },
+                {
+                  "n": 10,
+                  "probability": 0.24113664140076843,
+                  "observed": 0.4
+                },
+                {
+                  "n": 4,
+                  "probability": 0.3352006629849373,
+                  "observed": 0.25
+                },
+                {
+                  "n": 3,
+                  "probability": 0.44327796055304347,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5230168801909199,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6549907814483449,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.7047690722001075,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8552503649485638,
+                  "observed": 0.5
+                },
+                {
+                  "n": 7,
+                  "probability": 0.9509823294504549,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.030864197530864196,
+            "eligible": true
+          },
+          {
+            "threshold": 0.4,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 18,
+              "recall": 0.1,
+              "false_alarms": 14,
+              "false_alarm_rate": 0.00875,
+              "precision": 0.125,
+              "brier": 0.015606749735531087,
+              "ece_10_bins": 0.014025918916868397,
+              "reliability_bins": [
+                {
+                  "n": 1580,
+                  "probability": 0.0017450198783152647,
+                  "observed": 0.007594936708860759
+                },
+                {
+                  "n": 10,
+                  "probability": 0.1360739142517536,
+                  "observed": 0.1
+                },
+                {
+                  "n": 10,
+                  "probability": 0.24113664140076843,
+                  "observed": 0.4
+                },
+                {
+                  "n": 4,
+                  "probability": 0.3352006629849373,
+                  "observed": 0.25
+                },
+                {
+                  "n": 3,
+                  "probability": 0.44327796055304347,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5230168801909199,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6549907814483449,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.7047690722001075,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8552503649485638,
+                  "observed": 0.5
+                },
+                {
+                  "n": 7,
+                  "probability": 0.9509823294504549,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.030246913580246913,
+            "eligible": true
+          },
+          {
+            "threshold": 0.5,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 18,
+              "recall": 0.1,
+              "false_alarms": 11,
+              "false_alarm_rate": 0.006875,
+              "precision": 0.15384615384615385,
+              "brier": 0.015606749735531087,
+              "ece_10_bins": 0.014025918916868397,
+              "reliability_bins": [
+                {
+                  "n": 1580,
+                  "probability": 0.0017450198783152647,
+                  "observed": 0.007594936708860759
+                },
+                {
+                  "n": 10,
+                  "probability": 0.1360739142517536,
+                  "observed": 0.1
+                },
+                {
+                  "n": 10,
+                  "probability": 0.24113664140076843,
+                  "observed": 0.4
+                },
+                {
+                  "n": 4,
+                  "probability": 0.3352006629849373,
+                  "observed": 0.25
+                },
+                {
+                  "n": 3,
+                  "probability": 0.44327796055304347,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5230168801909199,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6549907814483449,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.7047690722001075,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8552503649485638,
+                  "observed": 0.5
+                },
+                {
+                  "n": 7,
+                  "probability": 0.9509823294504549,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.030246913580246913,
+            "eligible": true
+          },
+          {
+            "threshold": 0.6,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 19,
+              "recall": 0.05,
+              "false_alarms": 11,
+              "false_alarm_rate": 0.006875,
+              "precision": 0.08333333333333333,
+              "brier": 0.015606749735531087,
+              "ece_10_bins": 0.014025918916868397,
+              "reliability_bins": [
+                {
+                  "n": 1580,
+                  "probability": 0.0017450198783152647,
+                  "observed": 0.007594936708860759
+                },
+                {
+                  "n": 10,
+                  "probability": 0.1360739142517536,
+                  "observed": 0.1
+                },
+                {
+                  "n": 10,
+                  "probability": 0.24113664140076843,
+                  "observed": 0.4
+                },
+                {
+                  "n": 4,
+                  "probability": 0.3352006629849373,
+                  "observed": 0.25
+                },
+                {
+                  "n": 3,
+                  "probability": 0.44327796055304347,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5230168801909199,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6549907814483449,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.7047690722001075,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8552503649485638,
+                  "observed": 0.5
+                },
+                {
+                  "n": 7,
+                  "probability": 0.9509823294504549,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.02962962962962963,
+            "eligible": true
+          },
+          {
+            "threshold": 0.7,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 19,
+              "recall": 0.05,
+              "false_alarms": 9,
+              "false_alarm_rate": 0.005625,
+              "precision": 0.1,
+              "brier": 0.015606749735531087,
+              "ece_10_bins": 0.014025918916868397,
+              "reliability_bins": [
+                {
+                  "n": 1580,
+                  "probability": 0.0017450198783152647,
+                  "observed": 0.007594936708860759
+                },
+                {
+                  "n": 10,
+                  "probability": 0.1360739142517536,
+                  "observed": 0.1
+                },
+                {
+                  "n": 10,
+                  "probability": 0.24113664140076843,
+                  "observed": 0.4
+                },
+                {
+                  "n": 4,
+                  "probability": 0.3352006629849373,
+                  "observed": 0.25
+                },
+                {
+                  "n": 3,
+                  "probability": 0.44327796055304347,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5230168801909199,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6549907814483449,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.7047690722001075,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8552503649485638,
+                  "observed": 0.5
+                },
+                {
+                  "n": 7,
+                  "probability": 0.9509823294504549,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.02962962962962963,
+            "eligible": true
+          },
+          {
+            "threshold": 0.8,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 19,
+              "recall": 0.05,
+              "false_alarms": 8,
+              "false_alarm_rate": 0.005,
+              "precision": 0.1111111111111111,
+              "brier": 0.015606749735531087,
+              "ece_10_bins": 0.014025918916868397,
+              "reliability_bins": [
+                {
+                  "n": 1580,
+                  "probability": 0.0017450198783152647,
+                  "observed": 0.007594936708860759
+                },
+                {
+                  "n": 10,
+                  "probability": 0.1360739142517536,
+                  "observed": 0.1
+                },
+                {
+                  "n": 10,
+                  "probability": 0.24113664140076843,
+                  "observed": 0.4
+                },
+                {
+                  "n": 4,
+                  "probability": 0.3352006629849373,
+                  "observed": 0.25
+                },
+                {
+                  "n": 3,
+                  "probability": 0.44327796055304347,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5230168801909199,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6549907814483449,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.7047690722001075,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8552503649485638,
+                  "observed": 0.5
+                },
+                {
+                  "n": 7,
+                  "probability": 0.9509823294504549,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.02962962962962963,
+            "eligible": true
+          },
+          {
+            "threshold": 0.9,
+            "metrics": {
+              "n": 1620,
+              "positive_support": 20,
+              "negative_support": 1600,
+              "misses": 20,
+              "recall": 0.0,
+              "false_alarms": 7,
+              "false_alarm_rate": 0.004375,
+              "precision": 0.0,
+              "brier": 0.015606749735531087,
+              "ece_10_bins": 0.014025918916868397,
+              "reliability_bins": [
+                {
+                  "n": 1580,
+                  "probability": 0.0017450198783152647,
+                  "observed": 0.007594936708860759
+                },
+                {
+                  "n": 10,
+                  "probability": 0.1360739142517536,
+                  "observed": 0.1
+                },
+                {
+                  "n": 10,
+                  "probability": 0.24113664140076843,
+                  "observed": 0.4
+                },
+                {
+                  "n": 4,
+                  "probability": 0.3352006629849373,
+                  "observed": 0.25
+                },
+                {
+                  "n": 3,
+                  "probability": 0.44327796055304347,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.5230168801909199,
+                  "observed": 1.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.6549907814483449,
+                  "observed": 0.0
+                },
+                {
+                  "n": 1,
+                  "probability": 0.7047690722001075,
+                  "observed": 0.0
+                },
+                {
+                  "n": 2,
+                  "probability": 0.8552503649485638,
+                  "observed": 0.5
+                },
+                {
+                  "n": 7,
+                  "probability": 0.9509823294504549,
+                  "observed": 0.0
+                }
+              ]
+            },
+            "accuracy": 0.029012345679012345,
+            "eligible": true
+          }
+        ]
+      }
+    ],
+    "threshold_selection_trials": [
+      {
+        "threshold": 0.1,
+        "metrics": {
+          "n": 6822,
+          "positive_support": 61,
+          "negative_support": 6761,
+          "misses": 51,
+          "recall": 0.16393442622950818,
+          "false_alarms": 27,
+          "false_alarm_rate": 0.0039934920869693835,
+          "precision": 0.2702702702702703,
+          "brier": 0.008150525793420408,
+          "ece_10_bins": 0.0009967227973195646,
+          "reliability_bins": [
+            {
+              "n": 6785,
+              "probability": 0.007105432840875772,
+              "observed": 0.0075165806927044955
+            },
+            {
+              "n": 29,
+              "probability": 0.13449108963962786,
+              "observed": 0.1724137931034483
+            },
+            {
+              "n": 6,
+              "probability": 0.23625506640120963,
+              "observed": 0.6666666666666666
+            },
+            {
+              "n": 2,
+              "probability": 0.3361116266936775,
+              "observed": 0.5
+            }
+          ]
+        },
+        "accuracy": 0.8082673702726473,
+        "eligible": true
+      },
+      {
+        "threshold": 0.2,
+        "metrics": {
+          "n": 6822,
+          "positive_support": 61,
+          "negative_support": 6761,
+          "misses": 56,
+          "recall": 0.08196721311475409,
+          "false_alarms": 11,
+          "false_alarm_rate": 0.0016269782576541932,
+          "precision": 0.3125,
+          "brier": 0.008150525793420408,
+          "ece_10_bins": 0.0009967227973195646,
+          "reliability_bins": [
+            {
+              "n": 6785,
+              "probability": 0.007105432840875772,
+              "observed": 0.0075165806927044955
+            },
+            {
+              "n": 29,
+              "probability": 0.13449108963962786,
+              "observed": 0.1724137931034483
+            },
+            {
+              "n": 6,
+              "probability": 0.23625506640120963,
+              "observed": 0.6666666666666666
+            },
+            {
+              "n": 2,
+              "probability": 0.3361116266936775,
+              "observed": 0.5
+            }
+          ]
+        },
+        "accuracy": 0.8097332160656698,
+        "eligible": true
+      },
+      {
+        "threshold": 0.3,
+        "metrics": {
+          "n": 6822,
+          "positive_support": 61,
+          "negative_support": 6761,
+          "misses": 56,
+          "recall": 0.08196721311475409,
+          "false_alarms": 11,
+          "false_alarm_rate": 0.0016269782576541932,
+          "precision": 0.3125,
+          "brier": 0.008150525793420408,
+          "ece_10_bins": 0.0009967227973195646,
+          "reliability_bins": [
+            {
+              "n": 6785,
+              "probability": 0.007105432840875772,
+              "observed": 0.0075165806927044955
+            },
+            {
+              "n": 29,
+              "probability": 0.13449108963962786,
+              "observed": 0.1724137931034483
+            },
+            {
+              "n": 6,
+              "probability": 0.23625506640120963,
+              "observed": 0.6666666666666666
+            },
+            {
+              "n": 2,
+              "probability": 0.3361116266936775,
+              "observed": 0.5
+            }
+          ]
+        },
+        "accuracy": 0.8097332160656698,
+        "eligible": true
+      },
+      {
+        "threshold": 0.4,
+        "metrics": {
+          "n": 6822,
+          "positive_support": 61,
+          "negative_support": 6761,
+          "misses": 56,
+          "recall": 0.08196721311475409,
+          "false_alarms": 11,
+          "false_alarm_rate": 0.0016269782576541932,
+          "precision": 0.3125,
+          "brier": 0.008150525793420408,
+          "ece_10_bins": 0.0009967227973195646,
+          "reliability_bins": [
+            {
+              "n": 6785,
+              "probability": 0.007105432840875772,
+              "observed": 0.0075165806927044955
+            },
+            {
+              "n": 29,
+              "probability": 0.13449108963962786,
+              "observed": 0.1724137931034483
+            },
+            {
+              "n": 6,
+              "probability": 0.23625506640120963,
+              "observed": 0.6666666666666666
+            },
+            {
+              "n": 2,
+              "probability": 0.3361116266936775,
+              "observed": 0.5
+            }
+          ]
+        },
+        "accuracy": 0.8097332160656698,
+        "eligible": true
+      },
+      {
+        "threshold": 0.5,
+        "metrics": {
+          "n": 6822,
+          "positive_support": 61,
+          "negative_support": 6761,
+          "misses": 56,
+          "recall": 0.08196721311475409,
+          "false_alarms": 11,
+          "false_alarm_rate": 0.0016269782576541932,
+          "precision": 0.3125,
+          "brier": 0.008150525793420408,
+          "ece_10_bins": 0.0009967227973195646,
+          "reliability_bins": [
+            {
+              "n": 6785,
+              "probability": 0.007105432840875772,
+              "observed": 0.0075165806927044955
+            },
+            {
+              "n": 29,
+              "probability": 0.13449108963962786,
+              "observed": 0.1724137931034483
+            },
+            {
+              "n": 6,
+              "probability": 0.23625506640120963,
+              "observed": 0.6666666666666666
+            },
+            {
+              "n": 2,
+              "probability": 0.3361116266936775,
+              "observed": 0.5
+            }
+          ]
+        },
+        "accuracy": 0.8097332160656698,
+        "eligible": true
+      },
+      {
+        "threshold": 0.6,
+        "metrics": {
+          "n": 6822,
+          "positive_support": 61,
+          "negative_support": 6761,
+          "misses": 56,
+          "recall": 0.08196721311475409,
+          "false_alarms": 11,
+          "false_alarm_rate": 0.0016269782576541932,
+          "precision": 0.3125,
+          "brier": 0.008150525793420408,
+          "ece_10_bins": 0.0009967227973195646,
+          "reliability_bins": [
+            {
+              "n": 6785,
+              "probability": 0.007105432840875772,
+              "observed": 0.0075165806927044955
+            },
+            {
+              "n": 29,
+              "probability": 0.13449108963962786,
+              "observed": 0.1724137931034483
+            },
+            {
+              "n": 6,
+              "probability": 0.23625506640120963,
+              "observed": 0.6666666666666666
+            },
+            {
+              "n": 2,
+              "probability": 0.3361116266936775,
+              "observed": 0.5
+            }
+          ]
+        },
+        "accuracy": 0.8097332160656698,
+        "eligible": true
+      },
+      {
+        "threshold": 0.7,
+        "metrics": {
+          "n": 6822,
+          "positive_support": 61,
+          "negative_support": 6761,
+          "misses": 56,
+          "recall": 0.08196721311475409,
+          "false_alarms": 11,
+          "false_alarm_rate": 0.0016269782576541932,
+          "precision": 0.3125,
+          "brier": 0.008150525793420408,
+          "ece_10_bins": 0.0009967227973195646,
+          "reliability_bins": [
+            {
+              "n": 6785,
+              "probability": 0.007105432840875772,
+              "observed": 0.0075165806927044955
+            },
+            {
+              "n": 29,
+              "probability": 0.13449108963962786,
+              "observed": 0.1724137931034483
+            },
+            {
+              "n": 6,
+              "probability": 0.23625506640120963,
+              "observed": 0.6666666666666666
+            },
+            {
+              "n": 2,
+              "probability": 0.3361116266936775,
+              "observed": 0.5
+            }
+          ]
+        },
+        "accuracy": 0.8097332160656698,
+        "eligible": true
+      },
+      {
+        "threshold": 0.8,
+        "metrics": {
+          "n": 6822,
+          "positive_support": 61,
+          "negative_support": 6761,
+          "misses": 56,
+          "recall": 0.08196721311475409,
+          "false_alarms": 11,
+          "false_alarm_rate": 0.0016269782576541932,
+          "precision": 0.3125,
+          "brier": 0.008150525793420408,
+          "ece_10_bins": 0.0009967227973195646,
+          "reliability_bins": [
+            {
+              "n": 6785,
+              "probability": 0.007105432840875772,
+              "observed": 0.0075165806927044955
+            },
+            {
+              "n": 29,
+              "probability": 0.13449108963962786,
+              "observed": 0.1724137931034483
+            },
+            {
+              "n": 6,
+              "probability": 0.23625506640120963,
+              "observed": 0.6666666666666666
+            },
+            {
+              "n": 2,
+              "probability": 0.3361116266936775,
+              "observed": 0.5
+            }
+          ]
+        },
+        "accuracy": 0.8097332160656698,
+        "eligible": true
+      },
+      {
+        "threshold": 0.9,
+        "metrics": {
+          "n": 6822,
+          "positive_support": 61,
+          "negative_support": 6761,
+          "misses": 56,
+          "recall": 0.08196721311475409,
+          "false_alarms": 11,
+          "false_alarm_rate": 0.0016269782576541932,
+          "precision": 0.3125,
+          "brier": 0.008150525793420408,
+          "ece_10_bins": 0.0009967227973195646,
+          "reliability_bins": [
+            {
+              "n": 6785,
+              "probability": 0.007105432840875772,
+              "observed": 0.0075165806927044955
+            },
+            {
+              "n": 29,
+              "probability": 0.13449108963962786,
+              "observed": 0.1724137931034483
+            },
+            {
+              "n": 6,
+              "probability": 0.23625506640120963,
+              "observed": 0.6666666666666666
+            },
+            {
+              "n": 2,
+              "probability": 0.3361116266936775,
+              "observed": 0.5
+            }
+          ]
+        },
+        "accuracy": 0.8097332160656698,
+        "eligible": true
+      }
+    ]
+  },
+  "resolved_partitions": {
+    "train": [
+      "2023-01-01",
+      "2024-01-01"
+    ],
+    "locked_pollution": [
+      "2025-02-01",
+      "2025-05-01"
+    ],
+    "locked_other_seasons": [
+      "2025-05-01",
+      "2025-11-01"
+    ],
+    "development": [
+      "2024-01-01",
+      "2024-03-09"
+    ],
+    "calibration": [
+      "2024-03-09",
+      "2024-04-22"
+    ],
+    "threshold_selection": [
+      "2024-04-22",
+      "2025-02-01"
+    ]
+  },
+  "partition_support": {
+    "train": {
+      "n": 8748,
+      "bands": {
+        "moderate": 1836,
+        "satisfactory": 4373,
+        "good": 2423,
+        "poor": 116
+      },
+      "first_time": "2023-01-01T06:00",
+      "last_time": "2023-12-31T17:00"
+    },
+    "locked_pollution": {
+      "n": 2130,
+      "bands": {
+        "satisfactory": 1070,
+        "moderate": 788,
+        "good": 67,
+        "poor": 192,
+        "severe": 13
+      },
+      "first_time": "2025-02-01T00:00",
+      "last_time": "2025-04-30T17:00"
+    },
+    "locked_other_seasons": {
+      "n": 4410,
+      "bands": {
+        "satisfactory": 1700,
+        "moderate": 294,
+        "poor": 35,
+        "severe": 14,
+        "good": 2367
+      },
+      "first_time": "2025-05-01T00:00",
+      "last_time": "2025-10-31T17:00"
+    },
+    "development": {
+      "n": 1620,
+      "bands": {
+        "moderate": 480,
+        "satisfactory": 1073,
+        "good": 47,
+        "poor": 20
+      },
+      "first_time": "2024-01-01T06:00",
+      "last_time": "2024-03-08T17:00"
+    },
+    "calibration": {
+      "n": 1050,
+      "bands": {
+        "satisfactory": 578,
+        "moderate": 397,
+        "poor": 21,
+        "good": 54
+      },
+      "first_time": "2024-03-09T00:00",
+      "last_time": "2024-04-21T17:00"
+    },
+    "threshold_selection": {
+      "n": 6822,
+      "bands": {
+        "satisfactory": 3072,
+        "moderate": 1119,
+        "good": 2570,
+        "poor": 61
+      },
+      "first_time": "2024-04-22T00:00",
+      "last_time": "2025-01-31T17:00"
+    }
+  },
+  "dataset": {
+    "rows_sha256": "ba497dbad1c0d2a57fc6678b289a1ef6ed2e4315af8373bb142a016be78a3da3",
+    "row_count": 24822,
+    "excluded_history_n": 18,
+    "excluded_quality_n": 0,
+    "source_fixtures": [
+      {
+        "path": "data/samples/archival_aq_2023-01-01_2023-12-31.json",
+        "sha256": "80e2095817debe677445dfc694b99dfa0f9bcc39ead3f1f5bf7ff58b70d92bf0"
+      },
+      {
+        "path": "data/samples/archival_aq_2024-01-01_2024-12-31.json",
+        "sha256": "81ab6e6b0c1027fc203772aaa0e5a92e30ce42d89dfd4f4c584c41c7bdde7fb7"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-01-01_2025-10-31.json",
+        "sha256": "a9c677e876d844c9ebe1ff25fc439e9b7755e489bd26dc03a5d4ee14af4b2d5c"
+      },
+      {
+        "path": "data/samples/archival_wx_2023-01-01_2023-12-31.json",
+        "sha256": "3d71fbd3972525ab52d8613357a7ce8680ef2d40882649cb5eb14357fe41ab7c"
+      },
+      {
+        "path": "data/samples/archival_wx_2024-01-01_2024-12-31.json",
+        "sha256": "e0f0c92cdc67454504372e9292ff5c895d467a7b0d55b937322837970a923c9b"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-01-01_2025-10-31.json",
+        "sha256": "8d7e98f8a9c9cefe1a54a38779e7e367bdab294f96afc25e1f2291ec4e86bf4a"
+      }
+    ],
+    "source_kind": "CAMS archived model output and ERA5 reanalysis; not station observations"
+  },
+  "locked_results": [
+    {
+      "partition": "locked_pollution",
+      "n": 2130,
+      "poor_or_worse_support": 205,
+      "models": {
+        "persistence": {
+          "accuracy": 0.3042,
+          "macro_f1": 0.1506,
+          "risk": {
+            "positive_support": 205,
+            "negative_support": 1925,
+            "misses": 185,
+            "recall": 0.0975609756097561,
+            "false_alarms": 245,
+            "false_alarm_rate": 0.12727272727272726,
+            "precision": 0.07547169811320754,
+            "brier": 0.20187793427230047,
+            "ece_10_bins": 0.20187793427230047
+          },
+          "risk_probability_note": "binary decisions; Brier/ECE are not calibrated probability scores"
+        },
+        "lightgbm_baseline": {
+          "accuracy": 0.7469,
+          "macro_f1": 0.4031,
+          "risk": {
+            "positive_support": 205,
+            "negative_support": 1925,
+            "misses": 164,
+            "recall": 0.2,
+            "false_alarms": 11,
+            "false_alarm_rate": 0.005714285714285714,
+            "precision": 0.7884615384615384,
+            "brier": 0.07244380040468622,
+            "ece_10_bins": 0.06484862298940715
+          },
+          "risk_probability_note": "class probabilities"
+        },
+        "ensemble_baseline": {
+          "accuracy": 0.7188,
+          "macro_f1": 0.4276,
+          "risk": {
+            "positive_support": 205,
+            "negative_support": 1925,
+            "misses": 156,
+            "recall": 0.23902439024390243,
+            "false_alarms": 13,
+            "false_alarm_rate": 0.006753246753246753,
+            "precision": 0.7903225806451613,
+            "brier": 0.07934272300469483,
+            "ece_10_bins": 0.07934272300469483
+          },
+          "risk_probability_note": "binary decisions; Brier/ECE are not calibrated probability scores"
+        },
+        "weighted_lightgbm": {
+          "accuracy": 0.7493,
+          "macro_f1": 0.4346,
+          "risk": {
+            "positive_support": 205,
+            "negative_support": 1925,
+            "misses": 152,
+            "recall": 0.25853658536585367,
+            "false_alarms": 22,
+            "false_alarm_rate": 0.011428571428571429,
+            "precision": 0.7066666666666667,
+            "brier": 0.07019790901267979,
+            "ece_10_bins": 0.0607656316021739
+          },
+          "risk_probability_note": "class probabilities"
+        },
+        "weighted_plus_risk": {
+          "accuracy": 0.7418,
+          "macro_f1": 0.4526,
+          "risk": {
+            "positive_support": 205,
+            "negative_support": 1925,
+            "misses": 109,
+            "recall": 0.4682926829268293,
+            "false_alarms": 78,
+            "false_alarm_rate": 0.04051948051948052,
+            "precision": 0.5517241379310345,
+            "brier": 0.07601965673444691,
+            "ece_10_bins": 0.06654062542046311
+          },
+          "risk_probability_note": "calibrated logistic output"
+        }
+      }
+    },
+    {
+      "partition": "locked_other_seasons",
+      "n": 4410,
+      "poor_or_worse_support": 49,
+      "models": {
+        "persistence": {
+          "accuracy": 0.3862,
+          "macro_f1": 0.2353,
+          "risk": {
+            "positive_support": 49,
+            "negative_support": 4361,
+            "misses": 41,
+            "recall": 0.16326530612244897,
+            "false_alarms": 53,
+            "false_alarm_rate": 0.01215317587709241,
+            "precision": 0.13114754098360656,
+            "brier": 0.021315192743764172,
+            "ece_10_bins": 0.021315192743764172
+          },
+          "risk_probability_note": "binary decisions; Brier/ECE are not calibrated probability scores"
+        },
+        "lightgbm_baseline": {
+          "accuracy": 0.8211,
+          "macro_f1": 0.4598,
+          "risk": {
+            "positive_support": 49,
+            "negative_support": 4361,
+            "misses": 45,
+            "recall": 0.08163265306122448,
+            "false_alarms": 3,
+            "false_alarm_rate": 0.000687915615684476,
+            "precision": 0.5714285714285714,
+            "brier": 0.009882799017687302,
+            "ece_10_bins": 0.009609670527818585
+          },
+          "risk_probability_note": "class probabilities"
+        },
+        "ensemble_baseline": {
+          "accuracy": 0.8061,
+          "macro_f1": 0.4484,
+          "risk": {
+            "positive_support": 49,
+            "negative_support": 4361,
+            "misses": 44,
+            "recall": 0.10204081632653061,
+            "false_alarms": 7,
+            "false_alarm_rate": 0.0016051364365971107,
+            "precision": 0.4166666666666667,
+            "brier": 0.011564625850340135,
+            "ece_10_bins": 0.011564625850340135
+          },
+          "risk_probability_note": "binary decisions; Brier/ECE are not calibrated probability scores"
+        },
+        "weighted_lightgbm": {
+          "accuracy": 0.8188,
+          "macro_f1": 0.4622,
+          "risk": {
+            "positive_support": 49,
+            "negative_support": 4361,
+            "misses": 41,
+            "recall": 0.16326530612244897,
+            "false_alarms": 6,
+            "false_alarm_rate": 0.001375831231368952,
+            "precision": 0.5714285714285714,
+            "brier": 0.009746441928112448,
+            "ece_10_bins": 0.009313182813241581
+          },
+          "risk_probability_note": "class probabilities"
+        },
+        "weighted_plus_risk": {
+          "accuracy": 0.8181,
+          "macro_f1": 0.4786,
+          "risk": {
+            "positive_support": 49,
+            "negative_support": 4361,
+            "misses": 35,
+            "recall": 0.2857142857142857,
+            "false_alarms": 12,
+            "false_alarm_rate": 0.002751662462737904,
+            "precision": 0.5384615384615384,
+            "brier": 0.00954431038814566,
+            "ece_10_bins": 0.004516535422890823
+          },
+          "risk_probability_note": "calibrated logistic output"
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "CAMS archived model output and ERA5 reanalysis, not station observations.",
+    "Historical periods are not prospective; configurations were informed by previously consumed later archive diagnostics.",
+    "Hourly risk support is correlated and is not independent pollution episodes.",
+    "The threshold-selection period was label-adaptively allocated by earliest support; its metrics are development results, not an independent holdout.",
+    "Locked evaluation labels were not used for selecting model or threshold.",
+    "Target-hour recorded weather is oracle weather, not a deployed weather forecast.",
+    "No human review, field evidence, billed cost measurement, or safety/medical qualification is established.",
+    "Candidate bundle is research-only; no serving artifact was changed."
+  ]
+}

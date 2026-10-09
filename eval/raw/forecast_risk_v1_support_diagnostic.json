@@ -1,0 +1,49 @@
+{
+  "call_id": "fc-01M4E7EEVJMY8PNNGS0AXBR3FC",
+  "status": "FAILED",
+  "partition_support": {
+    "train": {
+      "n": 7308,
+      "bands": {
+        "moderate": 1404,
+        "satisfactory": 3316,
+        "good": 2491,
+        "poor": 97
+      },
+      "poor_or_worse": 97,
+      "below_poor": 7211
+    },
+    "development": {
+      "n": 1458,
+      "bands": {
+        "satisfactory": 964,
+        "moderate": 320,
+        "good": 173,
+        "poor": 1
+      },
+      "poor_or_worse": 1,
+      "below_poor": 1457
+    },
+    "calibration": {
+      "n": 348,
+      "bands": {
+        "moderate": 117,
+        "satisfactory": 231
+      },
+      "poor_or_worse": 0,
+      "below_poor": 348
+    },
+    "threshold_selection": {
+      "n": 378,
+      "bands": {
+        "satisfactory": 212,
+        "moderate": 155,
+        "good": 7,
+        "poor": 4
+      },
+      "poor_or_worse": 4,
+      "below_poor": 374
+    }
+  },
+  "locked_evaluation_labels_inspected": false
+}

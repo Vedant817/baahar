@@ -1,0 +1,60 @@
+{
+  "status": "COMPLETED",
+  "rows_sha256": "bc0f88f08f296e9045ff7c78c0f8f3ba7c93c156b5c54b1ec2d4d4518a4f8e1d",
+  "windows": [
+    [
+      "2026-02-01",
+      "2026-03-01"
+    ],
+    [
+      "2026-04-01",
+      "2026-05-01"
+    ],
+    [
+      "2026-06-01",
+      "2026-07-01"
+    ],
+    [
+      "2026-08-01",
+      "2026-09-01"
+    ]
+  ],
+  "models": [
+    "majority",
+    "persistence",
+    "lgbm",
+    "ensemble"
+  ],
+  "embargo_hours": 6,
+  "limitations": "Existing archive and previously selected configurations; rolling diagnostics, not pristine independent validation. No new parameter tuning; no model promotion. Synthetic extra pollution rows are not added.",
+  "timeout_seconds": 1800,
+  "compute_ceiling_estimate_usd": 0.079128,
+  "source_sha256": {
+    "src\\baahar\\air.py": "017041d0bc3a6beeccdc70717c4cc01f04b5e74f80e57381f88cb8cc0d287537",
+    "src\\baahar\\app.py": "431a17e12b9bfff4ccd4a9a4a2d9dcaea63a5f3a0276f5aab07302cf77df9671",
+    "src\\baahar\\brief.py": "721169227061247421a4d76445980348326cd7d9aa2c3e0167392644cb72c52e",
+    "src\\baahar\\briefing_contract.py": "382d6a4f70fd49b88e3858592cb18a84f6801840a708f45a38d1ac99f39f71ed",
+    "src\\baahar\\cli.py": "45e169bf6b33ac2f6727e1070f1d8c0904b2a6a8564a2e0e872965655bb3428c",
+    "src\\baahar\\config.py": "42d1a8beafd569d37e15c8249d77af25e1e87f75934751e264484bcf3889bd7c",
+    "src\\baahar\\features.py": "346b84cbcb8c32a4a46b3cd41608926b380f8453986775fd8fb32f70a0d3b8d4",
+    "src\\baahar\\forecast.py": "dcc1362fc6a5277d50b0b170e5ab0bd3b6d4bcb3c3cf851243a8881ec8aa6a89",
+    "src\\baahar\\http_client.py": "1f9c6d02f1659de77aecec7476d0b00028995dfefb7e0e8a34ad1728bb43aaed",
+    "src\\baahar\\journal.py": "9aaa06b4b54f871a08642a52e690d69a472aa51cc55ef871dfb54eb84dc66ead",
+    "src\\baahar\\modal_writer.py": "d6916faad9bbf31e70e7a761f99ef22bdf5c1e3366de61b3e8d64f655c9a7b7e",
+    "src\\baahar\\models.py": "1dfc0e87cd54ad67c009ac4d1d6b215ee6f7ff923c9c05827e7d14334f5837ea",
+    "src\\baahar\\naqi.py": "f755b308baef2fec28877c81f500e95d5b7dc9e1231dff677c208ca61b5b21dc",
+    "src\\baahar\\parks.py": "1fcc2ce280afef20b479f092be6ac3dddd2597c3c51bcbbe7e3ba3e1887824c7",
+    "src\\baahar\\pocket.py": "7b7c417de24c28457a5cde97a15fe04803ecf36f0fae22237c7f956aa6e1a459",
+    "src\\baahar\\score.py": "dfd887bd723eaa1c9cddccacc0e0d8949382fd72b2dd0d83456c1e509f7bde4e",
+    "src\\baahar\\seasonal.py": "c496a16ad9a15cad0650fbe23ccc5b66a32929330e99a64650de67f09c05cf83",
+    "src\\baahar\\stations.py": "0a858820fba6291a016598eed604a4e0adbd0de9ad13e68ec79dc7a2fdfbc2d8",
+    "src\\baahar\\walk.py": "f33010de87fd28c3687c9e59473077475e98b9ff614f56bf1344d52e1c653d26",
+    "src\\baahar\\weather.py": "d1281213bdf13444f461d86e2949c1c134d563b4f73f2b7dc395c2b175deda0b",
+    "src\\baahar\\__init__.py": "5e8311583c6c5a260d36fbf0a578efdd08834872a75aabd642b57e50bee6cab4",
+    "scripts\\run_eval.py": "ddcf520c72ad4dc1320f0517f68019bd0ed6ff1e2a7f492076f80597870a4021",
+    "scripts\\build_dataset.py": "ce9061becdacfd6c710e48917f35e0daeffbef097803169dbd095913be58de8e"
+  },
+  "app_id": "ap-WeWVM1pF4RdqyqPHJxirSG",
+  "call_id": "fc-01M4E3CXZXZDMNH1T20PHB3AAN",
+  "results": "eval\\raw\\forecast_rolling_results.json"
+}
