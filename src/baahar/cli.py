@@ -104,7 +104,7 @@ def brief(
     hours: Annotated[int | None, typer.Option(help="Hours of forecast to score.")] = None,
     offline: Annotated[bool, typer.Option(help="Force recorded fixtures.")] = False,
     model: Annotated[
-        str, typer.Option(help="Briefing writer: auto | gemma | tinker | template.")
+        str, typer.Option(help="Briefing writer: auto | gemma | tinker | modal | template.")
     ] = "auto",
     voice: Annotated[bool, typer.Option(help="Also speak the briefing (ElevenLabs).")] = False,
     walk_minutes: Annotated[int | None, typer.Option(help="Pocket Mode walk length.")] = None,
@@ -136,8 +136,17 @@ def render_brief(resp: BriefResponse) -> None:
     console.rule(f"Baahar · {plan.city}", style="cyan")
     console.print()
 
-    console.print(f"  {plan.overall.value}", style=DECISION_STYLE[plan.overall], end="")
+    from .walk import eligibility
+
+    allowed, permission_reason = eligibility(plan)
+    action = plan.overall if allowed else (
+        plan.current_decision if plan.current_decision not in (None, Decision.GO)
+        else (Decision.SKIP if plan.overall is Decision.SKIP else Decision.WAIT)
+    )
+    console.print(f"  {action.value}", style=DECISION_STYLE[action], end="")
     console.print(f"  {plan.headline}", style="bold")
+    if not allowed:
+        console.print(f"  {permission_reason}", style="yellow")
     console.print()
 
     for item in plan.degraded:

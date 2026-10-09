@@ -224,8 +224,11 @@ function renderHours(plan) {
 function renderPlan(data) {
   const { plan, briefing, pocket } = data;
 
-  $('decision').textContent = plan.overall;
-  $('decision').dataset.d = plan.overall;
+  const action = pocket.active ? 'GO' :
+    (plan.current_decision && plan.current_decision !== 'GO' ? plan.current_decision :
+      (plan.overall === 'SKIP' ? 'SKIP' : 'WAIT'));
+  $('decision').textContent = action;
+  $('decision').dataset.d = action;
   $('headline').textContent = plan.headline || '';
   $('window').textContent = plan.best_time
     ? `${fmtISTDay(plan.best_time)} · ${fmtTime(plan.best_time)} · ${plan.city}`
@@ -264,7 +267,7 @@ function renderPlan(data) {
 
   // Pocket Mode payload
   //
-  // `pocket.active` is false only on a SKIP. Honouring it is the difference
+  // `pocket.active` requires a fresh, eligible current hour. Honouring it is the difference
   // between the app agreeing with its own safety verdict and quietly
   // contradicting it: the button and the auto-pocket countdown used to fire
   // regardless, so a user who had just been told the air was hazardous got the
@@ -329,6 +332,15 @@ function paintCue() {
 }
 
 function enterPocket(auto) {
+  const assessment = state.data && state.data.plan && Date.parse(state.data.plan.generated_at);
+  const slot = state.data && state.data.plan && (state.data.plan.current_slot || state.data.plan.best_slot);
+  const hour = slot && Date.parse(slot.time || (slot.weather && slot.weather.time));
+  if (!Number.isFinite(assessment) || !Number.isFinite(hour) || Date.now() < hour || Date.now() >= hour + 60 * 60 * 1000 || Date.now() - assessment > 15 * 60 * 1000 || Date.now() < assessment) {
+    state.pocketActive = false;
+    cancelAutoPocket();
+    applyPocketAvailability();
+    return;
+  }
   // Deep links and timer callbacks must honour the same verdict as the button.
   if (!state.pocketActive) {
     cancelAutoPocket();

@@ -70,7 +70,7 @@ def api_brief(
     lon: Annotated[float | None, Query(ge=-180, le=180)] = None,
     city: str | None = None,
     hours: Annotated[int | None, Query(ge=1, le=48)] = None,
-    model: Annotated[str, Query(pattern="^(auto|gemma|tinker|template)$")] = "auto",
+    model: Annotated[str, Query(pattern="^(auto|gemma|tinker|modal|template)$")] = "auto",
     scorer: Annotated[str, Query(pattern="^(auto|heuristic|tabpfn|lgbm|ensemble)$")] = "auto",
     walk_minutes: Annotated[int | None, Query(ge=5, le=180)] = None,
     park: str | None = None,
