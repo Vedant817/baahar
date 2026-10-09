@@ -1,0 +1,1573 @@
+{
+  "observed_at": "2026-10-09T06:55:26.007922+00:00",
+  "source": "XKDR India Air Quality Database",
+  "access": "Publisher public demo credential; not saved. No user secret or signup.",
+  "license_documentation_url": "https://airquality.xkdr.org/",
+  "note": "Genuine recorded live responses. Parsed units are U+00B5 micro sign and U+00B3 superscript three for µg/m³; CO mg/m³. Earlier terminal display corruption did not affect payload. No calibration validation claimed.",
+  "responses": [
+    {
+      "url": "https://airquality.xkdr.org/v1/stations?city=Bengaluru&format=json",
+      "status": 200,
+      "response_sha256": "285688d24694c553f75d257aafb197f37466ac555a9817f61338e136e9f3a583",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Row-Count": "14",
+        "X-Truncated": "false"
+      },
+      "payload": {
+        "meta": {
+          "filters": {
+            "source": null,
+            "state": null,
+            "city": "Bengaluru",
+            "q": null
+          },
+          "rows": 14,
+          "truncated": false,
+          "max_rows": 100000,
+          "query_ms": 150
+        },
+        "data": [
+          {
+            "station_id": "site_162",
+            "station_name": "BTM Layout, Bengaluru - CPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 12.9135218,
+            "longitude": 77.5950804,
+            "first_seen": "2009-03-01T00:00:00",
+            "last_seen": "2025-09-01T23:00:00",
+            "n_rows": 992721,
+            "parameters": [
+              "Benzene",
+              "CO",
+              "Eth-Benzene",
+              "MP-Xylene",
+              "NH3",
+              "NO",
+              "NO2",
+              "NOx",
+              "O_Xylene",
+              "Ozone",
+              "PM10",
+              "PM2.5",
+              "SO2",
+              "Toluene"
+            ]
+          },
+          {
+            "station_id": "site_164",
+            "station_name": "BWSSB Kadabesanahalli, Bengaluru - CPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 12.9352049,
+            "longitude": 77.6814488,
+            "first_seen": "2009-03-01T00:00:00",
+            "last_seen": "2022-08-27T20:00:00",
+            "n_rows": 768495,
+            "parameters": [
+              "Benzene",
+              "CO",
+              "Eth-Benzene",
+              "MP-Xylene",
+              "NH3",
+              "NO",
+              "NO2",
+              "NOx",
+              "O_Xylene",
+              "Ozone",
+              "PM10",
+              "PM2.5",
+              "SO2",
+              "Toluene"
+            ]
+          },
+          {
+            "station_id": "site_1553",
+            "station_name": "Bapuji Nagar, Bengaluru - KSPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 12.951913,
+            "longitude": 77.539784,
+            "first_seen": "2018-06-25T14:00:00",
+            "last_seen": "2025-08-31T12:00:00",
+            "n_rows": 562754,
+            "parameters": [
+              "Benzene",
+              "CO",
+              "NH3",
+              "NO",
+              "NO2",
+              "NOx",
+              "Ozone",
+              "PM10",
+              "PM2.5",
+              "SO2",
+              "Toluene"
+            ]
+          },
+          {
+            "station_id": "site_165",
+            "station_name": "City Railway Station, Bengaluru - KSPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 12.9756843,
+            "longitude": 77.5660749,
+            "first_seen": "2016-01-01T00:00:00",
+            "last_seen": "2025-09-01T23:00:00",
+            "n_rows": 332732,
+            "parameters": [
+              "CO",
+              "NO",
+              "NO2",
+              "NOx",
+              "PM10",
+              "SO2"
+            ]
+          },
+          {
+            "station_id": "site_1554",
+            "station_name": "Hebbal, Bengaluru - KSPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 13.029152,
+            "longitude": 77.585901,
+            "first_seen": "2018-06-25T11:00:00",
+            "last_seen": "2025-09-01T23:00:00",
+            "n_rows": 389955,
+            "parameters": [
+              "Benzene",
+              "CO",
+              "NH3",
+              "NO2",
+              "Ozone",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ]
+          },
+          {
+            "station_id": "site_1555",
+            "station_name": "Hombegowda Nagar, Bengaluru - KSPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 12.938539,
+            "longitude": 77.5901,
+            "first_seen": "2018-07-03T17:00:00",
+            "last_seen": "2025-09-01T23:00:00",
+            "n_rows": 588408,
+            "parameters": [
+              "Benzene",
+              "CO",
+              "NH3",
+              "NO",
+              "NO2",
+              "NOx",
+              "Ozone",
+              "PM10",
+              "PM2.5",
+              "SO2",
+              "Toluene"
+            ]
+          },
+          {
+            "station_id": "site_1556",
+            "station_name": "Jayanagar 5th Block, Bengaluru - KSPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 12.920984,
+            "longitude": 77.584908,
+            "first_seen": "2018-06-25T16:00:00",
+            "last_seen": "2025-09-01T15:00:00",
+            "n_rows": 537058,
+            "parameters": [
+              "Benzene",
+              "CO",
+              "NH3",
+              "NO",
+              "NO2",
+              "NOx",
+              "Ozone",
+              "PM10",
+              "PM2.5",
+              "SO2",
+              "Toluene"
+            ]
+          },
+          {
+            "station_id": "site_5729",
+            "station_name": "Jigani, Bengaluru - KSPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 12.7816279,
+            "longitude": 77.6299145,
+            "first_seen": "2023-04-12T17:00:00",
+            "last_seen": "2025-09-01T23:00:00",
+            "n_rows": 149639,
+            "parameters": [
+              "Benzene",
+              "CO",
+              "Eth-Benzene",
+              "MP-Xylene",
+              "NH3",
+              "NO",
+              "NO2",
+              "NOx",
+              "Ozone",
+              "PM10",
+              "PM2.5",
+              "SO2",
+              "Toluene"
+            ]
+          },
+          {
+            "station_id": "site_5681",
+            "station_name": "Kasturi Nagar, Bengaluru - KSPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 13.003872,
+            "longitude": 77.664217,
+            "first_seen": "2023-04-20T16:00:00",
+            "last_seen": "2025-08-22T14:00:00",
+            "n_rows": 181757,
+            "parameters": [
+              "Benzene",
+              "CO",
+              "Eth-Benzene",
+              "MP-Xylene",
+              "NH3",
+              "NO",
+              "NO2",
+              "NOx",
+              "Ozone",
+              "PM10",
+              "PM2.5",
+              "SO2",
+              "Toluene"
+            ]
+          },
+          {
+            "station_id": "site_163",
+            "station_name": "Peenya, Bengaluru - CPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 13.0270199,
+            "longitude": 77.494094,
+            "first_seen": "2009-03-01T00:00:00",
+            "last_seen": "2025-09-01T23:00:00",
+            "n_rows": 834622,
+            "parameters": [
+              "Benzene",
+              "CO",
+              "Eth-Benzene",
+              "MP-Xylene",
+              "NH3",
+              "NO",
+              "NO2",
+              "NOx",
+              "Ozone",
+              "PM10",
+              "PM2.5",
+              "SO2",
+              "Toluene"
+            ]
+          },
+          {
+            "station_id": "site_5678",
+            "station_name": "RVCE-Mailasandra, Bengaluru - KSPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 12.921418,
+            "longitude": 77.502466,
+            "first_seen": "2022-12-14T08:00:00",
+            "last_seen": "2025-09-01T23:00:00",
+            "n_rows": 171255,
+            "parameters": [
+              "Benzene",
+              "CO",
+              "Eth-Benzene",
+              "MP-Xylene",
+              "NH3",
+              "NO",
+              "NO2",
+              "NOx",
+              "Ozone",
+              "PM10",
+              "PM2.5",
+              "SO2",
+              "Toluene"
+            ]
+          },
+          {
+            "station_id": "site_166",
+            "station_name": "Sanegurava Halli, Bengaluru - KSPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 12.990328,
+            "longitude": 77.5431385,
+            "first_seen": "2016-01-01T00:00:00",
+            "last_seen": "2025-09-01T23:00:00",
+            "n_rows": 324667,
+            "parameters": [
+              "CO",
+              "NO",
+              "NO2",
+              "NOx",
+              "PM10",
+              "SO2"
+            ]
+          },
+          {
+            "station_id": "site_5686",
+            "station_name": "Shivapura_Peenya, Bengaluru - KSPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 13.0246342,
+            "longitude": 77.5080115,
+            "first_seen": "2023-02-01T15:00:00",
+            "last_seen": "2025-09-01T23:00:00",
+            "n_rows": 154690,
+            "parameters": [
+              "Benzene",
+              "CO",
+              "NH3",
+              "NO",
+              "NO2",
+              "NOx",
+              "Ozone",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ]
+          },
+          {
+            "station_id": "site_1558",
+            "station_name": "Silk Board, Bengaluru - KSPCB",
+            "state_name": "Karnataka",
+            "city_name": "Bengaluru",
+            "source": "cpcb_caaqm",
+            "latitude": 12.917348,
+            "longitude": 77.622813,
+            "first_seen": "2018-06-25T13:00:00",
+            "last_seen": "2025-09-01T23:00:00",
+            "n_rows": 545965,
+            "parameters": [
+              "Benzene",
+              "CO",
+              "NH3",
+              "NO",
+              "NO2",
+              "NOx",
+              "Ozone",
+              "PM10",
+              "PM2.5",
+              "SO2",
+              "Toluene"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "url": "https://airquality.xkdr.org/v1/parameters?format=json",
+      "status": 200,
+      "response_sha256": "d44f0c09dff6adb0d0879778a7785fb5d5a62a6ccbeff3154d25ad2e3b656a0b",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Row-Count": "15",
+        "X-Truncated": "false"
+      },
+      "payload": {
+        "meta": {
+          "rows": 15,
+          "truncated": false,
+          "max_rows": 10000,
+          "query_ms": 124
+        },
+        "data": [
+          {
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "n_stations": 554,
+            "n_rows": 17844093,
+            "first_seen": "2009-01-01T00:00:00",
+            "last_seen": "2026-03-27T23:30:00"
+          },
+          {
+            "parameter_name": "NOx",
+            "unit": "ppb",
+            "n_stations": 544,
+            "n_rows": 17506764,
+            "first_seen": "2009-01-01T00:00:00",
+            "last_seen": "2024-12-31T23:00:00"
+          },
+          {
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "n_stations": 549,
+            "n_rows": 17445236,
+            "first_seen": "2009-01-01T00:00:00",
+            "last_seen": "2024-12-31T23:00:00"
+          },
+          {
+            "parameter_name": "NO",
+            "unit": "µg/m³",
+            "n_stations": 543,
+            "n_rows": 17105758,
+            "first_seen": "2009-01-01T00:00:00",
+            "last_seen": "2024-12-31T23:00:00"
+          },
+          {
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "n_stations": 546,
+            "n_rows": 16961824,
+            "first_seen": "2009-01-03T02:00:00",
+            "last_seen": "2024-12-31T23:00:00"
+          },
+          {
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "n_stations": 529,
+            "n_rows": 16722073,
+            "first_seen": "2009-01-01T00:00:00",
+            "last_seen": "2024-12-31T23:00:00"
+          },
+          {
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "n_stations": 545,
+            "n_rows": 16587252,
+            "first_seen": "2011-01-17T01:00:00",
+            "last_seen": "2025-09-01T23:00:00"
+          },
+          {
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "n_stations": 530,
+            "n_rows": 16499316,
+            "first_seen": "2009-01-01T00:00:00",
+            "last_seen": "2024-12-31T23:00:00"
+          },
+          {
+            "parameter_name": "Benzene",
+            "unit": "µg/m³",
+            "n_stations": 491,
+            "n_rows": 14160901,
+            "first_seen": "2009-03-02T18:00:00",
+            "last_seen": "2024-12-31T23:00:00"
+          },
+          {
+            "parameter_name": "NH3",
+            "unit": "µg/m³",
+            "n_stations": 490,
+            "n_rows": 14043209,
+            "first_seen": "2009-01-01T01:00:00",
+            "last_seen": "2024-12-31T23:00:00"
+          },
+          {
+            "parameter_name": "Toluene",
+            "unit": "µg/m³",
+            "n_stations": 401,
+            "n_rows": 11247222,
+            "first_seen": "2009-03-02T18:00:00",
+            "last_seen": "2024-12-31T23:00:00"
+          },
+          {
+            "parameter_name": "MP-Xylene",
+            "unit": "µg/m³",
+            "n_stations": 382,
+            "n_rows": 7826459,
+            "first_seen": "2009-03-02T14:00:00",
+            "last_seen": "2024-12-31T23:00:00"
+          },
+          {
+            "parameter_name": "Eth-Benzene",
+            "unit": "µg/m³",
+            "n_stations": 389,
+            "n_rows": 7679725,
+            "first_seen": "2009-03-02T16:00:00",
+            "last_seen": "2024-12-31T23:00:00"
+          },
+          {
+            "parameter_name": "Xylene",
+            "unit": "µg/m³",
+            "n_stations": 157,
+            "n_rows": 4395985,
+            "first_seen": "2010-09-13T00:00:00",
+            "last_seen": "2024-12-31T23:00:00"
+          },
+          {
+            "parameter_name": "O_Xylene",
+            "unit": "µg/m³",
+            "n_stations": 39,
+            "n_rows": 496017,
+            "first_seen": "2019-01-01T00:00:00",
+            "last_seen": "2021-12-31T23:00:00"
+          }
+        ]
+      }
+    },
+    {
+      "url": "https://airquality.xkdr.org/v1/measurements?station=site_162&parameter=Ozone&parameter=CO&parameter=PM2.5&parameter=PM10&parameter=NO2&parameter=SO2&start=2024-04-01&end=2024-04-01&agg=raw&format=json&limit=150",
+      "status": 200,
+      "response_sha256": "182656f9e78090aeaf86e0b6aa0fcb63d9d483f8d38ac52ca1a7b5a30d9cea1a",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Row-Count": "144",
+        "X-Truncated": "false"
+      },
+      "payload": {
+        "meta": {
+          "start": "2024-04-01",
+          "end": "2024-04-01",
+          "agg": "raw",
+          "filters": {
+            "station": [
+              "site_162"
+            ],
+            "parameter": [
+              "Ozone",
+              "CO",
+              "PM2.5",
+              "PM10",
+              "NO2",
+              "SO2"
+            ],
+            "state": null,
+            "city": null,
+            "source": null
+          },
+          "timezone": "IST (UTC+05:30), naive timestamps",
+          "rows": 144,
+          "truncated": false,
+          "max_rows": 150,
+          "query_ms": 221
+        },
+        "data": [
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T00:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T01:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T02:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T03:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T04:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T05:00:00",
+            "value": 0.69
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T06:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T07:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T08:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T09:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T10:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T11:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T12:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T13:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T14:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T15:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T16:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T17:00:00",
+            "value": 0.69
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T18:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T19:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T20:00:00",
+            "value": 0.69
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T21:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T22:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "CO",
+            "unit": "mg/m³",
+            "collected_at": "2024-04-01T23:00:00",
+            "value": 0.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T00:00:00",
+            "value": 28.37
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T01:00:00",
+            "value": 28.07
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T02:00:00",
+            "value": 28.1
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T03:00:00",
+            "value": 28.3
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T04:00:00",
+            "value": 28.04
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T05:00:00",
+            "value": 27.99
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T06:00:00",
+            "value": 28.16
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T07:00:00",
+            "value": 28.58
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T08:00:00",
+            "value": 28.75
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T09:00:00",
+            "value": 28.53
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T10:00:00",
+            "value": 28.01
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T11:00:00",
+            "value": 27.82
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T12:00:00",
+            "value": 28.53
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T13:00:00",
+            "value": 28.23
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T14:00:00",
+            "value": 28.4
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T15:00:00",
+            "value": 29.14
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T16:00:00",
+            "value": 29.98
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T17:00:00",
+            "value": 29.42
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T18:00:00",
+            "value": 34.38
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T19:00:00",
+            "value": 56.9
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T20:00:00",
+            "value": 41.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T21:00:00",
+            "value": 35.98
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T22:00:00",
+            "value": 32.56
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "NO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T23:00:00",
+            "value": 30.27
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T00:00:00",
+            "value": 83.68
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T01:00:00",
+            "value": 82.52
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T02:00:00",
+            "value": 88.63
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T03:00:00",
+            "value": 89.65
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T04:00:00",
+            "value": 98.46
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T05:00:00",
+            "value": 100.37
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T06:00:00",
+            "value": 94.2
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T07:00:00",
+            "value": 91.2
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T08:00:00",
+            "value": 91.32
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T09:00:00",
+            "value": 93.0
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T10:00:00",
+            "value": 94.9
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T11:00:00",
+            "value": 94.89
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T12:00:00",
+            "value": 59.26
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T13:00:00",
+            "value": 59.67
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T14:00:00",
+            "value": 58.94
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T15:00:00",
+            "value": 65.77
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T16:00:00",
+            "value": 61.52
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T17:00:00",
+            "value": 67.2
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T18:00:00",
+            "value": 61.82
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T19:00:00",
+            "value": 77.05
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T20:00:00",
+            "value": 70.76
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T21:00:00",
+            "value": 56.96
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T22:00:00",
+            "value": 21.9
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "Ozone",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T23:00:00",
+            "value": 30.34
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T00:00:00",
+            "value": 66.1
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T01:00:00",
+            "value": 68.26
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T02:00:00",
+            "value": 73.31
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T03:00:00",
+            "value": 70.22
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T04:00:00",
+            "value": 72.31
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T05:00:00",
+            "value": 68.94
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T06:00:00",
+            "value": 62.9
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T07:00:00",
+            "value": 61.82
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T08:00:00",
+            "value": 59.7
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T09:00:00",
+            "value": 57.65
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T10:00:00",
+            "value": 56.13
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T11:00:00",
+            "value": 53.23
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T12:00:00",
+            "value": 47.96
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T13:00:00",
+            "value": 45.84
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T14:00:00",
+            "value": 46.24
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T15:00:00",
+            "value": 56.69
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T16:00:00",
+            "value": 60.28
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T17:00:00",
+            "value": 61.97
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T18:00:00",
+            "value": 59.47
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T19:00:00",
+            "value": 65.6
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T20:00:00",
+            "value": 81.7
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T21:00:00",
+            "value": 89.23
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T22:00:00",
+            "value": 93.62
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM10",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T23:00:00",
+            "value": 86.9
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T00:00:00",
+            "value": 30.42
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T01:00:00",
+            "value": 26.24
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T02:00:00",
+            "value": 20.79
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T03:00:00",
+            "value": 25.08
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T04:00:00",
+            "value": 21.24
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T05:00:00",
+            "value": 22.37
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T06:00:00",
+            "value": 24.62
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T07:00:00",
+            "value": 20.06
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T08:00:00",
+            "value": 26.88
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T09:00:00",
+            "value": 22.28
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T10:00:00",
+            "value": 24.78
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T11:00:00",
+            "value": 23.66
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T12:00:00",
+            "value": 20.71
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T13:00:00",
+            "value": 18.66
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T14:00:00",
+            "value": 24.86
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T15:00:00",
+            "value": 25.1
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T16:00:00",
+            "value": 29.36
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T17:00:00",
+            "value": 24.58
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T18:00:00",
+            "value": 30.55
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T19:00:00",
+            "value": 25.33
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T20:00:00",
+            "value": 30.03
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T21:00:00",
+            "value": 32.48
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T22:00:00",
+            "value": 41.96
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "PM2.5",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T23:00:00",
+            "value": 35.52
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T00:00:00",
+            "value": 6.84
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T01:00:00",
+            "value": 6.84
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T02:00:00",
+            "value": 6.95
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T03:00:00",
+            "value": 6.89
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T04:00:00",
+            "value": 6.78
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T05:00:00",
+            "value": 7.0
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T06:00:00",
+            "value": 6.86
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T07:00:00",
+            "value": 6.9
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T08:00:00",
+            "value": 6.99
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T09:00:00",
+            "value": 6.99
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T10:00:00",
+            "value": 6.86
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T11:00:00",
+            "value": 6.89
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T12:00:00",
+            "value": 6.94
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T13:00:00",
+            "value": 6.88
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T14:00:00",
+            "value": 6.88
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T15:00:00",
+            "value": 6.86
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T16:00:00",
+            "value": 6.9
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T17:00:00",
+            "value": 6.92
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T18:00:00",
+            "value": 6.88
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T19:00:00",
+            "value": 6.9
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T20:00:00",
+            "value": 6.97
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T21:00:00",
+            "value": 6.85
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T22:00:00",
+            "value": 6.82
+          },
+          {
+            "station_id": "site_162",
+            "parameter_name": "SO2",
+            "unit": "µg/m³",
+            "collected_at": "2024-04-01T23:00:00",
+            "value": 6.95
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "status": "COMPLETED",
+  "created_at": "2026-10-09T07:53:29.433449+00:00",
+  "protocol": {
+    "station": "site_162",
+    "windows": {
+      "train": [
+        "2024-01-01",
+        "2024-10-01"
+      ],
+      "development": [
+        "2024-10-01",
+        "2024-12-01"
+      ]
+    },
+    "months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "source_sha256": {
+      "scripts/audit_station_support_modal.py": "ae3e4a23a2162a3301bee15138054cde8af411aedf3e2f3a168a7f1dd39e0001",
+      "src/baahar/naqi.py": "f755b308baef2fec28877c81f500e95d5b7dc9e1231dff677c208ca61b5b21dc",
+      "src/baahar/__init__.py": "5e8311583c6c5a260d36fbf0a578efdd08834872a75aabd642b57e50bee6cab4",
+      "data/samples/station_source_probe_v1.json": "7146f1fd64e813b1bc6678370ca63e60068046e8abaf0cae2ff3d232610c73a8",
+      "docs/STATION_SUPPORT_V1_PROTOCOL.md": "bcf6f8a4d69caeefe8364f6626cdb6208c8646c3488e4b1f0e85e90e109b9b17"
+    },
+    "public_document": "https://raw.githubusercontent.com/xKDR/Air-Quality-Database/main/README.md",
+    "license_url": "https://airquality.xkdr.org/",
+    "unit_documentation_url": "https://airquality.xkdr.org/#about"
+  },
+  "timeout_seconds": 1800,
+  "retries": 0,
+  "call_id": "fc-01M4FTEEQPE4A83G60KBVZ451P",
+  "app_id": "ap-nC2ixFEEAdI6xaYGFXBMax",
+  "result_sha256": "ad5d48df2b19a1e8b2501cebec23115362fba8644e2ff4fef2b2927fc967b44f"
+}

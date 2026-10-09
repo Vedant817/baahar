@@ -1,0 +1,16 @@
+{
+  "status": "READY_AFTER_LINEAR_COMPLETION",
+  "authorization": "User reopened continuing research; source and target qualification approved",
+  "requires_completed_manifest": "eval/raw/pollutant_linear_v1_manifest.json",
+  "manifest": "eval/raw/station_support_v1_manifest.json",
+  "submit_command": "uv run --group modal python scripts/audit_station_support_modal.py --submit",
+  "source_sha256": {
+    "scripts/audit_station_support_modal.py": "ae3e4a23a2162a3301bee15138054cde8af411aedf3e2f3a168a7f1dd39e0001",
+    "docs/STATION_SUPPORT_V1_PROTOCOL.md": "bcf6f8a4d69caeefe8364f6626cdb6208c8646c3488e4b1f0e85e90e109b9b17",
+    "data/samples/station_source_probe_v1.json": "7146f1fd64e813b1bc6678370ca63e60068046e8abaf0cae2ff3d232610c73a8",
+    "src/baahar/naqi.py": "f755b308baef2fec28877c81f500e95d5b7dc9e1231dff677c208ca61b5b21dc",
+    "src/baahar/__init__.py": "5e8311583c6c5a260d36fbf0a578efdd08834872a75aabd642b57e50bee6cab4"
+  },
+  "scope": "CPU read-only Jan-Nov2024 BTM six-pollutant coverage; December not acquired",
+  "one_submission_only": true
+}

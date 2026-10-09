@@ -1,0 +1,216 @@
+{
+  "status": "COMPLETED",
+  "station": "site_162",
+  "timezone": "Asia/Kolkata",
+  "sources": [
+    {
+      "url": "https://airquality.xkdr.org/v1/measurements?station=site_162&parameter=PM2.5&parameter=PM10&parameter=NO2&parameter=SO2&parameter=Ozone&parameter=CO&start=2024-01-01&end=2024-01-31&agg=raw&format=json&limit=4464",
+      "volume_path": "/artifacts/station_support_v1/source_2024_01.json",
+      "sha256": "304962bbf819b8a55c860fc8e72c2c94e2bf63335ef465e57985ca4c04364fc9",
+      "rows": 4323
+    },
+    {
+      "url": "https://airquality.xkdr.org/v1/measurements?station=site_162&parameter=PM2.5&parameter=PM10&parameter=NO2&parameter=SO2&parameter=Ozone&parameter=CO&start=2024-02-01&end=2024-02-29&agg=raw&format=json&limit=4464",
+      "volume_path": "/artifacts/station_support_v1/source_2024_02.json",
+      "sha256": "19c4b919d9c99f4e6a288f0d6e825477b07f43203013e52830e2bf38a21b73d7",
+      "rows": 4019
+    },
+    {
+      "url": "https://airquality.xkdr.org/v1/measurements?station=site_162&parameter=PM2.5&parameter=PM10&parameter=NO2&parameter=SO2&parameter=Ozone&parameter=CO&start=2024-03-01&end=2024-03-31&agg=raw&format=json&limit=4464",
+      "volume_path": "/artifacts/station_support_v1/source_2024_03.json",
+      "sha256": "31ccaa4e50dbafb2a3a432b871db088fe48138e2db8a1eb16686898c6d209c01",
+      "rows": 4384
+    },
+    {
+      "url": "https://airquality.xkdr.org/v1/measurements?station=site_162&parameter=PM2.5&parameter=PM10&parameter=NO2&parameter=SO2&parameter=Ozone&parameter=CO&start=2024-04-01&end=2024-04-30&agg=raw&format=json&limit=4464",
+      "volume_path": "/artifacts/station_support_v1/source_2024_04.json",
+      "sha256": "81b77bfb01dcb83cb4b4c008d773149ee812f10e04261ca7302e96df63538f31",
+      "rows": 4109
+    },
+    {
+      "url": "https://airquality.xkdr.org/v1/measurements?station=site_162&parameter=PM2.5&parameter=PM10&parameter=NO2&parameter=SO2&parameter=Ozone&parameter=CO&start=2024-05-01&end=2024-05-31&agg=raw&format=json&limit=4464",
+      "volume_path": "/artifacts/station_support_v1/source_2024_05.json",
+      "sha256": "9729cf9ef54c979f9ae4c335d07feeb89ce6ad8ee6f010e0020f027b78a2803b",
+      "rows": 1108
+    },
+    {
+      "url": "https://airquality.xkdr.org/v1/measurements?station=site_162&parameter=PM2.5&parameter=PM10&parameter=NO2&parameter=SO2&parameter=Ozone&parameter=CO&start=2024-06-01&end=2024-06-30&agg=raw&format=json&limit=4464",
+      "volume_path": "/artifacts/station_support_v1/source_2024_06.json",
+      "sha256": "9c38d7cfff622ac5db71db30c7d66db64ae832068beb55c2e7c5fcc67de40572",
+      "rows": 984
+    },
+    {
+      "url": "https://airquality.xkdr.org/v1/measurements?station=site_162&parameter=PM2.5&parameter=PM10&parameter=NO2&parameter=SO2&parameter=Ozone&parameter=CO&start=2024-07-01&end=2024-07-31&agg=raw&format=json&limit=4464",
+      "volume_path": "/artifacts/station_support_v1/source_2024_07.json",
+      "sha256": "63e53476bac0f6c0005a2bfb98c05a254dbf540f579aa6ae43e41c457ccaa24d",
+      "rows": 3866
+    },
+    {
+      "url": "https://airquality.xkdr.org/v1/measurements?station=site_162&parameter=PM2.5&parameter=PM10&parameter=NO2&parameter=SO2&parameter=Ozone&parameter=CO&start=2024-08-01&end=2024-08-31&agg=raw&format=json&limit=4464",
+      "volume_path": "/artifacts/station_support_v1/source_2024_08.json",
+      "sha256": "d138bdcacc30e08901510b63a1381a165be9d58dbc7d38e9a97e1caf5fc2900b",
+      "rows": 4294
+    },
+    {
+      "url": "https://airquality.xkdr.org/v1/measurements?station=site_162&parameter=PM2.5&parameter=PM10&parameter=NO2&parameter=SO2&parameter=Ozone&parameter=CO&start=2024-09-01&end=2024-09-30&agg=raw&format=json&limit=4464",
+      "volume_path": "/artifacts/station_support_v1/source_2024_09.json",
+      "sha256": "866a2ffe18149aee668506dac3f3a930d182fb21bcbdcd1c058a912ba950c757",
+      "rows": 4147
+    },
+    {
+      "url": "https://airquality.xkdr.org/v1/measurements?station=site_162&parameter=PM2.5&parameter=PM10&parameter=NO2&parameter=SO2&parameter=Ozone&parameter=CO&start=2024-10-01&end=2024-10-31&agg=raw&format=json&limit=4464",
+      "volume_path": "/artifacts/station_support_v1/source_2024_10.json",
+      "sha256": "f7ada38881c04a8a9669a98ddd4a96bc81dc4840e9bba020d099a86a704349c3",
+      "rows": 4363
+    },
+    {
+      "url": "https://airquality.xkdr.org/v1/measurements?station=site_162&parameter=PM2.5&parameter=PM10&parameter=NO2&parameter=SO2&parameter=Ozone&parameter=CO&start=2024-11-01&end=2024-11-30&agg=raw&format=json&limit=4464",
+      "volume_path": "/artifacts/station_support_v1/source_2024_11.json",
+      "sha256": "a33964a51ff4366640deb26322c8abd742c99478770bd09601af2d22badc5638",
+      "rows": 4182
+    }
+  ],
+  "raw_rows": 39779,
+  "duplicates_by_parameter": {},
+  "negative_by_parameter": {},
+  "nonfinite_by_parameter": {},
+  "raw_unit_counts": {
+    "CO:mg/m\u00b3": 6757,
+    "NO2:\u00b5g/m\u00b3": 6412,
+    "Ozone:\u00b5g/m\u00b3": 6898,
+    "PM10:\u00b5g/m\u00b3": 6511,
+    "PM2.5:\u00b5g/m\u00b3": 6426,
+    "SO2:\u00b5g/m\u00b3": 6775
+  },
+  "support": {
+    "train": {
+      "candidate_origins": 6576,
+      "eligible_origins": 2556,
+      "exclusions": {
+        "phase_boundary": 29,
+        "incomplete_or_invalid_sequence": 3991
+      },
+      "missing_values": {
+        "pm25": 1590,
+        "pm10": 1498,
+        "no2": 1560,
+        "so2": 1169,
+        "o3": 1134,
+        "co": 1271
+      },
+      "invalid_values": {
+        "pm25": 0,
+        "pm10": 0,
+        "no2": 0,
+        "so2": 0,
+        "o3": 0,
+        "co": 0
+      },
+      "origins_sha256": "8dee63007cb6a75a8be27c879ca7ed6a64139382746bd6c1dc8a4787615d320c",
+      "targets": {
+        "instantaneous": {
+          "poor_or_worse": {
+            "hours": 9,
+            "episodes": 3,
+            "recall": null
+          },
+          "very_poor_or_worse": {
+            "hours": 8,
+            "episodes": 2,
+            "recall": null
+          },
+          "official_severe": {
+            "hours": 7,
+            "episodes": 1,
+            "recall": null
+          }
+        },
+        "strict_trailing": {
+          "poor_or_worse": {
+            "hours": 20,
+            "episodes": 1,
+            "recall": null
+          },
+          "very_poor_or_worse": {
+            "hours": 0,
+            "episodes": 0,
+            "recall": null
+          },
+          "official_severe": {
+            "hours": 0,
+            "episodes": 0,
+            "recall": null
+          }
+        }
+      }
+    },
+    "development": {
+      "candidate_origins": 1464,
+      "eligible_origins": 830,
+      "exclusions": {
+        "phase_boundary": 29,
+        "incomplete_or_invalid_sequence": 605
+      },
+      "missing_values": {
+        "pm25": 24,
+        "pm10": 31,
+        "no2": 68,
+        "so2": 96,
+        "o3": 8,
+        "co": 12
+      },
+      "invalid_values": {
+        "pm25": 0,
+        "pm10": 0,
+        "no2": 0,
+        "so2": 0,
+        "o3": 0,
+        "co": 0
+      },
+      "origins_sha256": "d4dad13d29bc471a16d912f51263440468522da15676ee7ddb6f2aa6c73a4578",
+      "targets": {
+        "instantaneous": {
+          "poor_or_worse": {
+            "hours": 14,
+            "episodes": 4,
+            "recall": null
+          },
+          "very_poor_or_worse": {
+            "hours": 8,
+            "episodes": 3,
+            "recall": null
+          },
+          "official_severe": {
+            "hours": 4,
+            "episodes": 1,
+            "recall": null
+          }
+        },
+        "strict_trailing": {
+          "poor_or_worse": {
+            "hours": 0,
+            "episodes": 0,
+            "recall": null
+          },
+          "very_poor_or_worse": {
+            "hours": 0,
+            "episodes": 0,
+            "recall": null
+          },
+          "official_severe": {
+            "hours": 0,
+            "episodes": 0,
+            "recall": null
+          }
+        }
+      }
+    }
+  },
+  "reserved_period": "December 2024 excluded before fetch",
+  "limitations": [
+    "Preliminary station-derived source; no prospective/medical qualification",
+    "Only six pollutants; NH3/Pb absent",
+    "Complete trailing windows do not prove official station AQI qualification",
+    "No fitting; recalls unmeasured; correlated six-hour-gap episodes"
+  ]
+}
