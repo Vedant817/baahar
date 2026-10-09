@@ -1,7 +1,7 @@
 # Definition of Done
 
 The checklist from the HF26 Week 1 brief, with an honest status for each item.
-Last updated **2026-10-07 IST**.
+Last updated **2026-10-08 IST**.
 
 Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 **BLOCKED** (needs a human) · **NOT DONE**
@@ -16,9 +16,9 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | MIT licence | [`LICENSE`](../LICENSE) |
 | **DONE** | Green README: quickstart, architecture, why-open, field test | [`README.md`](../README.md) |
 | **DONE** | CLI exercised as a subprocess, exit codes asserted | `tests/test_cli.py`, 17 tests |
-| **DONE** | CI green on all three jobs | lint · format · tests · offline smoke · secret scan · honest-numbers · headless-Chrome UI audit |
+| **PARTIAL** | CI for current changes | Local tests, lint, format and evidence checks pass. Current remote CI has not run; prior committed CI was green. |
 | **DONE** | No secrets in git | `.env` gitignored; `.env.example` complete and empty |
-| **DONE** | Tests pass offline | `uv run pytest` 554 passed, no network |
+| **DONE** | Tests pass offline | 652 default tests passed without Modal; five additional optional Modal tests passed. External sockets blocked; `eval/raw/offline_validation_v2.json` |
 | **DONE** | Lint clean | `uv run ruff check .` |
 | **DONE** | Conventional commits with real explanations | `git log` |
 
@@ -55,14 +55,14 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | Latency p50/p95 measured | 3 ms / 6 ms local · 51,730 ms / 115,187 ms Gemma |
 | **DONE** | At least one documented failure | 10 failures in [`eval/RESULTS.md`](../eval/RESULTS.md) § C |
 | **DONE** | Package versions + timestamps in raw output | `eval/raw/*.json` |
-| **DONE** | Fine-tune vs baseline table | Run for real, locally on CPU, no credits: `scripts/fine_tune_local.py`. Tinker-hosted attempt documented in [`adr/001`](adr/001-tinker-outcome.md) |
+| **DONE** | Fine-tune vs baseline table | Remote GPU runs on Modal (L4 and L40S): Qwen2.5-1.5B, Qwen2.5-7B, Qwen3-4B evaluated against base baselines with locked holdouts; see [`eval/RESULTS.md`](../eval/RESULTS.md) and [`eval/raw/candidate_decision_20261007T184549Z-fb0d6990.md`](../eval/raw/candidate_decision_20261007T184549Z-fb0d6990.md) |
 
 ## Constraints
 
 | | Item | Evidence |
 |---|---|---|
-| **DONE** | No credit card used | No paid signup anywhere in the stack |
-| **DONE** | No multi-GB model downloads | TabPFN in an opt-in group; no weights committed |
+| **OVERRIDDEN** | Original no-card constraint | The author explicitly added a payment method and authorized Modal GPU training. Zero-key local use still requires no paid signup. |
+| **DONE** | New training keeps weights off the laptop | Modal hosts new base weights and adapters; historical local caches remain. No weights committed. |
 | **DONE** | Beginner-approachable repo | one-command quickstart, offline tests, plain-Python front end |
 | **DONE** | India-first | Bengaluru, CPCB NAQI, monsoon-exit October, dust |
 | **DONE** | Prize categories reflect real usage | see below |

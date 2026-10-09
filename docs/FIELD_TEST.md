@@ -32,9 +32,10 @@ thesis of the project.
 uv run baahar brief
 ```
 
-If it says **GO**, good conditions to test. If it says **SKIP** — take the walk
-anyway, but as a *test of the SKIP path*, and say so below. Both outcomes are
-interesting; only one is a normal use.
+Test outdoors only when a fresh assessment permits a current **GO**. If it says
+**WAIT** or **SKIP**, remain indoors and test that Pocket Mode cannot start a
+walk. A future forecast window or recorded offline sample is not permission to
+walk now. Do not walk to test a blocked safety path.
 
 Suggested kit:
 

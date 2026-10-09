@@ -31,10 +31,15 @@ breakpoints need a real source rather than a plausible-looking table.
 | CPCB real-time dashboard | <https://airquality.cpcb.gov.in/AQI_India/> | live values, for comparison |
 | CPCB real-time data portal | <http://www.cpcb.gov.in/real-time-air-quality-data/> | live values |
 
-**What was used to write the table.** The eight-pollutant CPCB table (PM10,
-PM2.5, NO2, O3, CO, SO2, NH3, Pb), its six categories (Good, Satisfactory,
-Moderate, Poor, Severe, Hazardous), the per-pollutant health-breakpoint ranges,
-and the rule that *the worst sub-index reflects overall NAQI*.
+**Verified category names.** The eight-pollutant CPCB table (PM10,
+PM2.5, NO2, O3, CO, SO2, NH3, Pb) uses Good, Satisfactory,
+Moderately Polluted, Poor, **Very Poor (301–400)** and **Severe (401–500)**.
+The repository historically serializes these last two bands as `severe` and
+`hazardous`. These are legacy identifiers, not the official CPCB names.
+Previous raw evaluation artifacts retain their identifiers; new research
+reports identify the numerical thresholds and official names explicitly.
+The primary government table is available at
+<https://ies.gov.in/arthapedia/concept/national-air-quality-index>.
 
 The breakpoints were cross-checked against the **India** section of the
 Wikipedia "Air quality index" article, which reproduces the CPCB table verbatim
@@ -42,9 +47,16 @@ including the per-pollutant ranges:
 
 <https://en.wikipedia.org/wiki/Air_quality_index#India>
 
-Retrieved 2026-10-06. Wikipedia is used here as a transcription of the CPCB
-table, not as an authority in its own right; `naqi.py` cites CPCB as the source
-and the tests pin every boundary value.
+Original cross-check recorded 2026-10-06. A later primary-source review corrected
+the category nomenclature above. Historical numerical boundary tests do not
+establish that the original category names were correct.
+
+The government table marks the upper ozone bands (209–748 and 748+ µg/m³)
+with a one-hour monitoring footnote for mathematical calculation. Lower ozone
+bands show an eight-hour averaging period. Applying this table to modeled
+hourly concentrations remains a research proxy, not a station-based official
+AQI assessment. The deep pollutant study preserves the numeric mapping and
+documents this distinction rather than silently relabeling historical results.
 
 ### The caveat that travels with every number
 

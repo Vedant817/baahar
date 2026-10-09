@@ -1,5 +1,7 @@
 # Baahar (बाहर) — Bengaluru outdoor-planning assistant
 
+Remote GPU training without local model downloads: [Modal setup and run steps](docs/MODAL_TRAINING.md).
+
 > *Find Bengaluru's next clean outdoor hour (NAQI + heat + rain), generate a ~30s
 > park briefing with open AI, then Pocket Mode so your phone goes dark while you
 > walk.*
@@ -47,10 +49,11 @@ counter and nothing to come back to. The success metric is you leaving.
    (the shipped consensus ensemble, or optional [TabPFN](https://priorlabs.ai/))
    on weather and past-hour air-quality signals, falling back to a documented
    heuristic when ML dependencies are absent.
-4. Generates a **≤120-word park briefing** with an open model
-   (Gemma via [Google AI Studio](https://aistudio.google.com/)), optionally
-   fine-tuned on Indian outdoor-briefing style via hosted
-   [Tinker](https://tinker.ai).
+4. Generates a short park briefing with Gemma or the local deterministic writer.
+   Model drafts must pass a 35–80-word grounding contract; rejected drafts get a
+   visible local fallback. Two stronger Qwen adapters are being evaluated on
+   Modal; training does not by itself promote or deploy a writer. See
+   [the experiment plan](docs/MODEL_IMPROVEMENT_PLAN.md).
 5. Optionally speaks it aloud, then drops into **Pocket Mode**: near-black
    screen, one line of text, a walk timer. No feeds, no badges, no notifications.
 
@@ -227,7 +230,7 @@ PDT is UTC−7, so Oct 11 23:59 PDT = Oct 12 06:59 UTC = Oct 12 12:29 IST.
 ```
 
 **Status of each box:** weather, air quality, Indian NAQI, the heuristic scorer,
-the Gemma briefing and Pocket Mode all run today with zero keys. The **consensus ensemble**
+the local template briefing and Pocket Mode run with zero keys. Gemma requires its optional API key. The **consensus ensemble**
 (LightGBM, HistGradientBoosting, Random Forest) is the shipped engine (**0.8617 +/- 0.0005 acc /
 0.6349 +/- 0.0368 macro-F1** over 28 features). **TabPFN** runs for real with `TABPFN_TOKEN`
 configured ([how](docs/NEEDS_HUMAN.md)) — **0.8708 +/- 0.0023 acc / 0.6193 +/- 0.0020 macro-F1**
@@ -236,8 +239,9 @@ and moderate recall (0.5845 vs 0.6620) to the ensemble. *(Earlier 13-feature run
 older provisional single-seed run was 0.8512 / 0.6040 on instantaneous NAQI, not like-for-like).*
 **Tinker** is verified reachable — the API is `tinker.thinkingmachines.dev`, not `tinker.ai` —
 and a LoRA fine-tune ran against it. Its balance then ran out (HTTP 402) and recharging needs a
-card, so the category is **not claimed**; the same experiment re-runs locally on CPU or on a Modal
-GPU ([adr/001](docs/adr/001-tinker-outcome.md)). **ElevenLabs** voice is implemented against
+card, so the category is **not claimed**. The author later authorized a payment method for
+Modal: new training runs remotely, while historical CPU results remain documented
+([adr/001](docs/adr/001-tinker-outcome.md), [Modal steps](docs/MODAL_TRAINING.md)). **ElevenLabs** voice is implemented against
 fixtures and blocked at the vendor's paid plan; `baahar brief --voice` now says so instead of
 silently returning no audio.
 

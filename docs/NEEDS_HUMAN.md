@@ -1,5 +1,31 @@
 # NEEDS_HUMAN.md
 
+## Modal GPU training — historical payment gate, now resolved (2026-10-07)
+
+**Update:** the user explicitly authorized payment setup and confirmed adding
+the details. This overrides the repository no-card rule for this run. Modal
+now accepts the T4 GPU function. The replacement job is submitted; see
+[`manifest`](../eval/raw/modal_submission_20261007T182316Z-30afa945.json).
+The T4 attempt failed with CUDA memory exhaustion; the successful run used L4
+and batch size 2. Training completed and the adapter is saved remotely; see
+[`results`](../eval/raw/modal_20261007T182316Z-30afa945.json).
+Safety and prose quality beyond template learning remain unverified. The original
+failure below is historical, not the current account status.
+
+Login verified successfully for `vedantmahajan271`. The remote image built,
+but creating the T4 GPU function returned `modal.exception.InvalidError`:
+"Please add a payment method to use T4 GPU functions."
+Training did not start and no adapter or GPU benchmark was produced. Existing
+credits did not bypass this account gate. We aborted under AGENTS.md's no-card
+rule; no card was added and local CPU training was stopped to free resources.
+Raw evidence: [`modal_blocked_20261007.json`](../eval/raw/modal_blocked_20261007.json).
+
+The lightweight client and reproducible workflow are ready; see
+[`MODAL_TRAINING.md`](MODAL_TRAINING.md). A human can ask Modal support whether
+the existing credits permit GPU use without a payment method. Until that gate
+is removed, use Baahar's existing offline template briefing. Do not restart
+local model training on this laptop as a fallback.
+
 Everything in this file is something **a human must do**. Agents cannot claim a
 promo code, accept a licence on someone's behalf, hold a phone during a walk, or
 publish a DEV post. Nothing here blocks the rest of the build: Baahar runs
@@ -103,10 +129,10 @@ project's disk budget, which is a hard constraint in `AGENTS.md`).
 recharging needs a payment method this project will not use. So step 6 is
 blocked for a reason that is neither reachability nor a missing idea.
 
-The experiment itself is **not** blocked: `scripts/fine_tune_local.py` runs the
-same fine-tune-vs-baseline measurement on CPU with no account and no credits, and
-its numbers are published. `docs/adr/001-tinker-outcome.md` records the full
-account. Re-running this section needs a Tinker balance, not a different plan.
+Historical CPU measurements remain published in `docs/adr/001-tinker-outcome.md`.
+For new training, use the [Modal workflow](MODAL_TRAINING.md): the author has
+explicitly authorized Modal billing, and training stays off this laptop. Tinker
+remains unused for the new experiment; no Tinker balance is required.
 
 ---
 

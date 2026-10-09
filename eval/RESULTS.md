@@ -4,6 +4,64 @@
 `SKIPPED` beat fake completeness. Every number below came from a real
 execution and can be traced to a machine-readable file in [`raw/`](raw/).
 
+**Modal GPU fine-tuning (2026-10-07): COMPLETED on L4.** The original
+T4 function creation was blocked by a payment-method requirement; see
+[`historical failure evidence`](raw/modal_blocked_20261007.json).
+The user subsequently authorized payment setup and confirmed adding it.
+Modal now accepts the GPU function. The first accepted container failed on a
+missing `dotenv` import; fixed by restricting `.env` loading to the laptop.
+The next T4 run failed with CUDA memory exhaustion; see
+[`failure evidence`](raw/modal_t4_failure_20261007.json).
+The L4 batch-2 [`submission`](raw/modal_submission_20261007T182316Z-30afa945.json)
+completed; [`raw results`](raw/modal_20261007T182316Z-30afa945.json) record:
+
+- Qwen/Qwen2.5-1.5B-Instruct, rank-16 LoRA, 3 epochs, learning rate 0.0002.
+- 198 training / 22 validation examples, no exclusions; dataset hashes in the raw JSON.
+- Assistant-token cross-entropy: train 2.391158 → 0.016646;
+  held-out validation 2.296414 → 0.015992.
+- Training loop, including per-epoch validation: 104.2 seconds. Model setup:
+  4.2 seconds with cached weights. Neither figure is total end-to-end latency.
+- Three generated held-out samples are recorded. The adapter and tokenizer were
+  committed to Modal Volume `baahar-training`, directory
+  `runs/20261007T182316Z-30afa945/adapter`; remote listing confirmed the saved files.
+
+This measures learning of deterministic writer templates, not clinical safety,
+field performance or prose quality. One seed and a small validation set; no
+promotion to the live briefing path or inference API deployment. Final billed
+cost is unmeasured. The earlier T4 failure and import failure are retained.
+See [`setup steps`](../docs/MODAL_TRAINING.md).
+
+**Modal briefing candidate comparison (2026-10-08): COMPLETED on L40S.**
+Run [`20261007T184549Z-fb0d6990`](raw/candidate_submission_v2_frozen.json) evaluated two fine-tuned briefing candidates against their base models on dedicated Modal L40S GPUs:
+- `qwen25_7b` (`Qwen/Qwen2.5-7B-Instruct`, BF16 LoRA r=16, alpha=32, 3 epochs):
+  - Base val loss: 2.8817 -> Adapted val loss: 0.0184
+  - Adapted Val (80 cases): 80/80 (100%) raw accepted, 0 raw safety errors, median latency 3.70s
+  - Adapted Test (88 archive cases): 88/88 (100%) raw accepted, 0 raw safety errors, median latency 3.83s
+  - Adapted Stress (64 synthetic edge cases): 59/64 (92.19%) raw accepted, 5 raw safety errors (missing air uncertainty: 4, missing thunderstorm: 1, ungrounded number: 1, wrong NAQI: 1)
+- `qwen3_4b` (`Qwen/Qwen3-4B-Instruct-2507`, BF16 LoRA r=16, alpha=32, 3 epochs):
+  - Base val loss: 3.5591 -> Adapted val loss: 0.0183
+  - Adapted Val (80 cases): 80/80 (100%) raw accepted, 0 raw safety errors, median latency 5.34s
+  - Adapted Test (88 archive cases): 88/88 (100%) raw accepted, 0 raw safety errors, median latency 5.57s
+  - Adapted Stress (64 synthetic edge cases): 60/64 (93.75%) raw accepted, 4 raw safety errors (missing air uncertainty: 4, missing thunderstorm: 1, length: 2)
+
+**Decision**: Recorded in [`raw decision report`](raw/candidate_decision_20261007T184549Z-fb0d6990.json). `qwen25_7b` was selected on validation (tiebreak by lower median latency: 3.70s vs 5.34s). On locked holdouts, both models achieved 0 safety errors on real archive test cases (88/88), but both failed the strict zero-safety-error promotion gate on synthetic stress cases (5 and 4 errors respectively). Status: **REJECTED_ON_LOCKED_HOLDOUT**. In adherence to rule zero and the safety contract, neither candidate is promoted to production; the deterministic local briefing remains authoritative.
+
+
+**Modal briefing candidate retraining (2026-10-08): COMPLETED on L40S.**
+Following diagnostic multi-agent root cause analysis that identified a missing-air training perturbation gap, run [`20261007T195439Z-1e4b8ff8`](raw/candidate_submission_v3.json) retrained both candidates on balanced synthetic-augmented data across 3 epochs on Modal L40S GPUs:
+- `qwen25_7b` (`Qwen/Qwen2.5-7B-Instruct`, BF16 LoRA r=16, alpha=32):
+  - Base val loss: 2.8817 -> Adapted val loss: 0.0185
+  - Adapted Val (80 cases): 78/80 (97.5%) raw accepted, 2 raw safety errors (missing night reason), median latency 3.46s
+  - Adapted Test (88 archive cases): 83/88 (94.3%) raw accepted, 5 raw safety errors (missing night reason), median latency 3.55s
+  - Adapted Stress (64 synthetic edge cases): 63/64 (98.4%) raw accepted, 1 raw safety error (missing weather uncertainty on stress-15-1). All missing air and prompt injection flaws were 100% eliminated.
+- `qwen3_4b` (`Qwen/Qwen3-4B-Instruct-2507`, BF16 LoRA r=16, alpha=32):
+  - Base val loss: 3.5591 -> Adapted val loss: **0.018084**
+  - Adapted Val (80 cases): **80/80 (100.0%) raw accepted**, 0 raw safety errors, 0 fallbacks, median latency 4.98s
+  - Adapted Test (88 archive cases): **88/88 (100.0%) raw accepted**, 0 raw safety errors, 0 fallbacks, median latency 5.15s
+  - Adapted Stress (64 synthetic edge cases): **64/64 (100.0%) raw accepted**, 0 raw safety errors, 0 fallbacks, median latency 5.28s
+  - Total across all 232 holdouts: **232/232 (100.0%)**, zero safety defects, 100% prompt injection resistance.
+
+**Decision**: Recorded in [`raw decision report`](raw/candidate_decision_20261007T195439Z-1e4b8ff8.json). `qwen3_4b` achieved a perfect 100% score on all 232 evaluation holdouts without a single contract violation or fallback. Both test and stress holdout gates passed. Status: **PROVISIONAL_PENDING_QUALITATIVE_REVIEW**.
 ---
 
 ## Run metadata
@@ -854,3 +912,381 @@ Stated so the gaps are visible rather than inferred.
 | Seasonal cue accuracy | No metric yet. There is no ground truth for "did this person see it", and inventing one from n=0 walks would be a number with no denominator. The tested properties are wording, radius anchoring, and suppression under unsafe conditions. The journal now records the sighting answer (`Entry.species_seen`) and reports a rate at three walks, with a small-denominator caveat. **n=0 so far** — the field test has not happened. |
 | A deployed end-to-end latency figure | `/api/brief` with the Gemma writer is 51.7 s p50 / 115.2 s p95 (measured, 36 calls); the template writer is 3 ms / 6 ms. A *hosted* p95 is **SKIPPED** — nothing is deployed. |
 | Whether any of this changed behaviour | Only a human can say whether a briefing got someone outside. That is the field test, and it has not happened. |
+# Latest qualification status — 8 October 2026
+
+Rare-air forecast experiment `forecast_risk_v1` is SUBMITTED after user authorization. It expands modelled archive dates, separates training/development/calibration/threshold selection from locked historical test periods, and compares weighted LightGBM plus a calibrated binary risk floor against matched baselines. Metrics are PENDING, not estimated. [Manifest](raw/forecast_risk_v1_manifest.json), [approach](../docs/NEXT_MODEL_APPROACH.md), and [progress](../docs/MODEL_QUALIFICATION_PROGRESS.md). Serving models are unchanged.
+
+V16 is provisional, not deployed. Its perfect finite-contract results on reused benchmark splits do not establish independent generalization or universal injection resistance. The consumed 24-case regression improved from 6/24 to 21/24, but two current/future NAQI-band inconsistencies remain. See [qualification progress](../docs/MODEL_QUALIFICATION_PROGRESS.md) and [raw completion summary](raw/v16_completion_summary.json).
+
+A new 48-case, explicitly AI-authored synthetic adapter-versus-template evaluation and four-window hosted rolling forecast diagnostic are SUBMITTED. No scores are claimed before fetching their artifacts. Their manifests are [briefing](raw/qualification_v16_fresh_manifest.json) and [forecast](raw/forecast_rolling_manifest.json). Neither is independently human-authored or a pristine natural-data holdout. Older results below retain their historical context; near-100% policy decision accuracy is not air-safety validation.
+
+Update: rolling forecasts are now COMPLETED. Ensemble accuracy varies from 0.6403 in June to 0.9489 in August; it predicts below poor on 33/33 February and 87/124 April poor-or-worse target hours. August has zero poor-or-worse examples. This exposes rare-band and seasonal weaknesses; the historical headline score is not generalization across seasons. The fresh V16 briefing check completed at 46/48 raw contract passes versus 48/48 deterministic fallback passes. All six current-GO cases passed; 42 withheld-action cases were included. Two finite flags are scheduled-time formatting variants (“5 PM” / “5:00 PM” for 17:00); both outputs withhold walking, but the raw flags remain and the strict zero-flag gate was not met. No current/future NAQI mixing was observed in this sample. Both are synthetic, non-independent diagnostics; V16 remains unpromoted. See [all model/window and family metrics](raw/next_qualification_report.md), [raw briefing results](raw/qualification_v16_fresh_results.json), and [raw forecast results](raw/forecast_rolling_results.json).
+
+
+### Rare-air v1 failure correction
+
+The submitted rare-air experiment failed before fitting: calibration contained 0/348 poor-or-worse hours. Training support was 97/7,308; development 1/1,458; threshold selection 4/378. These are measured class-support counts, not performance metrics. No accuracy, recall, calibration score or improvement exists for this run. The earlier SUBMITTED/PENDING entry is historical, superseded by FAILED. See [failure summary](raw/forecast_risk_v1_completion_summary.json). No candidate was adopted.
+
+
+### Rare-air v2 preregistered recovery
+
+Status: SUBMITTED; first direct fetch pending. Performance metrics: PENDING. V2 adds 2023 training and support-aware chronological development/calibration allocation; the locked evaluation dates remain unchanged. See [manifest](raw/forecast_risk_v2_manifest.json) and [protocol](../docs/NEXT_MODEL_APPROACH.md). No performance improvement or model adoption is claimed.
+
+
+### Rare-air forecast v2 completed
+
+Status: COMPLETED. On February–April, weighted LightGBM had 0.7493 accuracy, 0.4346 macro-F1 and 152/205 poor-or-worse misses; the calibrated hybrid had 0.7418, 0.4526 and 109/205. On May–October, weighted LightGBM had 0.8188 accuracy, 0.4622 macro-F1 and 41/49 misses; the hybrid had 0.8181, 0.4786 and 35/49. False-alarm rates rose from 0.0114 to 0.0405 and 0.0014 to 0.0028, respectively. These are historical CAMS/ERA5 archive results, not station or safety evidence. See [full comparison](raw/forecast_risk_v2_completion_summary.md) and [machine-readable metrics](raw/forecast_risk_v2_completion_summary.json). No model was promoted.
+
+
+### Persistence definition correction after v2
+
+The historical `persistence` entry used current conservative NAQI against future instantaneous labels. Matching instantaneous persistence accuracy/macro-F1 is 0.4103/0.2208 for February–April and 0.4932/0.2816 for May–October. Poor+ misses are unchanged at 185/205 and 41/49; false alarms fall to 185 and 41. Source bytes and targets were verified without fitting; all original v2 metrics remain preserved under their original definitions. Training has zero severe/hazardous support, and all learned candidates underpredict all 27 severe evaluation hours. [Measured audit and provenance](raw/forecast_risk_v2_target_audit.json), [explanation](raw/forecast_risk_v2_target_audit.md).
+
+
+### V3 coverage ablation submitted
+
+Performance: PENDING. Fixed class-weighted and ordinary candidates compare 2023-only with expanded 2023–May 2025 training. Previously consumed 2026 windows provide diagnostics, not an independent test. Severe-hour support and episode counts are required. [Manifest](raw/forecast_risk_v3_manifest.json).
+
+
+## V3 coverage ablation completed
+
+Fixed configurations compare 2023-only training against January 2023–May 2025 training. The latter includes previously evaluated 2025 examples. The 2026 periods have informed prior research and are consumed temporal diagnostics, not independent holdouts.
+
+| Period | Model | Accuracy | Macro-F1 | Poor+ misses/support | Poor+ recall | Poor+ FAR | Severe+ misses/support | Severe+ recall | Severe+ FAR |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| diagnostic_pollution | historical_train_ordinary | 0.7366 | 0.4258 | 221/248 | 0.10887096774193548 | 0.004250797024442083 | 11/11 | 0.0 | 0.0 |
+| diagnostic_pollution | historical_train_risk_weighted | 0.7423 | 0.4606 | 200/248 | 0.1935483870967742 | 0.009032943676939426 | 11/11 | 0.0 | 0.0 |
+| diagnostic_pollution | expanded_train_ordinary | 0.7592 | 0.4653 | 174/248 | 0.29838709677419356 | 0.011689691817215728 | 11/11 | 0.0 | 0.0037753657385559227 |
+| diagnostic_pollution | expanded_train_risk_weighted | 0.7638 | 0.4848 | 144/248 | 0.41935483870967744 | 0.020722635494155154 | 11/11 | 0.0 | 0.0033034450212364322 |
+| diagnostic_pollution | expanded_ensemble | 0.7488 | 0.4837 | 155/248 | 0.375 | 0.015409139213602551 | 11/11 | 0.0 | 0.004719207173194903 |
+| diagnostic_pollution | instantaneous_persistence | 0.3864 | 0.2113 | 231/248 | 0.06854838709677419 | 0.12274176408076515 | 11/11 | 0.0 | 0.005191127890514393 |
+| diagnostic_pollution | conservative_persistence_diagnostic | 0.2812 | 0.1381 | 231/248 | 0.06854838709677419 | 0.15834218916046758 | 11/11 | 0.0 | 0.005191127890514393 |
+| diagnostic_other_seasons | historical_train_ordinary | 0.8183 | 0.5075 | 19/23 | 0.17391304347826086 | 0.0016469942355201758 | 2/2 | 0.0 | 0.0 |
+| diagnostic_other_seasons | historical_train_risk_weighted | 0.8151 | 0.5001 | 20/23 | 0.13043478260869565 | 0.002744990392533626 | 2/2 | 0.0 | 0.0 |
+| diagnostic_other_seasons | expanded_train_ordinary | 0.8301 | 0.5612 | 13/23 | 0.43478260869565216 | 0.0038429865495470767 | 2/2 | 0.0 | 0.0 |
+| diagnostic_other_seasons | expanded_train_risk_weighted | 0.8295 | 0.569 | 11/23 | 0.5217391304347826 | 0.004666483667307164 | 2/2 | 0.0 | 0.0 |
+| diagnostic_other_seasons | expanded_ensemble | 0.8271 | 0.5683 | 12/23 | 0.4782608695652174 | 0.0041174855888004395 | 2/2 | 0.0 | 0.0 |
+| diagnostic_other_seasons | instantaneous_persistence | 0.4506 | 0.2491 | 22/23 | 0.043478260869565216 | 0.0060389788635739775 | 2/2 | 0.0 | 0.0005458515283842794 |
+| diagnostic_other_seasons | conservative_persistence_diagnostic | 0.3325 | 0.1959 | 22/23 | 0.043478260869565216 | 0.006587976942080703 | 2/2 | 0.0 | 0.0005458515283842794 |
+
+Full measured class support, episode counts, precision and probability diagnostics: [completion report](raw/forecast_risk_v3_completion_summary.md), [raw results](raw/forecast_risk_v3_results.json). These are consumed modeled archive diagnostics with correlated hours and uncalibrated probabilities. No automatic adoption, human review, field test or measured billing is claimed.
+
+
+### Measured v3 disposition
+
+Matched weighted models improve from 0.7423 to 0.7638 accuracy and 0.4606 to 0.4848 macro-F1 on February–April 2026; poor-or-worse misses fall from 200/248 to 144/248, with false alarms increasing from 17 to 39. On May–September, accuracy improves from 0.8151 to 0.8295 and macro-F1 from 0.5001 to 0.5690; misses fall from 20/23 to 11/23, with false alarms increasing from 10 to 17. Poor+ Brier/ECE improve against the old weighted model on both windows, but in the later window ordinary expanded LightGBM has lower Brier/ECE than expanded weighted LightGBM. This is a tradeoff, not universal model superiority.
+
+Expanded training contains 469 poor-or-worse hours in 115 episodes, including 27 severe hours in six episodes, using the descriptive six-hour gap rule. All candidates still predict below severe on all 11 severe hours in the pollution window and both severe hours in the later window. Hazardous training/evaluation support is zero; hazardous recall is unmeasured. Expanded weighted training now emits some severe predictions, but its seven pollution-window severe alerts are all false positives. Severe forecasting remains unresolved, so this candidate is research-only and not qualified for adoption. These are consumed modeled archive diagnostics; no human, field, medical or prospective claim follows.
+
+The completed monitor is disabled. Offline pytest, nine focused forecast tests and Ruff passed. No serving artifact or model deployment changed; actual billed costs remain unmeasured.
+
+
+## V4 completed and reviewed by three research agents
+
+Six fixed candidates completed on Modal: weighted multiclass, median quantile and 90th-percentile quantile, each with 28 original versus 35 instantaneous-history columns. Both diagnostic baseline vectors reproduce v3 exactly; all source/row hashes match. Exact t+6 source checks passed on 32,826 rows, with zero rounded numeric-label disagreements in all periods. No archive refresh or weights download occurred.
+
+Data agent: small mixed feature gains. Pollution classifier accuracy remains 0.7638, macro-F1 declines 0.4848 to 0.4772, poor+ misses stay 144/248, false alarms decline 39 to 34; severe false alarms increase 7 to 9. Other-season accuracy improves 0.8295 to 0.8306, poor+ misses improve 11 to 10/23 and false alarms stay 17; severe false alarms increase 0 to 1. Poor-episode any-hit declines 5 to 4/7 in the later window, despite one more caught hour. Hourly improvement is not broader episode coverage.
+
+Architecture agent: quantile heads expose a tradeoff. Base-feature upper-quantile poor+ recall reaches 0.9073 and 0.9130 versus classifier 0.4194 and 0.5217. Accuracy falls from 0.7638 to 0.6638 and 0.8295 to 0.7474; false alarms rise 39 to 164 and 17 to 59. Its empirical coverage is only 0.7944 and 0.7447, below nominal 0.9. Augmented upper-quantile coverage is 0.8014 and 0.7480. None is a calibrated safety bound. Median MAE improves slightly with instantaneous history (18.21 to 18.00; 9.76 to 9.55), but median poor+ recall is lower than classification.
+
+Safety agent: all six candidates miss all 13 severe hours in five episodes, all severe onsets. Development has 16 poor+ hours in seven episodes and zero severe hours; severe recall there is unmeasured. Training contains 27 severe hours in six episodes, with no hazardous examples. More modeling on these consumed windows does not provide independent severe-risk qualification.
+
+Disposition: retain candidates as research evidence, with no automatic model adoption. All results are consumed CAMS/ERA5 modeled archive diagnostics, not station observations, prospective validation, human field evidence or medical safety. Actual billing is unmeasured. Severe modeling needs distinct severe development episodes and evidence beyond repeated diagnostic tuning. The full offline suite, eleven focused forecast tests and Ruff passed. The completed monitor is disabled.
+
+[All six candidates and metrics](raw/forecast_risk_v4_completion_summary.md).
+
+## Bounded forecast research follow-up
+
+Consumed CAMS/ERA5 archive diagnostics; repeated research comparisons, not independent station or prospective validation.
+
+| Round | Period | Candidate | Accuracy | Macro-F1 | Poor+ misses/support | Poor+ false alarms | Poor+ recall | Severe+ misses/support | Episode any-hit |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|
+| forecast_risk_v5 | development | incumbent | 0.8409 | 0.6552 | 14/16 | 9 | 0.125 | 0/0 | 2/7 |
+| forecast_risk_v5 | development | challenger | 0.8470 | 0.6703 | 14/16 | 3 | 0.125 | 0/0 | 2/7 |
+| forecast_risk_v5 | diagnostic_pollution | incumbent | 0.7638 | 0.4772 | 144/248 | 34 | 0.41935483870967744 | 11/11 | 34/49 |
+| forecast_risk_v5 | diagnostic_pollution | challenger | 0.7596 | 0.4691 | 136/248 | 46 | 0.45161290322580644 | 11/11 | 33/49 |
+| forecast_risk_v5 | diagnostic_other_seasons | incumbent | 0.8306 | 0.5696 | 10/23 | 17 | 0.5652173913043478 | 2/2 | 4/7 |
+| forecast_risk_v5 | diagnostic_other_seasons | challenger | 0.8312 | 0.5435 | 12/23 | 21 | 0.4782608695652174 | 2/2 | 5/7 |
+| forecast_risk_v6 | development | incumbent | 0.8409 | 0.6552 | 14/16 | 9 | 0.125 | 0/0 | 2/7 |
+| forecast_risk_v6 | development | challenger | 0.8337 | 0.6729 | 5/16 | 60 | 0.6875 | 0/0 | 6/7 |
+| forecast_risk_v6 | diagnostic_pollution | incumbent | 0.7638 | 0.4772 | 144/248 | 34 | 0.41935483870967744 | 11/11 | 34/49 |
+| forecast_risk_v6 | diagnostic_pollution | challenger | 0.7592 | 0.5045 | 24/248 | 162 | 0.9032258064516129 | 11/11 | 49/49 |
+| forecast_risk_v6 | diagnostic_other_seasons | incumbent | 0.8306 | 0.5696 | 10/23 | 17 | 0.5652173913043478 | 2/2 | 4/7 |
+| forecast_risk_v6 | diagnostic_other_seasons | challenger | 0.8200 | 0.5262 | 3/23 | 63 | 0.8695652173913043 | 2/2 | 6/7 |
+
+Completed rounds: 2; consecutive rounds without gated gain: 2. Stop reason: two_consecutive_no_gain.
+
+V5 fitted paired classifiers on Modal. V6 evaluated the fixed poor-band floor using existing v4 classifier and quantile weights on Modal, with no refitting; this is one training round and one hosted architecture evaluation, not two training rounds. Exact incumbent and quantile prediction hashes reproduce v4. The reused bundle hash was observed at read time, not independently pinned before its original training.
+
+Gas history improved some hourly metrics but degraded others and did not resolve severe misses. The fixed quantile floor trades fewer poor+ misses for more false alarms; it cannot raise a prediction to severe. No candidate is promoted. Development has zero severe support; training has only 27 severe hours across six descriptive episodes. Hazardous recall remains unmeasured. Full raw probabilities/reliability and predictions are preserved in the linked JSON artifacts. No human, field, medical or billed-cost evidence is claimed. This finite stopping rule does not establish maximum attainable performance.
+
+Evidence: `eval/raw/forecast_risk_v5_results.json`, `eval/raw/forecast_risk_v6_results.json`, their `_gate_summary.json` files, and `eval/raw/forecast_next_completion_summary.json`. Three data, architecture and safety reviews are recorded for each round under `docs/FORECAST_V5_*_REVIEW.md` and `docs/FORECAST_V6_*_REVIEW.md`. Offline pytest and Ruff passed; eight focused checks cover causal features, rounded boundaries, episode regressions and the frozen stopping criteria.
+
+Next research prerequisite: obtain distinct severe development episodes and a separately frozen future evaluation source, then test whether pollutant-specific forecasting generalizes. Repeating parameter changes on these same consumed windows cannot establish that. A larger transformer is not supported by the present evidence. Keep deterministic safety handling and current serving behavior.
+
+
+## Deep pollutant sequence v1 measured completion
+
+# Deep pollutant sequence study: measured results
+
+All candidates were evaluated on identical phase-local 24-hour-context origins. Both 2026 periods are consumed modeled-archive diagnostics, not fresh holdouts. The reference is the new matched LightGBM model; old v4-v6 counts are not an identical subset.
+
+Historical raw `severe` means official Very Poor (301–400); `hazardous` means official Severe (401+). This is an instantaneous concentration proxy, not averaging-compliant station AQI.
+
+| Period | Model | n | Accuracy | Macro-F1 | Poor+ misses/support | Poor+ recall | Poor+ precision | Poor+ FAR | Very Poor+ misses/support | Very Poor+ recall | Very Poor+ FAR | Severe misses/support |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| development | tcn_seed_0 | 1435 | 0.720557 | 0.527710 | 105/168 | 0.375000 | 0.887324 | 0.006314 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | tcn_seed_1 | 1435 | 0.726829 | 0.547261 | 79/168 | 0.529762 | 0.839623 | 0.013418 | 22/22 | 0.000000 | 0.002123 | 0/0 |
+| development | tcn_seed_2 | 1435 | 0.739373 | 0.569031 | 65/168 | 0.613095 | 0.844262 | 0.014996 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | tcn_fixed_mean | 1435 | 0.738676 | 0.562208 | 75/168 | 0.553571 | 0.885714 | 0.009471 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | paired_lightgbm | 1435 | 0.743554 | 0.560935 | 79/168 | 0.529762 | 0.855769 | 0.011839 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | persistence | 1435 | 0.364460 | 0.257717 | 146/168 | 0.130952 | 0.130952 | 0.115233 | 22/22 | 0.000000 | 0.015570 | 0/0 |
+| diagnostic_pollution | tcn_seed_0 | 2107 | 0.783579 | 0.462954 | 112/248 | 0.548387 | 0.719577 | 0.028510 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | tcn_seed_1 | 2107 | 0.789274 | 0.518402 | 125/248 | 0.495968 | 0.793548 | 0.017214 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | tcn_seed_2 | 2107 | 0.785002 | 0.480535 | 101/248 | 0.592742 | 0.765625 | 0.024207 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | tcn_fixed_mean | 2107 | 0.788799 | 0.486780 | 111/248 | 0.552419 | 0.769663 | 0.022055 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | paired_lightgbm | 2107 | 0.794495 | 0.506529 | 129/248 | 0.479839 | 0.815068 | 0.014524 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | persistence | 2107 | 0.385382 | 0.211169 | 231/248 | 0.068548 | 0.068548 | 0.124260 | 11/11 | 0.000000 | 0.005248 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_0 | 3643 | 0.851496 | 0.713231 | 12/16 | 0.250000 | 0.800000 | 0.000276 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_1 | 3643 | 0.846555 | 0.720355 | 9/16 | 0.437500 | 0.411765 | 0.002757 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_2 | 3643 | 0.849300 | 0.725629 | 11/16 | 0.312500 | 0.714286 | 0.000551 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_fixed_mean | 3643 | 0.854516 | 0.716318 | 12/16 | 0.250000 | 0.800000 | 0.000276 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | paired_lightgbm | 3643 | 0.839967 | 0.664454 | 13/16 | 0.187500 | 0.333333 | 0.001654 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | persistence | 3643 | 0.451551 | 0.299947 | 16/16 | 0.000000 | 0.000000 | 0.004411 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+
+
+Full [measured report](raw/pollutant_sequence_v1_completion_summary.md) and [machine-readable metrics](raw/pollutant_sequence_v1_completion_summary.json). Research-only consumed modeled archive; no automatic adoption or measured billing.
+
+
+## Deep pollutant sequence v2 measured completion
+
+# Deep pollutant sequence study: measured results
+
+All candidates were evaluated on identical phase-local 24-hour-context origins. Both 2026 periods are consumed modeled-archive diagnostics, not fresh holdouts. The primary reference is the frozen v1 three-seed concentration-average ensemble. Matched LightGBM remains a secondary comparator.
+
+Historical raw `severe` means official Very Poor (301â€“400); `hazardous` means official Severe (401+). This is an instantaneous concentration proxy, not averaging-compliant station AQI.
+
+| Period | Model | n | Accuracy | Macro-F1 | Poor+ misses/support | Poor+ recall | Poor+ precision | Poor+ FAR | Very Poor+ misses/support | Very Poor+ recall | Very Poor+ FAR | Severe misses/support |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| development | tcn_seed_0 | 1435 | 0.703136 | 0.509053 | 109/168 | 0.351190 | 0.867647 | 0.007103 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | tcn_seed_1 | 1435 | 0.733101 | 0.549333 | 84/168 | 0.500000 | 0.857143 | 0.011050 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | tcn_seed_2 | 1435 | 0.723345 | 0.537784 | 92/168 | 0.452381 | 0.844444 | 0.011050 | 22/22 | 0.000000 | 0.002123 | 0/0 |
+| development | tcn_fixed_mean | 1435 | 0.730314 | 0.539391 | 97/168 | 0.422619 | 0.922078 | 0.004736 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | paired_lightgbm | 1435 | 0.743554 | 0.560935 | 79/168 | 0.529762 | 0.855769 | 0.011839 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | persistence | 1435 | 0.364460 | 0.257717 | 146/168 | 0.130952 | 0.130952 | 0.115233 | 22/22 | 0.000000 | 0.015570 | 0/0 |
+| development | v1_fixed_mean | 1435 | 0.738676 | 0.562208 | 75/168 | 0.553571 | 0.885714 | 0.009471 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | tcn_seed_0 | 2107 | 0.780731 | 0.429600 | 135/248 | 0.455645 | 0.753333 | 0.019903 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | tcn_seed_1 | 2107 | 0.789274 | 0.465070 | 119/248 | 0.520161 | 0.796296 | 0.017751 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | tcn_seed_2 | 2107 | 0.778358 | 0.488864 | 132/248 | 0.467742 | 0.743590 | 0.021517 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | tcn_fixed_mean | 2107 | 0.783579 | 0.464440 | 133/248 | 0.463710 | 0.782313 | 0.017214 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | paired_lightgbm | 2107 | 0.794495 | 0.506529 | 129/248 | 0.479839 | 0.815068 | 0.014524 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | persistence | 2107 | 0.385382 | 0.211169 | 231/248 | 0.068548 | 0.068548 | 0.124260 | 11/11 | 0.000000 | 0.005248 | 0/0 |
+| diagnostic_pollution | v1_fixed_mean | 2107 | 0.788799 | 0.486780 | 111/248 | 0.552419 | 0.769663 | 0.022055 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_0 | 3643 | 0.841340 | 0.717388 | 11/16 | 0.312500 | 0.714286 | 0.000551 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_1 | 3643 | 0.844085 | 0.697320 | 12/16 | 0.250000 | 0.571429 | 0.000827 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_2 | 3643 | 0.850673 | 0.617154 | 16/16 | 0.000000 | UNMEASURED | 0.000000 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_fixed_mean | 3643 | 0.849575 | 0.695079 | 13/16 | 0.187500 | 1.000000 | 0.000000 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | paired_lightgbm | 3643 | 0.839967 | 0.664454 | 13/16 | 0.187500 | 0.333333 | 0.001654 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | persistence | 3643 | 0.451551 | 0.299947 | 16/16 | 0.000000 | 0.000000 | 0.004411 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | v1_fixed_mean | 3643 | 0.854516 | 0.716318 | 12/16 | 0.250000 | 0.800000 | 0.000276 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+
+
+Full [measured report](raw/pollutant_sequence_v2_completion_summary.md) and [machine-readable metrics](raw/pollutant_sequence_v2_completion_summary.json). Research-only consumed modeled archive; no automatic adoption or measured billing.
+
+
+## V2 disposition and next weighting study
+
+V2 completed in 335.298 seconds of remote run time (not billed cost). Its fixed ensemble failed the paired gate against v1: pollution Poor+ misses 133/248 versus 111/248, false alarms 32 versus 41; later misses 13/16 versus 12/16, false alarms zero versus one. Very Poor+ misses remain 11/11. All four v2 candidates failed the v1 comparison. Keep v1 as research incumbent; no adoption or deployment. V3 is being prepared with only training-origin risk weighting relative to v1 (SmoothL1, multiplier two on canonical Poor+ labels from training only). Completed secondary reviewers remain unavailable through provider quota/authentication/balance; root synthesis is disclosed.
+
+
+## Deep pollutant sequence v3 measured completion
+
+# Deep pollutant sequence study: measured results
+
+All candidates were evaluated on identical phase-local 24-hour-context origins. Both 2026 periods are consumed modeled-archive diagnostics, not fresh holdouts. The primary reference is the frozen v1 three-seed concentration-average ensemble. Matched LightGBM remains a secondary comparator.
+
+Historical raw `severe` means official Very Poor (301â€“400); `hazardous` means official Severe (401+). This is an instantaneous concentration proxy, not averaging-compliant station AQI.
+
+| Period | Model | n | Accuracy | Macro-F1 | Poor+ misses/support | Poor+ recall | Poor+ precision | Poor+ FAR | Very Poor+ misses/support | Very Poor+ recall | Very Poor+ FAR | Severe misses/support |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| development | tcn_seed_0 | 1435 | 0.730314 | 0.560950 | 94/168 | 0.440476 | 0.860465 | 0.009471 | 21/22 | 0.045455 | 0.000000 | 0/0 |
+| development | tcn_seed_1 | 1435 | 0.739373 | 0.570759 | 58/168 | 0.654762 | 0.814815 | 0.019732 | 22/22 | 0.000000 | 0.001415 | 0/0 |
+| development | tcn_seed_2 | 1435 | 0.735889 | 0.579122 | 61/168 | 0.636905 | 0.842520 | 0.015785 | 21/22 | 0.045455 | 0.002123 | 0/0 |
+| development | tcn_fixed_mean | 1435 | 0.745645 | 0.576626 | 62/168 | 0.630952 | 0.876033 | 0.011839 | 22/22 | 0.000000 | 0.000708 | 0/0 |
+| development | paired_lightgbm | 1435 | 0.743554 | 0.560935 | 79/168 | 0.529762 | 0.855769 | 0.011839 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | persistence | 1435 | 0.364460 | 0.257717 | 146/168 | 0.130952 | 0.130952 | 0.115233 | 22/22 | 0.000000 | 0.015570 | 0/0 |
+| development | v1_fixed_mean | 1435 | 0.738676 | 0.562208 | 75/168 | 0.553571 | 0.885714 | 0.009471 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | tcn_seed_0 | 2107 | 0.786901 | 0.480468 | 99/248 | 0.600806 | 0.726829 | 0.030124 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | tcn_seed_1 | 2107 | 0.788799 | 0.523214 | 86/248 | 0.653226 | 0.757009 | 0.027972 | 11/11 | 0.000000 | 0.000477 | 0/0 |
+| diagnostic_pollution | tcn_seed_2 | 2107 | 0.787375 | 0.516024 | 86/248 | 0.653226 | 0.733032 | 0.031737 | 10/11 | 0.090909 | 0.000477 | 0/0 |
+| diagnostic_pollution | tcn_fixed_mean | 2107 | 0.791172 | 0.486293 | 88/248 | 0.645161 | 0.740741 | 0.030124 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | paired_lightgbm | 2107 | 0.794495 | 0.506529 | 129/248 | 0.479839 | 0.815068 | 0.014524 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | persistence | 2107 | 0.385382 | 0.211169 | 231/248 | 0.068548 | 0.068548 | 0.124260 | 11/11 | 0.000000 | 0.005248 | 0/0 |
+| diagnostic_pollution | v1_fixed_mean | 2107 | 0.788799 | 0.486780 | 111/248 | 0.552419 | 0.769663 | 0.022055 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_0 | 3643 | 0.838869 | 0.743890 | 7/16 | 0.562500 | 0.529412 | 0.002206 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_1 | 3643 | 0.845183 | 0.721250 | 6/16 | 0.625000 | 0.333333 | 0.005514 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_2 | 3643 | 0.854516 | 0.760749 | 9/16 | 0.437500 | 0.777778 | 0.000551 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_fixed_mean | 3643 | 0.847928 | 0.789472 | 6/16 | 0.625000 | 0.769231 | 0.000827 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | paired_lightgbm | 3643 | 0.839967 | 0.664454 | 13/16 | 0.187500 | 0.333333 | 0.001654 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | persistence | 3643 | 0.451551 | 0.299947 | 16/16 | 0.000000 | 0.000000 | 0.004411 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | v1_fixed_mean | 3643 | 0.854516 | 0.716318 | 12/16 | 0.250000 | 0.800000 | 0.000276 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+
+
+Full [measured report](raw/pollutant_sequence_v3_completion_summary.md) and [machine-readable metrics](raw/pollutant_sequence_v3_completion_summary.json). Research-only consumed modeled archive; no automatic adoption or measured billing.
+
+
+## V3 completed: passed finite retrospective gate
+
+V3 passed the preregistered research gate versus the frozen v1 ensemble on both consumed 2026 diagnostics. Pollution Poor+ misses fell 111/248→88/248 while false alarms rose 41→56; later misses fell 12/16→6/16 while false alarms rose 1→3. The fixed ensemble still missed all 11 pollution Very Poor+ hours; later Very Poor+ and official Severe recall remain unmeasured. The 296/19,663 training weighting-support check passed. [Full paired review and next-data requirements](POLLUTANT_SEQUENCE_V3_REVIEW.md).
+
+
+## Deep pollutant sequence v4 measured completion
+
+# Deep pollutant sequence study: measured results
+
+All candidates were evaluated on identical phase-local 24-hour-context origins. Both 2026 periods are consumed modeled-archive diagnostics, not fresh holdouts. The primary reference is the frozen v3 three-seed concentration-average ensemble. Matched LightGBM remains a secondary comparator.
+
+Historical raw `severe` means official Very Poor (301â€“400); `hazardous` means official Severe (401+). This is an instantaneous concentration proxy, not averaging-compliant station AQI.
+
+| Period | Model | n | Accuracy | Macro-F1 | Poor+ misses/support | Poor+ recall | Poor+ precision | Poor+ FAR | Very Poor+ misses/support | Very Poor+ recall | Very Poor+ FAR | Severe misses/support |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| development | tcn_seed_0 | 1435 | 0.698955 | 0.510189 | 100/168 | 0.404762 | 0.871795 | 0.007893 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | tcn_seed_1 | 1435 | 0.724739 | 0.629951 | 55/168 | 0.672619 | 0.856061 | 0.014996 | 16/22 | 0.272727 | 0.004246 | 0/0 |
+| development | tcn_seed_2 | 1435 | 0.758188 | 0.660446 | 56/168 | 0.666667 | 0.811594 | 0.020521 | 15/22 | 0.318182 | 0.004246 | 0/0 |
+| development | tcn_fixed_mean | 1435 | 0.737282 | 0.580140 | 68/168 | 0.595238 | 0.877193 | 0.011050 | 21/22 | 0.045455 | 0.001415 | 0/0 |
+| development | paired_lightgbm | 1435 | 0.743554 | 0.560935 | 79/168 | 0.529762 | 0.855769 | 0.011839 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | persistence | 1435 | 0.364460 | 0.257717 | 146/168 | 0.130952 | 0.130952 | 0.115233 | 22/22 | 0.000000 | 0.015570 | 0/0 |
+| development | v3_fixed_mean | 1435 | 0.745645 | 0.576626 | 62/168 | 0.630952 | 0.876033 | 0.011839 | 22/22 | 0.000000 | 0.000708 | 0/0 |
+| diagnostic_pollution | tcn_seed_0 | 2107 | 0.789274 | 0.548512 | 116/248 | 0.532258 | 0.776471 | 0.020441 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | tcn_seed_1 | 2107 | 0.794495 | 0.583828 | 77/248 | 0.689516 | 0.721519 | 0.035503 | 10/11 | 0.090909 | 0.000954 | 0/0 |
+| diagnostic_pollution | tcn_seed_2 | 2107 | 0.795918 | 0.534362 | 76/248 | 0.693548 | 0.738197 | 0.032813 | 11/11 | 0.000000 | 0.002385 | 0/0 |
+| diagnostic_pollution | tcn_fixed_mean | 2107 | 0.796393 | 0.548551 | 88/248 | 0.645161 | 0.761905 | 0.026896 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | paired_lightgbm | 2107 | 0.794495 | 0.506529 | 129/248 | 0.479839 | 0.815068 | 0.014524 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | persistence | 2107 | 0.385382 | 0.211169 | 231/248 | 0.068548 | 0.068548 | 0.124260 | 11/11 | 0.000000 | 0.005248 | 0/0 |
+| diagnostic_pollution | v3_fixed_mean | 2107 | 0.791172 | 0.486293 | 88/248 | 0.645161 | 0.740741 | 0.030124 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_0 | 3643 | 0.850947 | 0.751999 | 10/16 | 0.375000 | 1.000000 | 0.000000 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_1 | 3643 | 0.842438 | 0.774007 | 4/16 | 0.750000 | 0.545455 | 0.002757 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_2 | 3643 | 0.861378 | 0.789140 | 5/16 | 0.687500 | 0.611111 | 0.001930 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_fixed_mean | 3643 | 0.857260 | 0.802230 | 6/16 | 0.625000 | 0.833333 | 0.000551 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | paired_lightgbm | 3643 | 0.839967 | 0.664454 | 13/16 | 0.187500 | 0.333333 | 0.001654 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | persistence | 3643 | 0.451551 | 0.299947 | 16/16 | 0.000000 | 0.000000 | 0.004411 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | v3_fixed_mean | 3643 | 0.847928 | 0.789472 | 6/16 | 0.625000 | 0.769231 | 0.000827 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+
+
+Full [measured report](raw/pollutant_sequence_v4_completion_summary.md) and [machine-readable metrics](raw/pollutant_sequence_v4_completion_summary.json). Research-only consumed modeled archive; no automatic adoption or measured billing.
+
+## Pollutant context support audit (not a model evaluation)
+
+The read-only 24/48/72-hour support audit checked 32,826 canonical target index/band pairs with no missing timestamps or incomplete finite six-gas histories. Eligible row counts at 24/48/72 hours: train 19,663/19,639/19,615; development 1,435/1,411/1,387; pollution diagnostic 2,107/2,083/2,059; other-seasons diagnostic 3,643/3,619/3,595. Poor+ support was unchanged in train (296 hours, 86 episodes), development (168, 28), and pollution (248, 49). Other-seasons Poor+ support was 16/6 episodes at 24h and 13/5 at 48h and 72h. Train has five Very Poor+ hours in one episode and zero official Severe examples; official Severe recall is UNMEASURED. All evaluated time periods are consumed CAMS/ERA5 modeled archive. This audit measures eligibility, not forecast skill. Exact timestamp digests, manifest/result hashes, reviewer synthesis and the next-step decision are in [the support report](../docs/POLLUTANT_CONTEXT_SUPPORT_V1_REVIEW.md) and [raw result](raw/pollutant_context_support_v1_results.json). The three reviews did not establish predictive value from the additional older lags; no 48h model fit was started.
+
+## Fixed older-history probe v1: measured development results
+
+Modal call `fc-01M4FM73AHVNNJFY7F8SGSYD8Q`, app `ap-LOJY41QfJZesEwi80LRam5` completed once. Both fits used the exact same 19,639 train and 1,411 development origins; 21,050 canonical target pairs verified. Median imputation, input scaling and target scales fit only on training. There were 296 Poor+ weighted training origins. No 2026 diagnostic labels entered this study.
+
+| Development period | Context | n | Normalized MAE | Accuracy | Macro-F1 | Poor+ misses/support | Poor+ false alarms | Poor+ episode hits/support | Very Poor+ misses/support |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| overall | 24h | 1411 | 0.474160 | 0.759745 | 0.638596 | 64/168 | 23 | 21/28 | 18/22 |
+| overall | 48h | 1411 | 0.471746 | 0.751240 | 0.626867 | 64/168 | 22 | 21/28 | 18/22 |
+| 2025-04 | 24h | 673 | 0.532290 | 0.760773 | 0.490218 | 48/122 | 7 | 16/21 | 8/8 |
+| 2025-04 | 48h | 673 | 0.532371 | 0.760773 | 0.485323 | 48/122 | 7 | 16/21 | 8/8 |
+| 2025-05 | 24h | 738 | 0.421149 | 0.758808 | 0.637216 | 16/46 | 16 | 5/7 | 10/14 |
+| 2025-05 | 48h | 738 | 0.416461 | 0.742547 | 0.629883 | 16/46 | 15 | 5/7 | 10/14 |
+
+48h relative normalized MAE improvement: 0.509%. Predeclared exploratory context screen passed: **False**.
+
+- overall_normalized_mae_gain_at_least_1pct: False
+- neither_month_normalized_mae_worse: False
+- poor_misses_not_worse: True
+- poor_false_alarms_not_worse: True
+- poor_episode_hits_not_worse: True
+- very_poor_misses_not_worse: True
+- very_poor_false_alarms_not_worse: False
+
+Full raw results include six pollutant MAEs, recalls/precision/FAR, episode counts, monthly scores, negative pre-clipping predictions, train scales, actual and predicted development concentrations, and exact origin hashes. These are consumed CAMS/ERA5 modeled archive diagnostics, not independent station, prospective or medical qualification. Unsupported recall is UNMEASURED. A fixed linear probe cannot disprove nonlinear older-history value. No promotion, deployment or billed cost is claimed.
+
+
+## Deep pollutant sequence v5 measured completion
+
+# Deep pollutant sequence study: measured results
+
+All candidates were evaluated on identical phase-local 24-hour-context origins. Both 2026 periods are consumed modeled-archive diagnostics, not fresh holdouts. The primary reference is the frozen v3 three-seed concentration-average ensemble. Matched LightGBM remains a secondary comparator.
+
+Historical raw `severe` means official Very Poor (301-400); `hazardous` means official Severe (401+). This is an instantaneous concentration proxy, not averaging-compliant station AQI.
+
+| Period | Model | n | Accuracy | Macro-F1 | Poor+ misses/support | Poor+ recall | Poor+ precision | Poor+ FAR | Very Poor+ misses/support | Very Poor+ recall | Very Poor+ FAR | Severe misses/support |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| development | tcn_seed_0 | 1435 | 0.728223 | 0.558271 | 75/168 | 0.553571 | 0.894231 | 0.008682 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | tcn_seed_1 | 1435 | 0.753310 | 0.579183 | 63/168 | 0.625000 | 0.833333 | 0.016575 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | tcn_seed_2 | 1435 | 0.738676 | 0.563584 | 82/168 | 0.511905 | 0.924731 | 0.005525 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | tcn_fixed_mean | 1435 | 0.747038 | 0.573598 | 70/168 | 0.583333 | 0.899083 | 0.008682 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | paired_lightgbm | 1435 | 0.743554 | 0.560935 | 79/168 | 0.529762 | 0.855769 | 0.011839 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | persistence | 1435 | 0.364460 | 0.257717 | 146/168 | 0.130952 | 0.130952 | 0.115233 | 22/22 | 0.000000 | 0.015570 | 0/0 |
+| development | v3_fixed_mean | 1435 | 0.745645 | 0.576626 | 62/168 | 0.630952 | 0.876033 | 0.011839 | 22/22 | 0.000000 | 0.000708 | 0/0 |
+| diagnostic_pollution | tcn_seed_0 | 2107 | 0.795444 | 0.529715 | 90/248 | 0.637097 | 0.755981 | 0.027434 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | tcn_seed_1 | 2107 | 0.789748 | 0.509684 | 86/248 | 0.653226 | 0.746544 | 0.029586 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | tcn_seed_2 | 2107 | 0.789274 | 0.489791 | 102/248 | 0.588710 | 0.772487 | 0.023131 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | tcn_fixed_mean | 2107 | 0.790698 | 0.482729 | 94/248 | 0.620968 | 0.766169 | 0.025282 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | paired_lightgbm | 2107 | 0.794495 | 0.506529 | 129/248 | 0.479839 | 0.815068 | 0.014524 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | persistence | 2107 | 0.385382 | 0.211169 | 231/248 | 0.068548 | 0.068548 | 0.124260 | 11/11 | 0.000000 | 0.005248 | 0/0 |
+| diagnostic_pollution | v3_fixed_mean | 2107 | 0.791172 | 0.486293 | 88/248 | 0.645161 | 0.740741 | 0.030124 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_0 | 3643 | 0.852045 | 0.746901 | 9/16 | 0.437500 | 0.636364 | 0.001103 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_1 | 3643 | 0.845732 | 0.723817 | 9/16 | 0.437500 | 0.437500 | 0.002481 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_seed_2 | 3643 | 0.850398 | 0.706675 | 12/16 | 0.250000 | 0.800000 | 0.000276 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | tcn_fixed_mean | 3643 | 0.851222 | 0.741100 | 10/16 | 0.375000 | 0.750000 | 0.000551 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | paired_lightgbm | 3643 | 0.839967 | 0.664454 | 13/16 | 0.187500 | 0.333333 | 0.001654 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | persistence | 3643 | 0.451551 | 0.299947 | 16/16 | 0.000000 | 0.000000 | 0.004411 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | v3_fixed_mean | 3643 | 0.847928 | 0.789472 | 6/16 | 0.625000 | 0.769231 | 0.000827 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+
+
+Full [measured report](raw/pollutant_sequence_v5_completion_summary.md) and [machine-readable metrics](raw/pollutant_sequence_v5_completion_summary.json). Research-only consumed modeled archive; no automatic adoption or measured billing.
+
+Three read-only V5 result reviews found no data-pairing defect and recommended no further fit against this consumed archive. Saved development attribution found all 168 Poor+ hours ozone-controlled; V5 missed 70 versus V3's 62 and worsened ozone MAE from 21.86 to 22.88. Full [event and gas analysis](raw/pollutant_sequence_v5_error_analysis.md) and [review synthesis](../docs/POLLUTANT_SEQUENCE_V5_RESULT_REVIEWS.md) are preserved. The evidence gap is recurring, independent station-aligned extreme episodes; no global model maximum is claimed.
+
+
+# Target-contract audit: measured results
+
+Hosted read-only CPU call fc-01M4FQ5AR38P77DCWRDAZ9N2M3, app ap-EYjomUeIBrjTquMy5bYdOv. All 32,826 historical instantaneous targets verified. Complete-window decomposition identity error was zero in every phase.
+
+| Phase | Paired origins | Hourly Poor+ / VP+ | Trailing Poor+ / VP+ | Conservative Poor+ / VP+ |
+|---|---:|---:|---:|---:|
+| train | 19663 | 296 / 5 | 74 / 0 | 344 / 5 |
+| development | 1435 | 168 / 22 | 94 / 6 | 213 / 27 |
+| diagnostic_pollution | 2107 | 248 / 11 | 113 / 0 | 317 / 11 |
+| diagnostic_other_seasons | 3643 | 16 / 0 | 0 / 0 | 16 / 0 |
+
+Official Severe support is zero under every target in every phase. Later complete-trailing Poor+ support is also zero: recall is UNMEASURED, not successful detection.
+
+Period averaging changes the task and cannot be reported as an improvement in historical model accuracy. The conservative product approximation retains hourly spikes and additionally includes persistent elevated averages. Training on trailing means alone would remove the five training Very Poor hours and is not justified as a safety improvement.
+
+Causal persistence trailing Poor+ recall/precision: train 0.6216/0.1581; development 0.6489/0.3631; pollution diagnostic 0.6549/0.3020; later recall UNMEASURED with 15 false alarms. These are a baseline on a different target, not neural results.
+
+No station quality, pristine evaluation, prospective, medical, probability calibration or billed-cost claim. Saved neural h6 outputs cannot reconstruct full trajectories; further inference would require the existing hosted checkpoints.
+
+The development-only fixed-linear comparison provides a distinct algorithm hypothesis. Keep its original hourly task and frozen V3 gate for comparability while independently qualifying station sources.
+
+
+## Deep pollutant GPU linear v2 measured completion
+
+# Fixed pollutant linear study: measured results
+
+All candidates were evaluated on identical phase-local 24-hour-context origins. Both 2026 periods are consumed modeled-archive diagnostics, not fresh holdouts. The primary reference is the frozen v3 three-seed concentration-average ensemble. Matched LightGBM remains a secondary comparator.
+
+Historical raw `severe` means official Very Poor (301-400); `hazardous` means official Severe (401+). This is an instantaneous concentration proxy, not averaging-compliant station AQI.
+
+| Period | Model | n | Accuracy | Macro-F1 | Poor+ misses/support | Poor+ recall | Poor+ precision | Poor+ FAR | Very Poor+ misses/support | Very Poor+ recall | Very Poor+ FAR | Severe misses/support |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| development | ridge_fixed | 1435 | 0.763066 | 0.639753 | 64/168 | 0.619048 | 0.806202 | 0.019732 | 18/22 | 0.181818 | 0.001415 | 0/0 |
+| development | v3_fixed_mean | 1435 | 0.745645 | 0.576626 | 62/168 | 0.630952 | 0.876033 | 0.011839 | 22/22 | 0.000000 | 0.000708 | 0/0 |
+| development | paired_lightgbm | 1435 | 0.743554 | 0.560935 | 79/168 | 0.529762 | 0.855769 | 0.011839 | 22/22 | 0.000000 | 0.000000 | 0/0 |
+| development | persistence | 1435 | 0.364460 | 0.257717 | 146/168 | 0.130952 | 0.130952 | 0.115233 | 22/22 | 0.000000 | 0.015570 | 0/0 |
+| diagnostic_pollution | ridge_fixed | 2107 | 0.799241 | 0.498535 | 106/248 | 0.572581 | 0.820809 | 0.016676 | 11/11 | 0.000000 | 0.000477 | 0/0 |
+| diagnostic_pollution | v3_fixed_mean | 2107 | 0.791172 | 0.486293 | 88/248 | 0.645161 | 0.740741 | 0.030124 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | paired_lightgbm | 2107 | 0.794495 | 0.506529 | 129/248 | 0.479839 | 0.815068 | 0.014524 | 11/11 | 0.000000 | 0.000000 | 0/0 |
+| diagnostic_pollution | persistence | 2107 | 0.385382 | 0.211169 | 231/248 | 0.068548 | 0.068548 | 0.124260 | 11/11 | 0.000000 | 0.005248 | 0/0 |
+| diagnostic_other_seasons | ridge_fixed | 3643 | 0.845732 | 0.707854 | 12/16 | 0.250000 | 0.800000 | 0.000276 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | v3_fixed_mean | 3643 | 0.847928 | 0.789472 | 6/16 | 0.625000 | 0.769231 | 0.000827 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | paired_lightgbm | 3643 | 0.839967 | 0.664454 | 13/16 | 0.187500 | 0.333333 | 0.001654 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+| diagnostic_other_seasons | persistence | 3643 | 0.451551 | 0.299947 | 16/16 | 0.000000 | 0.000000 | 0.004411 | 0/0 | UNMEASURED | 0.000000 | 0/0 |
+
+
+Full [measured report](raw/pollutant_linear_v2_gpu_completion_summary.md) and [machine-readable metrics](raw/pollutant_linear_v2_gpu_completion_summary.json). Research-only consumed modeled archive; no automatic adoption or measured billing.
