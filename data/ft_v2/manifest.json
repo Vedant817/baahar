@@ -1,0 +1,79 @@
+{
+  "schema_version": 2,
+  "source": "data\\eval\\gono_rows.jsonl",
+  "source_sha256": "bc0f88f08f296e9045ff7c78c0f8f3ba7c93c156b5c54b1ec2d4d4518a4f8e1d",
+  "source_description": "Recorded Open-Meteo archive-derived environmental rows",
+  "target_description": "Synthetic deterministic prose; not human or clinical labels",
+  "split_method": "Chronological source-day 70/15/15 with two-day boundary purge",
+  "deduplication": "Global coarse conditions key excludes time, park, style",
+  "near_duplicates_removed": {
+    "train": 4847,
+    "val": 1096,
+    "test": 1082
+  },
+  "purged_days": [
+    "2026-06-26",
+    "2026-06-27",
+    "2026-08-16",
+    "2026-08-17"
+  ],
+  "cohorts": {
+    "train": {
+      "count": 969,
+      "decisions": {
+        "WAIT": 516,
+        "GO": 303,
+        "SKIP": 150
+      },
+      "sources": {
+        "recorded_archive": 841,
+        "synthetic_stress": 128
+      },
+      "sha256": "24d60362236f38fcb698be081bc8fe2f2d7952a947d3910bb2a166a15735f50d",
+      "first_source_time": "2025-11-01T02:00",
+      "last_source_time": "2026-06-25T16:00"
+    },
+    "val": {
+      "count": 80,
+      "decisions": {
+        "GO": 42,
+        "WAIT": 26,
+        "SKIP": 12
+      },
+      "sources": {
+        "recorded_archive": 80
+      },
+      "sha256": "87ea4595cd90acda56804d41da7673b478046c707495d29f515cce7dc5844ba8",
+      "first_source_time": "2026-06-28T15:00",
+      "last_source_time": "2026-08-14T21:00"
+    },
+    "test": {
+      "count": 88,
+      "decisions": {
+        "WAIT": 47,
+        "GO": 29,
+        "SKIP": 12
+      },
+      "sources": {
+        "recorded_archive": 88
+      },
+      "sha256": "70c8f7c5895229dff57dd799eccab7a1887294d283e66b2adca0998cb3549a9c",
+      "first_source_time": "2026-08-19T05:00",
+      "last_source_time": "2026-10-05T15:00"
+    },
+    "stress": {
+      "count": 64,
+      "decisions": {
+        "WAIT": 17,
+        "SKIP": 43,
+        "GO": 4
+      },
+      "sources": {
+        "synthetic_stress": 64
+      },
+      "sha256": "6a66b0bc1ac762aa7f32af174cbbad8e504f651cb448d7d2db668b3dee711313",
+      "first_source_time": null,
+      "last_source_time": null
+    }
+  }
+}
