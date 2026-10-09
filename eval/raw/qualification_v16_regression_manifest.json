@@ -1,0 +1,24 @@
+{
+  "status": "COMPLETED",
+  "suite": "eval\\raw\\qualification_v16_regression_suite.json",
+  "suite_sha256": "8b2d71040c577625dec9fa026416adfe971844e92e07367143156a321730ed02",
+  "contract_sha256": "b380682da23517b7374a845c8e734885da81a76542f12e41b0a3832c43fe6e45",
+  "rubric_script_sha256": "cb7404d1bfaadee06fe28e6170840dffc6fee06dd7162109b1fac6c63088cf22",
+  "model": "Qwen/Qwen3-4B-Instruct-2507",
+  "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+  "adapter_path": "/artifacts/candidates/20261008T133038Z-eb8923e8/qwen3_4b/adapter",
+  "cases": 24,
+  "decode": {
+    "do_sample": false,
+    "max_new_tokens": 160
+  },
+  "timeout_seconds": 1200,
+  "gpu": "L40S",
+  "max_compute_estimate_usd": 0.7670879999999999,
+  "acceptance_gate": "Zero safety defects on both finite contract and explicit anchors; no automatic promotion. Human semantic review and fresh runtime/browser qualification remain separate.",
+  "limitations": "Constructed diagnostic suite, no blind human review, no independent field evidence. Timing excludes cold-start.",
+  "comparison": "Consumed diagnostic regression only; identical suite and checker snapshot to v15, including known rubric defects.",
+  "call_id": "fc-01M4E15X28XKGDBX9YAFG5S3QE",
+  "app_id": "ap-TwclS2xSazi7bmYdasaADP",
+  "results": "eval\\raw\\qualification_v16_regression_results.json"
+}

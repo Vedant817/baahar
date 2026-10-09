@@ -1,0 +1,322 @@
+{
+  "disposition": "PROVISIONAL_NO_PROMOTION",
+  "field_test": "NOT_DONE",
+  "forecast": [
+    {
+      "window": "2026-02-01",
+      "model": "majority",
+      "n": 672,
+      "accuracy": 0.4836,
+      "macro_f1": 0.163,
+      "moderate_recall": 0.0,
+      "poor_or_worse_n": 33,
+      "poor_or_worse_underpredicted": 33
+    },
+    {
+      "window": "2026-02-01",
+      "model": "persistence",
+      "n": 672,
+      "accuracy": 0.4092,
+      "macro_f1": 0.2307,
+      "moderate_recall": 0.5537,
+      "poor_or_worse_n": 33,
+      "poor_or_worse_underpredicted": 31
+    },
+    {
+      "window": "2026-02-01",
+      "model": "lgbm",
+      "n": 672,
+      "accuracy": 0.7113,
+      "macro_f1": 0.4024,
+      "moderate_recall": 0.594,
+      "poor_or_worse_n": 33,
+      "poor_or_worse_underpredicted": 32
+    },
+    {
+      "window": "2026-02-01",
+      "model": "ensemble",
+      "n": 672,
+      "accuracy": 0.7232,
+      "macro_f1": 0.3977,
+      "moderate_recall": 0.7013,
+      "poor_or_worse_n": 33,
+      "poor_or_worse_underpredicted": 33
+    },
+    {
+      "window": "2026-04-01",
+      "model": "majority",
+      "n": 720,
+      "accuracy": 0.4528,
+      "macro_f1": 0.1247,
+      "moderate_recall": 0.0,
+      "poor_or_worse_n": 124,
+      "poor_or_worse_underpredicted": 124
+    },
+    {
+      "window": "2026-04-01",
+      "model": "persistence",
+      "n": 720,
+      "accuracy": 0.175,
+      "macro_f1": 0.0938,
+      "moderate_recall": 0.2923,
+      "poor_or_worse_n": 124,
+      "poor_or_worse_underpredicted": 116
+    },
+    {
+      "window": "2026-04-01",
+      "model": "lgbm",
+      "n": 720,
+      "accuracy": 0.6972,
+      "macro_f1": 0.3645,
+      "moderate_recall": 0.6423,
+      "poor_or_worse_n": 124,
+      "poor_or_worse_underpredicted": 96
+    },
+    {
+      "window": "2026-04-01",
+      "model": "ensemble",
+      "n": 720,
+      "accuracy": 0.7,
+      "macro_f1": 0.3789,
+      "moderate_recall": 0.6731,
+      "poor_or_worse_n": 124,
+      "poor_or_worse_underpredicted": 87
+    },
+    {
+      "window": "2026-06-01",
+      "model": "majority",
+      "n": 720,
+      "accuracy": 0.425,
+      "macro_f1": 0.1491,
+      "moderate_recall": 0.0,
+      "poor_or_worse_n": 2,
+      "poor_or_worse_underpredicted": 2
+    },
+    {
+      "window": "2026-06-01",
+      "model": "persistence",
+      "n": 720,
+      "accuracy": 0.3153,
+      "macro_f1": 0.2086,
+      "moderate_recall": 0.2128,
+      "poor_or_worse_n": 2,
+      "poor_or_worse_underpredicted": 2
+    },
+    {
+      "window": "2026-06-01",
+      "model": "lgbm",
+      "n": 720,
+      "accuracy": 0.725,
+      "macro_f1": 0.4969,
+      "moderate_recall": 0.7234,
+      "poor_or_worse_n": 2,
+      "poor_or_worse_underpredicted": 2
+    },
+    {
+      "window": "2026-06-01",
+      "model": "ensemble",
+      "n": 720,
+      "accuracy": 0.6403,
+      "macro_f1": 0.4264,
+      "moderate_recall": 0.8298,
+      "poor_or_worse_n": 2,
+      "poor_or_worse_underpredicted": 2
+    },
+    {
+      "window": "2026-08-01",
+      "model": "majority",
+      "n": 744,
+      "accuracy": 0.3118,
+      "macro_f1": 0.2377,
+      "moderate_recall": null,
+      "poor_or_worse_n": 0,
+      "poor_or_worse_underpredicted": 0
+    },
+    {
+      "window": "2026-08-01",
+      "model": "persistence",
+      "n": 744,
+      "accuracy": 0.3656,
+      "macro_f1": 0.3306,
+      "moderate_recall": null,
+      "poor_or_worse_n": 0,
+      "poor_or_worse_underpredicted": 0
+    },
+    {
+      "window": "2026-08-01",
+      "model": "lgbm",
+      "n": 744,
+      "accuracy": 0.9449,
+      "macro_f1": 0.9378,
+      "moderate_recall": null,
+      "poor_or_worse_n": 0,
+      "poor_or_worse_underpredicted": 0
+    },
+    {
+      "window": "2026-08-01",
+      "model": "ensemble",
+      "n": 744,
+      "accuracy": 0.9489,
+      "macro_f1": 0.9423,
+      "moderate_recall": null,
+      "poor_or_worse_n": 0,
+      "poor_or_worse_underpredicted": 0
+    }
+  ],
+  "forecast_support": [
+    {
+      "window": "2026-02-01",
+      "n": 672,
+      "good": 16,
+      "satisfactory": 325,
+      "moderate": 298,
+      "poor": 33,
+      "severe": 0,
+      "hazardous": 0
+    },
+    {
+      "window": "2026-04-01",
+      "n": 720,
+      "good": 10,
+      "satisfactory": 326,
+      "moderate": 260,
+      "poor": 117,
+      "severe": 7,
+      "hazardous": 0
+    },
+    {
+      "window": "2026-06-01",
+      "n": 720,
+      "good": 365,
+      "satisfactory": 306,
+      "moderate": 47,
+      "poor": 2,
+      "severe": 0,
+      "hazardous": 0
+    },
+    {
+      "window": "2026-08-01",
+      "n": 744,
+      "good": 512,
+      "satisfactory": 232,
+      "moderate": 0,
+      "poor": 0,
+      "severe": 0,
+      "hazardous": 0
+    }
+  ],
+  "briefing": {
+    "current_go": {
+      "n": 6,
+      "adapter_raw_contract_accepted": 6,
+      "fallback_raw_contract_accepted": 6,
+      "adapter_semantic_flagged": 0,
+      "fallback_semantic_flagged": 0,
+      "adapter_accepted": 6,
+      "fallback_accepted": 6,
+      "adapter_safety_flagged": 0,
+      "adapter_defects": {},
+      "median_seconds": 5.014373554499999
+    },
+    "current_heat_future_window": {
+      "n": 6,
+      "adapter_raw_contract_accepted": 4,
+      "fallback_raw_contract_accepted": 6,
+      "adapter_semantic_flagged": 0,
+      "fallback_semantic_flagged": 0,
+      "adapter_accepted": 4,
+      "fallback_accepted": 6,
+      "adapter_safety_flagged": 2,
+      "adapter_defects": {
+        "ungrounded_number": 2
+      },
+      "median_seconds": 5.527431080500001
+    },
+    "current_pollution_future_window": {
+      "n": 6,
+      "adapter_raw_contract_accepted": 6,
+      "fallback_raw_contract_accepted": 6,
+      "adapter_semantic_flagged": 0,
+      "fallback_semantic_flagged": 0,
+      "adapter_accepted": 6,
+      "fallback_accepted": 6,
+      "adapter_safety_flagged": 0,
+      "adapter_defects": {},
+      "median_seconds": 5.262090147000006
+    },
+    "missing_air": {
+      "n": 6,
+      "adapter_raw_contract_accepted": 6,
+      "fallback_raw_contract_accepted": 6,
+      "adapter_semantic_flagged": 0,
+      "fallback_semantic_flagged": 0,
+      "adapter_accepted": 6,
+      "fallback_accepted": 6,
+      "adapter_safety_flagged": 0,
+      "adapter_defects": {},
+      "median_seconds": 5.408139830500005
+    },
+    "night_storm": {
+      "n": 6,
+      "adapter_raw_contract_accepted": 6,
+      "fallback_raw_contract_accepted": 6,
+      "adapter_semantic_flagged": 0,
+      "fallback_semantic_flagged": 0,
+      "adapter_accepted": 6,
+      "fallback_accepted": 6,
+      "adapter_safety_flagged": 0,
+      "adapter_defects": {},
+      "median_seconds": 5.678142954500004
+    },
+    "partial_weather": {
+      "n": 6,
+      "adapter_raw_contract_accepted": 6,
+      "fallback_raw_contract_accepted": 6,
+      "adapter_semantic_flagged": 0,
+      "fallback_semantic_flagged": 0,
+      "adapter_accepted": 6,
+      "fallback_accepted": 6,
+      "adapter_safety_flagged": 0,
+      "adapter_defects": {},
+      "median_seconds": 5.5126711785
+    },
+    "stale_assessment": {
+      "n": 6,
+      "adapter_raw_contract_accepted": 6,
+      "fallback_raw_contract_accepted": 6,
+      "adapter_semantic_flagged": 0,
+      "fallback_semantic_flagged": 0,
+      "adapter_accepted": 6,
+      "fallback_accepted": 6,
+      "adapter_safety_flagged": 0,
+      "adapter_defects": {},
+      "median_seconds": 5.69669970999999
+    },
+    "untrusted_note": {
+      "n": 6,
+      "adapter_raw_contract_accepted": 6,
+      "fallback_raw_contract_accepted": 6,
+      "adapter_semantic_flagged": 0,
+      "fallback_semantic_flagged": 0,
+      "adapter_accepted": 6,
+      "fallback_accepted": 6,
+      "adapter_safety_flagged": 0,
+      "adapter_defects": {},
+      "median_seconds": 5.378110894499997
+    }
+  },
+  "briefing_overall": {
+    "n": 48,
+    "adapter_raw_contract_accepted": 46,
+    "fallback_raw_contract_accepted": 48,
+    "adapter_semantic_flagged": 0,
+    "fallback_semantic_flagged": 0,
+    "adapter_finite_safety_flagged": 2,
+    "fallback_finite_safety_flagged": 0,
+    "adapter_combined_accepted": 46,
+    "fallback_combined_accepted": 48,
+    "current_go_n": 6,
+    "current_go_adapter_combined_accepted": 6
+  },
+  "status": "COMPLETED"
+}

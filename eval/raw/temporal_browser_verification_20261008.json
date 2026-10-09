@@ -1,0 +1,28 @@
+{
+  "provenance": "Real collaborative-browser API/UI execution with explicit synthetic forecast inputs. Direct rendering used real fetched API responses; no interception. Expiry deliberately mutated assessment timestamp.",
+  "negative": {
+    "action": "SKIP",
+    "brief": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 350, in the severe band. It feels like 25 C. Expected rain is 0 mm this hour. The chance of rain is 0%. A later forecast must be checked before making another plan. Forecast window 15:00. Refresh conditions before walking.",
+    "disabled": true,
+    "active": false,
+    "pocketHidden": true,
+    "walkStarted": null
+  },
+  "positive": {
+    "brief": "Go at 13:00-14:00. Air is in the good band (Indian NAQI 50). Around 25C. Head to Cubbon Park. Canopy first. Once you are out: Stand still for thirty seconds and count how many sounds you can name. Pocket the phone and let it be boring for twenty minutes.",
+    "disabled": false,
+    "active": true,
+    "walkStarted": true,
+    "pocketHidden": false
+  },
+  "expired": {
+    "active": false,
+    "walkStarted": null,
+    "pocketHidden": true,
+    "buttonDisabled": true
+  },
+  "verification": {
+    "offline_pytest": "PASS",
+    "ruff": "PASS"
+  }
+}

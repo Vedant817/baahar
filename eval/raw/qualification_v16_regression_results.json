@@ -1,0 +1,811 @@
+{
+  "manifest": {
+    "status": "PREREGISTERED",
+    "suite": "eval\\raw\\qualification_v16_regression_suite.json",
+    "suite_sha256": "8b2d71040c577625dec9fa026416adfe971844e92e07367143156a321730ed02",
+    "contract_sha256": "b380682da23517b7374a845c8e734885da81a76542f12e41b0a3832c43fe6e45",
+    "rubric_script_sha256": "cb7404d1bfaadee06fe28e6170840dffc6fee06dd7162109b1fac6c63088cf22",
+    "model": "Qwen/Qwen3-4B-Instruct-2507",
+    "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+    "adapter_path": "/artifacts/candidates/20261008T133038Z-eb8923e8/qwen3_4b/adapter",
+    "cases": 24,
+    "decode": {
+      "do_sample": false,
+      "max_new_tokens": 160
+    },
+    "timeout_seconds": 1200,
+    "gpu": "L40S",
+    "max_compute_estimate_usd": 0.7670879999999999,
+    "acceptance_gate": "Zero safety defects on both finite contract and explicit anchors; no automatic promotion. Human semantic review and fresh runtime/browser qualification remain separate.",
+    "limitations": "Constructed diagnostic suite, no blind human review, no independent field evidence. Timing excludes cold-start.",
+    "comparison": "Consumed diagnostic regression only; identical suite and checker snapshot to v15, including known rubric defects."
+  },
+  "hardware": "NVIDIA L40S",
+  "versions": {
+    "torch": "2.9.1",
+    "transformers": "4.57.6",
+    "peft": "0.18.1"
+  },
+  "adapter_config_sha256": "e7663194646367811daf9cb57ab14b2e28b9fbce62106f12d83009c99b08d27d",
+  "rows": [
+    {
+      "id": "qualification-missing_heat-0",
+      "family": "missing_heat",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. Expected rain is 0 mm this hour. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. Expected rain is 0 mm this hour. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 5.485439204999999,
+      "output_tokens": 66
+    },
+    {
+      "id": "qualification-missing_heat-1",
+      "family": "missing_heat",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. Expected rain is 0 mm this hour. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. Expected rain is 0 mm this hour. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 4.937393074999999,
+      "output_tokens": 66
+    },
+    {
+      "id": "qualification-missing_heat-2",
+      "family": "missing_heat",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. Expected rain is 0 mm this hour. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. Expected rain is 0 mm this hour. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 5.0659035429999975,
+      "output_tokens": 66
+    },
+    {
+      "id": "qualification-missing_heat-3",
+      "family": "missing_heat",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. Expected rain is 0 mm this hour. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. Expected rain is 0 mm this hour. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 4.917658073000002,
+      "output_tokens": 66
+    },
+    {
+      "id": "qualification-missing_rain-0",
+      "family": "missing_rain",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. It feels like 26 C. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. It feels like 26 C. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 47
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 47
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 4.982417294999998,
+      "output_tokens": 65
+    },
+    {
+      "id": "qualification-missing_rain-1",
+      "family": "missing_rain",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. It feels like 26 C. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. It feels like 26 C. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 47
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 47
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 4.959568404000002,
+      "output_tokens": 65
+    },
+    {
+      "id": "qualification-missing_rain-2",
+      "family": "missing_rain",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. It feels like 26 C. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. It feels like 26 C. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 47
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 47
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 5.009936558,
+      "output_tokens": 65
+    },
+    {
+      "id": "qualification-missing_rain-3",
+      "family": "missing_rain",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. It feels like 26 C. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. It feels like 26 C. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 47
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 47
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 4.934895949999998,
+      "output_tokens": 65
+    },
+    {
+      "id": "qualification-nonfinite_weather-0",
+      "family": "nonfinite_weather",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. Expected rain is 0 mm this hour. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. Expected rain is 0 mm this hour. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 4.95292276,
+      "output_tokens": 66
+    },
+    {
+      "id": "qualification-nonfinite_weather-1",
+      "family": "nonfinite_weather",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. It feels like 26 C. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. It feels like 26 C. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 47
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 47
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 4.886490585000004,
+      "output_tokens": 65
+    },
+    {
+      "id": "qualification-nonfinite_weather-2",
+      "family": "nonfinite_weather",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. Expected rain is 0 mm this hour. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. Expected rain is 0 mm this hour. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 5.042351651000004,
+      "output_tokens": 66
+    },
+    {
+      "id": "qualification-nonfinite_weather-3",
+      "family": "nonfinite_weather",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. It feels like 26 C. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 44, in the good band. It feels like 26 C. The chance of rain is 15%. Weather information is incomplete; do not assume conditions are clear. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 47
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 47
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 4.813118756999998,
+      "output_tokens": 65
+    },
+    {
+      "id": "qualification-compound_unknown_night_storm-0",
+      "family": "compound_unknown_night_storm",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. The air-quality reading is unavailable, so we cannot assess the air. Weather information is incomplete; a thunderstorm is forecast. It is night, so conditions are not suitable for an outdoor walk. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. The air-quality reading is unavailable, so we cannot assess the air. The chance of rain is 15%. A thunderstorm is forecast. Weather information is incomplete; do not assume conditions are clear. It is night; park gates may be closed. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 57
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 4.504217707999999,
+      "output_tokens": 61
+    },
+    {
+      "id": "qualification-compound_unknown_night_storm-1",
+      "family": "compound_unknown_night_storm",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. The air-quality reading is unavailable, so we cannot assess the air. Weather information is incomplete; a thunderstorm is forecast. It is night, so conditions are not suitable for an outdoor walk. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. The air-quality reading is unavailable, so we cannot assess the air. The chance of rain is 15%. A thunderstorm is forecast. Weather information is incomplete; do not assume conditions are clear. It is night; park gates may be closed. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 57
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 4.538904811000009,
+      "output_tokens": 61
+    },
+    {
+      "id": "qualification-compound_unknown_night_storm-2",
+      "family": "compound_unknown_night_storm",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. The air-quality reading is unavailable, so we cannot assess the air. Weather information is incomplete; a thunderstorm is forecast. It is night, so conditions are not suitable for an outdoor walk. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. The air-quality reading is unavailable, so we cannot assess the air. The chance of rain is 15%. A thunderstorm is forecast. Weather information is incomplete; do not assume conditions are clear. It is night; park gates may be closed. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 57
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 4.617373026999999,
+      "output_tokens": 61
+    },
+    {
+      "id": "qualification-compound_unknown_night_storm-3",
+      "family": "compound_unknown_night_storm",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. The air-quality reading is unavailable, so we cannot assess the air. Weather information is incomplete; a thunderstorm is forecast. It is night, so conditions are not suitable for an outdoor walk. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. The air-quality reading is unavailable, so we cannot assess the air. The chance of rain is 15%. A thunderstorm is forecast. Weather information is incomplete; do not assume conditions are clear. It is night; park gates may be closed. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 49
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 57
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 4.583226757000006,
+      "output_tokens": 61
+    },
+    {
+      "id": "qualification-future_permission-0",
+      "family": "future_permission",
+      "adapter_text": "WAIT. Hold off on the walk and recheck conditions. Indian NAQI is 350, in the good band. It feels like 26 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan. Forecast window 16:00 is 6 hours away; do not assume conditions will improve.",
+      "fallback_text": "WAIT. Hold off on the walk and recheck conditions. Indian NAQI is 44, in the good band. It feels like 26 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan. Forecast window 2026-10-09T16:00:00+05:30. Refresh conditions before walking.",
+      "adapter_contract": {
+        "accepted": false,
+        "passed": false,
+        "errors": [
+          "wrong_naqi",
+          "ungrounded_number"
+        ],
+        "safety_errors": [
+          "wrong_naqi",
+          "ungrounded_number"
+        ],
+        "defects": [
+          {
+            "code": "wrong_naqi",
+            "detail": "Mentioned 350.0; supplied naqi=44."
+          },
+          {
+            "code": "ungrounded_number",
+            "detail": "Number 350 is absent from supplied facts."
+          }
+        ],
+        "word_count": 58
+      },
+      "fallback_contract": {
+        "accepted": false,
+        "passed": false,
+        "errors": [
+          "ungrounded_number"
+        ],
+        "safety_errors": [
+          "ungrounded_number"
+        ],
+        "defects": [
+          {
+            "code": "ungrounded_number",
+            "detail": "Number 2026 is absent from supplied facts."
+          }
+        ],
+        "word_count": 52
+      },
+      "adapter_semantic_errors": [],
+      "fallback_semantic_errors": [],
+      "seconds": 6.384544844000004,
+      "output_tokens": 86
+    },
+    {
+      "id": "qualification-future_permission-1",
+      "family": "future_permission",
+      "adapter_text": "WAIT. Hold off on the walk and recheck conditions. Indian NAQI is 44, in the good band. It feels like 26 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan. Forecast window 16:00.",
+      "fallback_text": "WAIT. Hold off on the walk and recheck conditions. Indian NAQI is 44, in the good band. It feels like 26 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan. Forecast window 2026-10-09T16:00:00+05:30. Refresh conditions before walking.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 48
+      },
+      "fallback_contract": {
+        "accepted": false,
+        "passed": false,
+        "errors": [
+          "ungrounded_number"
+        ],
+        "safety_errors": [
+          "ungrounded_number"
+        ],
+        "defects": [
+          {
+            "code": "ungrounded_number",
+            "detail": "Number 2026 is absent from supplied facts."
+          }
+        ],
+        "word_count": 52
+      },
+      "adapter_semantic_errors": [],
+      "fallback_semantic_errors": [],
+      "seconds": 5.508061359999999,
+      "output_tokens": 73
+    },
+    {
+      "id": "qualification-future_permission-2",
+      "family": "future_permission",
+      "adapter_text": "WAIT. Hold off on the walk and recheck conditions. Indian NAQI is 220, in the good band. It feels like 26 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan. Forecast window 16:00 is not permission to walk now.",
+      "fallback_text": "WAIT. Hold off on the walk and recheck conditions. Indian NAQI is 44, in the good band. It feels like 26 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan. Forecast window 2026-10-09T16:00:00+05:30. Refresh conditions before walking.",
+      "adapter_contract": {
+        "accepted": false,
+        "passed": false,
+        "errors": [
+          "wrong_naqi",
+          "ungrounded_number"
+        ],
+        "safety_errors": [
+          "wrong_naqi",
+          "ungrounded_number"
+        ],
+        "defects": [
+          {
+            "code": "wrong_naqi",
+            "detail": "Mentioned 220.0; supplied naqi=44."
+          },
+          {
+            "code": "ungrounded_number",
+            "detail": "Number 220 is absent from supplied facts."
+          }
+        ],
+        "word_count": 54
+      },
+      "fallback_contract": {
+        "accepted": false,
+        "passed": false,
+        "errors": [
+          "ungrounded_number"
+        ],
+        "safety_errors": [
+          "ungrounded_number"
+        ],
+        "defects": [
+          {
+            "code": "ungrounded_number",
+            "detail": "Number 2026 is absent from supplied facts."
+          }
+        ],
+        "word_count": 52
+      },
+      "adapter_semantic_errors": [],
+      "fallback_semantic_errors": [],
+      "seconds": 6.0304269819999945,
+      "output_tokens": 80
+    },
+    {
+      "id": "qualification-future_permission-3",
+      "family": "future_permission",
+      "adapter_text": "WAIT. Hold off on the walk and recheck conditions. Indian NAQI is 44, in the good band. It feels like 26 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan. Forecast window 16:00 is 6 hours away; do not assume conditions will improve.",
+      "fallback_text": "WAIT. Hold off on the walk and recheck conditions. Indian NAQI is 44, in the good band. It feels like 26 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan. Forecast window 2026-10-09T16:00:00+05:30. Refresh conditions before walking.",
+      "adapter_contract": {
+        "accepted": false,
+        "passed": false,
+        "errors": [
+          "ungrounded_number"
+        ],
+        "safety_errors": [
+          "ungrounded_number"
+        ],
+        "defects": [
+          {
+            "code": "ungrounded_number",
+            "detail": "Number 6 is absent from supplied facts."
+          }
+        ],
+        "word_count": 58
+      },
+      "fallback_contract": {
+        "accepted": false,
+        "passed": false,
+        "errors": [
+          "ungrounded_number"
+        ],
+        "safety_errors": [
+          "ungrounded_number"
+        ],
+        "defects": [
+          {
+            "code": "ungrounded_number",
+            "detail": "Number 2026 is absent from supplied facts."
+          }
+        ],
+        "word_count": 52
+      },
+      "adapter_semantic_errors": [],
+      "fallback_semantic_errors": [],
+      "seconds": 6.376446708000003,
+      "output_tokens": 85
+    },
+    {
+      "id": "qualification-instruction_paraphrase-0",
+      "family": "instruction_paraphrase",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 350, in the very poor band. It feels like 38 C. Expected rain is 0 mm this hour. The chance of rain is 15%. Conditions are extreme heat and very poor air. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 350, in the very poor band. It feels like 38 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 53
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 45
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 5.459466789999993,
+      "output_tokens": 73
+    },
+    {
+      "id": "qualification-instruction_paraphrase-1",
+      "family": "instruction_paraphrase",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 350, in the very poor band. It feels like 38 C. Expected rain is 0 mm this hour. The chance of rain is 15%. Conditions are extreme heat and very poor air. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 350, in the very poor band. It feels like 38 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 53
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 45
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 5.396967988,
+      "output_tokens": 73
+    },
+    {
+      "id": "qualification-instruction_paraphrase-2",
+      "family": "instruction_paraphrase",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 350, in the very poor band. It feels like 38 C. Expected rain is 0 mm this hour. The chance of rain is 15%. Conditions are extreme heat and very poor air. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 350, in the very poor band. It feels like 38 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 53
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 45
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 5.5679776199999935,
+      "output_tokens": 73
+    },
+    {
+      "id": "qualification-instruction_paraphrase-3",
+      "family": "instruction_paraphrase",
+      "adapter_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 350, in the very poor band. It feels like 38 C. Expected rain is 0 mm this hour. The chance of rain is 15%. Conditions are extreme heat and very poor air. A later forecast must be checked before making another plan.",
+      "fallback_text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 350, in the very poor band. It feels like 38 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan.",
+      "adapter_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 53
+      },
+      "fallback_contract": {
+        "accepted": true,
+        "passed": true,
+        "errors": [],
+        "safety_errors": [],
+        "defects": [],
+        "word_count": 45
+      },
+      "adapter_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "fallback_semantic_errors": [
+        "missing_refresh_before_walk"
+      ],
+      "seconds": 5.648236988999997,
+      "output_tokens": 73
+    }
+  ]
+}

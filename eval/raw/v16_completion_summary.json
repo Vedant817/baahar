@@ -1,0 +1,110 @@
+{
+  "status": "COMPLETED_PROVISIONAL_NO_PROMOTION",
+  "v15_adapter_run": "20261008T112810Z-6067171e",
+  "v16_adapter_run": "20261008T133038Z-eb8923e8",
+  "suite_sha256": "8b2d71040c577625dec9fa026416adfe971844e92e07367143156a321730ed02",
+  "contract_snapshot_sha256": "b380682da23517b7374a845c8e734885da81a76542f12e41b0a3832c43fe6e45",
+  "cases": 24,
+  "v15_finite_accepted": 6,
+  "v16_finite_accepted": 21,
+  "families": {
+    "compound_unknown_night_storm": {
+      "v15_accepted": 0,
+      "v16_accepted": 4,
+      "n": 4
+    },
+    "future_permission": {
+      "v15_accepted": 2,
+      "v16_accepted": 1,
+      "n": 4
+    },
+    "instruction_paraphrase": {
+      "v15_accepted": 4,
+      "v16_accepted": 4,
+      "n": 4
+    },
+    "missing_heat": {
+      "v15_accepted": 0,
+      "v16_accepted": 4,
+      "n": 4
+    },
+    "missing_rain": {
+      "v15_accepted": 0,
+      "v16_accepted": 4,
+      "n": 4
+    },
+    "nonfinite_weather": {
+      "v15_accepted": 0,
+      "v16_accepted": 4,
+      "n": 4
+    }
+  },
+  "v15_finite_defects": {
+    "wrong_apparent_c": 5,
+    "missing_weather_uncertainty": 16,
+    "length": 1,
+    "ungrounded_number": 3,
+    "wrong_precip_mm": 4,
+    "wrong_naqi": 2
+  },
+  "v16_finite_defects": {
+    "wrong_naqi": 2,
+    "ungrounded_number": 3
+  },
+  "v15_semantic_anchor_flags": {
+    "missing_refresh_before_walk": 20,
+    "missing_weather_uncertainty": 16,
+    "walk_now_permission": 3
+  },
+  "v16_semantic_anchor_flags": {
+    "missing_refresh_before_walk": 20
+  },
+  "v16_temporal_outputs": [
+    {
+      "id": "qualification-future_permission-0",
+      "text": "WAIT. Hold off on the walk and recheck conditions. Indian NAQI is 350, in the good band. It feels like 26 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan. Forecast window 16:00 is 6 hours away; do not assume conditions will improve.",
+      "finite_errors": [
+        "wrong_naqi",
+        "ungrounded_number"
+      ],
+      "anchor_flags": []
+    },
+    {
+      "id": "qualification-future_permission-1",
+      "text": "WAIT. Hold off on the walk and recheck conditions. Indian NAQI is 44, in the good band. It feels like 26 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan. Forecast window 16:00.",
+      "finite_errors": [],
+      "anchor_flags": []
+    },
+    {
+      "id": "qualification-future_permission-2",
+      "text": "WAIT. Hold off on the walk and recheck conditions. Indian NAQI is 220, in the good band. It feels like 26 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan. Forecast window 16:00 is not permission to walk now.",
+      "finite_errors": [
+        "wrong_naqi",
+        "ungrounded_number"
+      ],
+      "anchor_flags": []
+    },
+    {
+      "id": "qualification-future_permission-3",
+      "text": "WAIT. Hold off on the walk and recheck conditions. Indian NAQI is 44, in the good band. It feels like 26 C. Expected rain is 0 mm this hour. The chance of rain is 15%. A later forecast must be checked before making another plan. Forecast window 16:00 is 6 hours away; do not assume conditions will improve.",
+      "finite_errors": [
+        "ungrounded_number"
+      ],
+      "anchor_flags": []
+    }
+  ],
+  "limitations": [
+    "Same previously consumed 24-case synthetic suite; regression only, not fresh independent validation.",
+    "No GO-positive cases; cannot compare useful GO prose.",
+    "The refresh anchor misses the correct wording: A later forecast must be checked.",
+    "Temporal prompt facts supply conflicting current and future NAQI; wrong_naqi marks two outputs using supplied current readings.",
+    "Three false-positive v15 walk_now_permission flags were absent in v16; v15 flag regex matched Postpone the walk for now.",
+    "No human semantic review, field test, live serving test or actual billed amount."
+  ],
+  "model_disposition": "Keep Qwen3-4B v16 as best measured provisional adapter for finite contract adherence; do not promote/deploy until a new independent, semantically reviewed suite including current-GO positives and current-hour runtime checks passes.",
+  "compute_estimates_usd_not_actual_billing": {
+    "v15_pair_manifest": 9.205056,
+    "v16_training": 4.602528,
+    "v16_regression": 0.767088
+  }
+}
