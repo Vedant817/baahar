@@ -24,6 +24,24 @@ NO_LGBM_ARTIFACT = Path(__file__).parent / "_no_such_lgbm_model.pkl"
 NO_ENSEMBLE_ARTIFACT = Path(__file__).parent / "_no_such_ensemble_model.pkl"
 
 
+@pytest.fixture(autouse=True)
+def assessment_clock(monkeypatch):
+    """Keep recorded test hours and the assessment clock on the same date.
+
+    Patch clock inputs, never the walking policy. Temporal regression tests can
+    advance the clock or provide an explicit assessment time themselves.
+    """
+    from baahar import score, walk
+
+    class TestDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return BASE.astimezone(tz) if tz else BASE.replace(tzinfo=None)
+
+    monkeypatch.setattr(score, "datetime", TestDateTime)
+    monkeypatch.setattr(walk, "utc_now", lambda: BASE)
+
+
 def make_weather(
     offset_hours: int = 0,
     *,
@@ -88,6 +106,29 @@ def make_slot(offset_hours: int = 0, **kwargs) -> HourSlot:
     return HourSlot(
         weather=make_weather(offset_hours, **kwargs), air=make_air(offset_hours, **air_kwargs)
     )
+
+
+@pytest.fixture(autouse=True)
+def _offline_model_credentials(monkeypatch, request):
+    """Developer credentials must not turn ordinary tests into billable calls."""
+    if request.node.get_closest_marker("network") or request.node.get_closest_marker("gemini"):
+        yield
+        return
+    from baahar.config import get_settings
+
+    for name in (
+        "GEMINI_API_KEY",
+        "TINKER_API_KEY",
+        "ELEVENLABS_API_KEY",
+        "TABPFN_API_KEY",
+        "WAQI_TOKEN",
+        "BAAHAR_MODAL_RUN_ID",
+        "BAAHAR_MODAL_CANDIDATE",
+    ):
+        monkeypatch.setenv(name, "")
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
 
 
 @pytest.fixture(autouse=True)
