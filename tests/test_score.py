@@ -127,6 +127,36 @@ class TestBoundaryBehaviour:
 
 
 class TestScoring:
+    @pytest.mark.parametrize("field", ["apparent_c", "precip_mm"])
+    @pytest.mark.parametrize("value", [None, float("nan"), float("inf")])
+    def test_unknown_heat_or_rain_cannot_recommend_a_walk(self, go_slot, field, value):
+        weather = go_slot.weather.model_copy(update={field: value})
+        incomplete = go_slot.model_copy(update={"weather": weather})
+        plan = build_plan([incomplete], scorer="heuristic")
+        assert plan.overall is Decision.SKIP
+        assert "not guessing" in plan.slots[0].reasons[0]
+
+    def test_optional_weather_context_can_be_absent(self, go_slot):
+        weather = go_slot.weather.model_copy(
+            update={
+                "temp_c": None,
+                "humidity": None,
+                "wind_kmh": None,
+                "uv_index": None,
+                "weather_code": None,
+                "precip_prob": None,
+            }
+        )
+        partial = go_slot.model_copy(update={"weather": weather})
+        assert score_heuristic([partial])[0].decision is Decision.GO
+
+    def test_known_hazard_keeps_its_reason_when_weather_is_missing(self, hazardous_slot):
+        weather = hazardous_slot.weather.model_copy(update={"apparent_c": None, "precip_mm": None})
+        partial = hazardous_slot.model_copy(update={"weather": weather})
+        result = score_heuristic([partial])[0]
+        assert result.decision is Decision.SKIP
+        assert "NAQI" in result.reasons[0]
+
     def test_every_hour_gets_a_decision_and_a_reason(self, go_slot: HourSlot, slot) -> None:
         slots = [go_slot, slot(1, pm25=120.0), slot(2, temp_c=34.0, apparent_c=38.0)]
         scores = score_heuristic(slots)
@@ -344,6 +374,29 @@ class TestScorerSelection:
 
 class TestSafetyAsymmetry:
     """A learned model must never be more permissive than the policy."""
+
+    @pytest.mark.parametrize("scorer", ["score_lgbm", "score_ensemble", "score_tabpfn"])
+    @pytest.mark.parametrize("field", ["apparent_c", "precip_mm"])
+    def test_model_cannot_fill_unknown_safety_weather_with_a_go(self, go_slot, scorer, field):
+        np = pytest.importorskip("numpy")
+        from baahar import score as score_mod
+        from baahar.features import TABPFN_FEATURE_ORDER
+
+        class AlwaysGo:
+            n_features_in_ = len(
+                TABPFN_FEATURE_ORDER if scorer == "score_tabpfn" else COMPACT_FEATURE_NAMES
+            )
+
+            def predict_proba(self, x):
+                return np.tile([[1.0, 0.0, 0.0]], (len(x), 1))
+
+        incomplete = go_slot.model_copy(
+            update={"weather": go_slot.weather.model_copy(update={field: None})}
+        )
+        result = getattr(score_mod, scorer)([incomplete], model=AlwaysGo())[0]
+        assert result.decision is Decision.SKIP
+        assert result.scorer != "heuristic", "the model path must reach its safety gate"
+        assert any("not guessing" in reason for reason in result.reasons)
 
     def test_model_cannot_override_a_skip(self, hazardous_slot: HourSlot) -> None:
         np = pytest.importorskip("numpy")

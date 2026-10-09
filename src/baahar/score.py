@@ -24,9 +24,10 @@ Design rules that the eval section depends on:
 from __future__ import annotations
 
 import logging
+import math
 import os
 from collections.abc import Sequence
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from .config import REPO_ROOT, get_settings
@@ -58,11 +59,44 @@ DEFAULT_ENSEMBLE_ARTIFACT = REPO_ROOT / "eval" / "artifacts" / "ensemble_gono.pk
 # ---------------------------------------------------------------------------
 # Heuristic scorer
 # ---------------------------------------------------------------------------
+def _safety_policy(slot: HourSlot) -> tuple[Decision, list[str]]:
+    """Keep unknown heat or rain from becoming an outdoor recommendation.
+
+    Apparent temperature and hourly precipitation are the two required weather
+    inputs to the safety policy. Optional context such as humidity, UV and wind
+    can be absent without discarding an otherwise usable forecast.
+    """
+    invalid = {
+        name: None
+        for name in ("apparent_c", "precip_mm")
+        if (value := getattr(slot.weather, name)) is not None and not math.isfinite(value)
+    }
+    policy_slot = (
+        slot.model_copy(update={"weather": slot.weather.model_copy(update=invalid)})
+        if invalid
+        else slot
+    )
+    decision, reasons = heuristic_decision(policy_slot)
+    if decision is Decision.SKIP:
+        return decision, reasons
+    missing = [
+        label
+        for label, value in (
+            ("apparent temperature", slot.weather.apparent_c),
+            ("hourly precipitation", slot.weather.precip_mm),
+        )
+        if value is None or not math.isfinite(value)
+    ]
+    if missing:
+        return Decision.SKIP, [f"No usable {' or '.join(missing)} for this hour -- not guessing."]
+    return decision, reasons
+
+
 def score_heuristic(slots: Sequence[HourSlot]) -> list[SlotScore]:
     """Score every hour with the documented policy."""
     out: list[SlotScore] = []
     for slot in slots:
-        decision, reasons = heuristic_decision(slot)
+        decision, reasons = _safety_policy(slot)
         features = features_from_slot(slot)
         out.append(
             SlotScore(
@@ -166,7 +200,7 @@ def _predict_decisions(
                 decisions.append(Decision.WAIT)
         return decisions
 
-    return [heuristic_decision(s)[0] for s in slots]
+    return [_safety_policy(s)[0] for s in slots]
 
 
 # ---------------------------------------------------------------------------
@@ -300,7 +334,7 @@ def score_lgbm(slots: Sequence[HourSlot], model: Any | None = None) -> list[Slot
 
     out: list[SlotScore] = []
     for slot, decision in zip(slots, decisions, strict=True):
-        policy_decision, reasons = heuristic_decision(slot)
+        policy_decision, reasons = _safety_policy(slot)
         # Safety asymmetry: the model may not talk a user into SKIP conditions.
         if decision_rank(decision) < decision_rank(policy_decision):
             decision = policy_decision
@@ -432,7 +466,7 @@ def score_ensemble(
 
     out: list[SlotScore] = []
     for slot, decision in zip(slots, decisions, strict=True):
-        policy_decision, reasons = heuristic_decision(slot)
+        policy_decision, reasons = _safety_policy(slot)
         # Safety asymmetry: the model may not talk a user into SKIP conditions.
         if decision_rank(decision) < decision_rank(policy_decision):
             decision = policy_decision
@@ -602,7 +636,7 @@ def score_tabpfn(slots: Sequence[HourSlot], model: Any | None = None) -> list[Sl
 
     out: list[SlotScore] = []
     for slot, decision in zip(slots, decisions, strict=True):
-        policy_decision, reasons = heuristic_decision(slot)
+        policy_decision, reasons = _safety_policy(slot)
         # Safety asymmetry: the model may not talk a user into SKIP conditions.
         if decision_rank(decision) < decision_rank(policy_decision):
             decision = policy_decision
@@ -822,9 +856,21 @@ def build_plan(
         overall = best.decision
         headline = _headline(overall, best)
 
+    assessment_time = generated_at or datetime.now(tz=UTC)
+    current_slot = next(
+        (
+            s for s in slots
+            if s.time.tzinfo is not None and assessment_time.tzinfo is not None
+            and s.time <= assessment_time < s.time + timedelta(hours=1)
+        ), None
+    )
     return OutdoorPlan(
         city=city,
-        generated_at=generated_at or datetime.now(tz=UTC),
+        generated_at=assessment_time,
+        current_slot=current_slot,
+        current_decision=next(
+            (s.decision for s in scores if current_slot and s.time == current_slot.time), None
+        ),
         window_hours=window_hours,
         overall=overall,
         best_slot=best_slot,
