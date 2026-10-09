@@ -1,0 +1,13 @@
+# Pollutant sequence v2: squared-error loss ablation
+
+This is a distinct preregistered hosted experiment. The only training change from v1 is replacing SmoothL1 with MSE on the same train-standardized six-pollutant, six-horizon targets. Large residuals receive a quadratic penalty; whether this improves rare-hour detection is a hypothesis, not a result. Development standardized MAE still selects checkpoints.
+
+All data, eligibility, phase bounds, normalization, architecture, seeds 0/1/2, optimizer, batch size, maximum 60 epochs, patience 8, prediction clipping, category rounding and metric/gate rules stay as documented in the frozen [v1 protocol](DEEP_POLLUTANT_STUDY_PROTOCOL.md). One T4 container, two-hour timeout, no retries. No local weights or heavy installation. Weights stay on Modal.
+
+The primary incumbent is the completed **v1 fixed three-seed concentration-average ensemble**, not a diagnostic-selected seed. Its raw result SHA and call ID are pinned in the new manifest. The runner checks matching timestamps, actual pollutant arrays, NAQI/category targets, dataset and partitions. Unchanged tree/persistence predictions must reproduce exactly. Every v2 seed is reported, but the next-approach decision uses the fixed mean. The same paired utility gate is applied against this incumbent in both diagnostic periods; the tree remains a secondary comparison. Passing against the weaker tree alone does not establish improvement over v1.
+
+The v1 fixed ensemble gained Poor+ recall over the matched tree on both consumed diagnostic windows, while missing all eleven eligible Very Poor+ pollution hours. Sparse tail training support is unchanged: five Very Poor+ training hours in one episode. There are no official Severe positives in any phase, and no Very Poor+ positives in the later diagnostic window. Those recalls remain UNMEASURED. Correlated modeled hours are not independent events. This study cannot establish station air safety, medical benefit or prospective generalization.
+
+This loss choice responds to already-consumed development/diagnostic results and is adaptive research. Neither diagnostic window is pristine. CAMS/ERA5 modeled source, canonical instantaneous breakpoint proxy, official category-name correction and upper ozone averaging limitations from v1 remain applicable. No future weather enters predictors; no probability calibration, human review, field test, billed cost, automatic promotion or deployment is claimed.
+
+Preserve v1 sources/results and historical loops. Save v2 in a distinct namespace with source/result hashes, actual call/app IDs, complete finite metrics and training histories. A routine infrastructure or data mismatch must not trigger a duplicate submission or weakened evaluation gate.

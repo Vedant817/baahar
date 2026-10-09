@@ -1,0 +1,3722 @@
+{
+  "status": "COMPLETED",
+  "call_id": "fc-01M4FGJG73MFMNR1EZFCNNFNZY",
+  "app_id": "ap-xvJUwXwSUCMSjNpflZe9Xn",
+  "raw_result_sha256": "8f48c3852746486ecd6ffef58b9c30e4e9f1af7cd57bdf0e0993d4ff3d9fad00",
+  "target_contract": "Hourly canonical breakpoint proxy, not CPCB averaging-compliant station NAQI. Official 301+ Very Poor and 401+ Severe; historical code labels these severe/hazardous respectively.",
+  "limitations": "Consumed modeled CAMS/ERA5 archive; no station/prospective evidence, no future weather input, no probabilities, no automatic promotion.",
+  "training": {
+    "0": {
+      "epochs": [
+        {
+          "epoch": 1,
+          "development_standardized_mae": 0.5318939089775085
+        },
+        {
+          "epoch": 2,
+          "development_standardized_mae": 0.4709816873073578
+        },
+        {
+          "epoch": 3,
+          "development_standardized_mae": 0.44311287999153137
+        },
+        {
+          "epoch": 4,
+          "development_standardized_mae": 0.43572258949279785
+        },
+        {
+          "epoch": 5,
+          "development_standardized_mae": 0.4245621860027313
+        },
+        {
+          "epoch": 6,
+          "development_standardized_mae": 0.42494651675224304
+        },
+        {
+          "epoch": 7,
+          "development_standardized_mae": 0.41648247838020325
+        },
+        {
+          "epoch": 8,
+          "development_standardized_mae": 0.4254140555858612
+        },
+        {
+          "epoch": 9,
+          "development_standardized_mae": 0.41796958446502686
+        },
+        {
+          "epoch": 10,
+          "development_standardized_mae": 0.4188231825828552
+        },
+        {
+          "epoch": 11,
+          "development_standardized_mae": 0.4130082130432129
+        },
+        {
+          "epoch": 12,
+          "development_standardized_mae": 0.41129088401794434
+        },
+        {
+          "epoch": 13,
+          "development_standardized_mae": 0.41023918986320496
+        },
+        {
+          "epoch": 14,
+          "development_standardized_mae": 0.40488335490226746
+        },
+        {
+          "epoch": 15,
+          "development_standardized_mae": 0.40301513671875
+        },
+        {
+          "epoch": 16,
+          "development_standardized_mae": 0.4082225263118744
+        },
+        {
+          "epoch": 17,
+          "development_standardized_mae": 0.40466421842575073
+        },
+        {
+          "epoch": 18,
+          "development_standardized_mae": 0.41041991114616394
+        },
+        {
+          "epoch": 19,
+          "development_standardized_mae": 0.4114497900009155
+        },
+        {
+          "epoch": 20,
+          "development_standardized_mae": 0.40441423654556274
+        },
+        {
+          "epoch": 21,
+          "development_standardized_mae": 0.41015738248825073
+        },
+        {
+          "epoch": 22,
+          "development_standardized_mae": 0.4012376070022583
+        },
+        {
+          "epoch": 23,
+          "development_standardized_mae": 0.40541476011276245
+        },
+        {
+          "epoch": 24,
+          "development_standardized_mae": 0.407985121011734
+        },
+        {
+          "epoch": 25,
+          "development_standardized_mae": 0.4012269079685211
+        },
+        {
+          "epoch": 26,
+          "development_standardized_mae": 0.4045993387699127
+        },
+        {
+          "epoch": 27,
+          "development_standardized_mae": 0.40839338302612305
+        },
+        {
+          "epoch": 28,
+          "development_standardized_mae": 0.4002125561237335
+        },
+        {
+          "epoch": 29,
+          "development_standardized_mae": 0.39922404289245605
+        },
+        {
+          "epoch": 30,
+          "development_standardized_mae": 0.4007304310798645
+        },
+        {
+          "epoch": 31,
+          "development_standardized_mae": 0.40982845425605774
+        },
+        {
+          "epoch": 32,
+          "development_standardized_mae": 0.4077672064304352
+        },
+        {
+          "epoch": 33,
+          "development_standardized_mae": 0.41000694036483765
+        },
+        {
+          "epoch": 34,
+          "development_standardized_mae": 0.4022595286369324
+        },
+        {
+          "epoch": 35,
+          "development_standardized_mae": 0.40290746092796326
+        },
+        {
+          "epoch": 36,
+          "development_standardized_mae": 0.4052235186100006
+        },
+        {
+          "epoch": 37,
+          "development_standardized_mae": 0.4036870300769806
+        }
+      ],
+      "best_development_standardized_mae": 0.39922404289245605
+    },
+    "1": {
+      "epochs": [
+        {
+          "epoch": 1,
+          "development_standardized_mae": 0.5462275147438049
+        },
+        {
+          "epoch": 2,
+          "development_standardized_mae": 0.48531949520111084
+        },
+        {
+          "epoch": 3,
+          "development_standardized_mae": 0.451860636472702
+        },
+        {
+          "epoch": 4,
+          "development_standardized_mae": 0.44101470708847046
+        },
+        {
+          "epoch": 5,
+          "development_standardized_mae": 0.4326123595237732
+        },
+        {
+          "epoch": 6,
+          "development_standardized_mae": 0.4273429214954376
+        },
+        {
+          "epoch": 7,
+          "development_standardized_mae": 0.4216949939727783
+        },
+        {
+          "epoch": 8,
+          "development_standardized_mae": 0.41337838768959045
+        },
+        {
+          "epoch": 9,
+          "development_standardized_mae": 0.41486048698425293
+        },
+        {
+          "epoch": 10,
+          "development_standardized_mae": 0.4026075005531311
+        },
+        {
+          "epoch": 11,
+          "development_standardized_mae": 0.4038965702056885
+        },
+        {
+          "epoch": 12,
+          "development_standardized_mae": 0.40090081095695496
+        },
+        {
+          "epoch": 13,
+          "development_standardized_mae": 0.4013124406337738
+        },
+        {
+          "epoch": 14,
+          "development_standardized_mae": 0.40018025040626526
+        },
+        {
+          "epoch": 15,
+          "development_standardized_mae": 0.40413400530815125
+        },
+        {
+          "epoch": 16,
+          "development_standardized_mae": 0.40210041403770447
+        },
+        {
+          "epoch": 17,
+          "development_standardized_mae": 0.40274661779403687
+        },
+        {
+          "epoch": 18,
+          "development_standardized_mae": 0.3962729871273041
+        },
+        {
+          "epoch": 19,
+          "development_standardized_mae": 0.3914526700973511
+        },
+        {
+          "epoch": 20,
+          "development_standardized_mae": 0.40025973320007324
+        },
+        {
+          "epoch": 21,
+          "development_standardized_mae": 0.40355154871940613
+        },
+        {
+          "epoch": 22,
+          "development_standardized_mae": 0.39235976338386536
+        },
+        {
+          "epoch": 23,
+          "development_standardized_mae": 0.39965277910232544
+        },
+        {
+          "epoch": 24,
+          "development_standardized_mae": 0.39739909768104553
+        },
+        {
+          "epoch": 25,
+          "development_standardized_mae": 0.4006985127925873
+        },
+        {
+          "epoch": 26,
+          "development_standardized_mae": 0.39918607473373413
+        },
+        {
+          "epoch": 27,
+          "development_standardized_mae": 0.39374151825904846
+        }
+      ],
+      "best_development_standardized_mae": 0.3914526700973511
+    },
+    "2": {
+      "epochs": [
+        {
+          "epoch": 1,
+          "development_standardized_mae": 0.5509622693061829
+        },
+        {
+          "epoch": 2,
+          "development_standardized_mae": 0.4780685603618622
+        },
+        {
+          "epoch": 3,
+          "development_standardized_mae": 0.4488282799720764
+        },
+        {
+          "epoch": 4,
+          "development_standardized_mae": 0.4332575798034668
+        },
+        {
+          "epoch": 5,
+          "development_standardized_mae": 0.4284595847129822
+        },
+        {
+          "epoch": 6,
+          "development_standardized_mae": 0.41903018951416016
+        },
+        {
+          "epoch": 7,
+          "development_standardized_mae": 0.412628710269928
+        },
+        {
+          "epoch": 8,
+          "development_standardized_mae": 0.40720614790916443
+        },
+        {
+          "epoch": 9,
+          "development_standardized_mae": 0.40392589569091797
+        },
+        {
+          "epoch": 10,
+          "development_standardized_mae": 0.40224578976631165
+        },
+        {
+          "epoch": 11,
+          "development_standardized_mae": 0.4048258066177368
+        },
+        {
+          "epoch": 12,
+          "development_standardized_mae": 0.40147918462753296
+        },
+        {
+          "epoch": 13,
+          "development_standardized_mae": 0.39799174666404724
+        },
+        {
+          "epoch": 14,
+          "development_standardized_mae": 0.3994278907775879
+        },
+        {
+          "epoch": 15,
+          "development_standardized_mae": 0.40058469772338867
+        },
+        {
+          "epoch": 16,
+          "development_standardized_mae": 0.3928055465221405
+        },
+        {
+          "epoch": 17,
+          "development_standardized_mae": 0.3942287564277649
+        },
+        {
+          "epoch": 18,
+          "development_standardized_mae": 0.3908011317253113
+        },
+        {
+          "epoch": 19,
+          "development_standardized_mae": 0.39992791414260864
+        },
+        {
+          "epoch": 20,
+          "development_standardized_mae": 0.3874983489513397
+        },
+        {
+          "epoch": 21,
+          "development_standardized_mae": 0.3999705910682678
+        },
+        {
+          "epoch": 22,
+          "development_standardized_mae": 0.3874264657497406
+        },
+        {
+          "epoch": 23,
+          "development_standardized_mae": 0.38912269473075867
+        },
+        {
+          "epoch": 24,
+          "development_standardized_mae": 0.38884684443473816
+        },
+        {
+          "epoch": 25,
+          "development_standardized_mae": 0.3990095257759094
+        },
+        {
+          "epoch": 26,
+          "development_standardized_mae": 0.38846513628959656
+        },
+        {
+          "epoch": 27,
+          "development_standardized_mae": 0.39450332522392273
+        },
+        {
+          "epoch": 28,
+          "development_standardized_mae": 0.38400131464004517
+        },
+        {
+          "epoch": 29,
+          "development_standardized_mae": 0.3897378146648407
+        },
+        {
+          "epoch": 30,
+          "development_standardized_mae": 0.39648646116256714
+        },
+        {
+          "epoch": 31,
+          "development_standardized_mae": 0.3940867483615875
+        },
+        {
+          "epoch": 32,
+          "development_standardized_mae": 0.3899363875389099
+        },
+        {
+          "epoch": 33,
+          "development_standardized_mae": 0.39086517691612244
+        },
+        {
+          "epoch": 34,
+          "development_standardized_mae": 0.390042245388031
+        },
+        {
+          "epoch": 35,
+          "development_standardized_mae": 0.39306217432022095
+        },
+        {
+          "epoch": 36,
+          "development_standardized_mae": 0.3880530595779419
+        }
+      ],
+      "best_development_standardized_mae": 0.38400131464004517
+    }
+  },
+  "periods": [
+    {
+      "partition": "development",
+      "count": 1435,
+      "legacy_class_support": {
+        "good": 208,
+        "satisfactory": 642,
+        "moderate": 417,
+        "poor": 146,
+        "severe": 22,
+        "hazardous": 0
+      },
+      "models": {
+        "tcn_seed_0": {
+          "accuracy": 0.7031358885017421,
+          "confusion_matrix": [
+            [
+              143,
+              65,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              41,
+              558,
+              43,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              141,
+              267,
+              9,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              105,
+              41,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              4,
+              18,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.5090532994439958,
+          "risk": {
+            "poor_or_worse": {
+              "support": 168,
+              "negative_support": 1267,
+              "misses": 109,
+              "recall": 0.35119047619047616,
+              "false_alarms": 9,
+              "false_alarm_rate": 0.007103393843725336,
+              "precision": 0.8676470588235294,
+              "ranking_average_precision": 0.8169456065585295,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 28,
+                "any_hit": 15,
+                "full_hit": 1,
+                "onset_hit": 4
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 22,
+              "negative_support": 1413,
+              "misses": 22,
+              "recall": 0.0,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": 0.39354902885431414,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 5,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 1435,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 6.98257553769869,
+              "rmse": 9.797504369998446
+            },
+            "pm10": {
+              "mae": 9.117049870328625,
+              "rmse": 12.188352174031232
+            },
+            "nitrogen_dioxide": {
+              "mae": 9.8958601095845,
+              "rmse": 17.98947805054818
+            },
+            "ozone": {
+              "mae": 18.011051538708998,
+              "rmse": 23.726503287026116
+            },
+            "sulphur_dioxide": {
+              "mae": 2.7319669931218202,
+              "rmse": 4.459046657342241
+            },
+            "carbon_monoxide": {
+              "mae": 114.7723062255022,
+              "rmse": 162.51057194297454
+            }
+          },
+          "naqi_mae": 21.75954368976791,
+          "naqi_rmse": 31.828643699607973,
+          "negative_concentration_clips": 6
+        },
+        "tcn_seed_1": {
+          "accuracy": 0.7331010452961673,
+          "confusion_matrix": [
+            [
+              137,
+              71,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              33,
+              579,
+              30,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              132,
+              271,
+              14,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              81,
+              65,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              3,
+              19,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.5493334662240198,
+          "risk": {
+            "poor_or_worse": {
+              "support": 168,
+              "negative_support": 1267,
+              "misses": 84,
+              "recall": 0.5,
+              "false_alarms": 14,
+              "false_alarm_rate": 0.011049723756906077,
+              "precision": 0.8571428571428571,
+              "ranking_average_precision": 0.8208808363476923,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 28,
+                "any_hit": 22,
+                "full_hit": 2,
+                "onset_hit": 2
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 22,
+              "negative_support": 1413,
+              "misses": 22,
+              "recall": 0.0,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": 0.25981264847829055,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 5,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 1435,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 6.688971197576118,
+              "rmse": 9.227432256485283
+            },
+            "pm10": {
+              "mae": 8.816200992834508,
+              "rmse": 11.532652435935058
+            },
+            "nitrogen_dioxide": {
+              "mae": 8.632868089489934,
+              "rmse": 15.364460607320726
+            },
+            "ozone": {
+              "mae": 14.56970452953148,
+              "rmse": 19.165822813633337
+            },
+            "sulphur_dioxide": {
+              "mae": 2.708954361485796,
+              "rmse": 4.231144896992135
+            },
+            "carbon_monoxide": {
+              "mae": 119.89705100782643,
+              "rmse": 167.4077843594572
+            }
+          },
+          "naqi_mae": 19.460351383282994,
+          "naqi_rmse": 29.133622639131858,
+          "negative_concentration_clips": 22
+        },
+        "tcn_seed_2": {
+          "accuracy": 0.7233449477351916,
+          "confusion_matrix": [
+            [
+              159,
+              49,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              55,
+              553,
+              34,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              131,
+              272,
+              14,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              89,
+              54,
+              3,
+              0
+            ],
+            [
+              0,
+              0,
+              3,
+              19,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.5377844229229426,
+          "risk": {
+            "poor_or_worse": {
+              "support": 168,
+              "negative_support": 1267,
+              "misses": 92,
+              "recall": 0.4523809523809524,
+              "false_alarms": 14,
+              "false_alarm_rate": 0.011049723756906077,
+              "precision": 0.8444444444444444,
+              "ranking_average_precision": 0.8196913533602862,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 28,
+                "any_hit": 21,
+                "full_hit": 1,
+                "onset_hit": 1
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 22,
+              "negative_support": 1413,
+              "misses": 22,
+              "recall": 0.0,
+              "false_alarms": 3,
+              "false_alarm_rate": 0.0021231422505307855,
+              "precision": 0.0,
+              "ranking_average_precision": 0.35341748818424323,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 5,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 1435,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 6.752072181300655,
+              "rmse": 9.46055746937004
+            },
+            "pm10": {
+              "mae": 8.616938529890762,
+              "rmse": 11.586489340153285
+            },
+            "nitrogen_dioxide": {
+              "mae": 9.318718545530842,
+              "rmse": 16.790525322620336
+            },
+            "ozone": {
+              "mae": 15.85067274367296,
+              "rmse": 20.53464542440426
+            },
+            "sulphur_dioxide": {
+              "mae": 2.8345437878640105,
+              "rmse": 4.6531958298440745
+            },
+            "carbon_monoxide": {
+              "mae": 107.6888176030287,
+              "rmse": 150.0163239829669
+            }
+          },
+          "naqi_mae": 20.326386055525255,
+          "naqi_rmse": 29.730409412090843,
+          "negative_concentration_clips": 2
+        },
+        "tcn_fixed_mean": {
+          "accuracy": 0.7303135888501742,
+          "confusion_matrix": [
+            [
+              154,
+              54,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              47,
+              566,
+              29,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              134,
+              277,
+              6,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              95,
+              51,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              2,
+              20,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.5393906692208796,
+          "risk": {
+            "poor_or_worse": {
+              "support": 168,
+              "negative_support": 1267,
+              "misses": 97,
+              "recall": 0.4226190476190476,
+              "false_alarms": 6,
+              "false_alarm_rate": 0.004735595895816891,
+              "precision": 0.922077922077922,
+              "ranking_average_precision": 0.8373658487200989,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 28,
+                "any_hit": 17,
+                "full_hit": 2,
+                "onset_hit": 2
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 22,
+              "negative_support": 1413,
+              "misses": 22,
+              "recall": 0.0,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": 0.3377837865715281,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 5,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 1435,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 6.6932382372555566,
+              "rmse": 9.3501914345232
+            },
+            "pm10": {
+              "mae": 8.671717300024895,
+              "rmse": 11.493312902552242
+            },
+            "nitrogen_dioxide": {
+              "mae": 8.95293717779785,
+              "rmse": 16.459004076704844
+            },
+            "ozone": {
+              "mae": 15.325121421752979,
+              "rmse": 20.276660100797457
+            },
+            "sulphur_dioxide": {
+              "mae": 2.677272779272663,
+              "rmse": 4.363497644689326
+            },
+            "carbon_monoxide": {
+              "mae": 109.58440530559467,
+              "rmse": 153.7286134106291
+            }
+          },
+          "naqi_mae": 19.791847274350975,
+          "naqi_rmse": 29.67927455546067,
+          "negative_concentration_clips": 2
+        },
+        "paired_lightgbm": {
+          "accuracy": 0.7435540069686412,
+          "confusion_matrix": [
+            [
+              149,
+              59,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              43,
+              578,
+              21,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              131,
+              271,
+              15,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              77,
+              69,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              2,
+              20,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.5609350829823235,
+          "risk": {
+            "poor_or_worse": {
+              "support": 168,
+              "negative_support": 1267,
+              "misses": 79,
+              "recall": 0.5297619047619048,
+              "false_alarms": 15,
+              "false_alarm_rate": 0.011838989739542225,
+              "precision": 0.8557692307692307,
+              "ranking_average_precision": 0.8342833128395308,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 28,
+                "any_hit": 21,
+                "full_hit": 3,
+                "onset_hit": 11
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 22,
+              "negative_support": 1413,
+              "misses": 22,
+              "recall": 0.0,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": 0.506143831374106,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 5,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 1435,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 6.846958148558588,
+              "rmse": 9.27487814183824
+            },
+            "pm10": {
+              "mae": 8.948832064801023,
+              "rmse": 11.73035205397686
+            },
+            "nitrogen_dioxide": {
+              "mae": 8.93180178867234,
+              "rmse": 16.762294938706287
+            },
+            "ozone": {
+              "mae": 14.211859465360002,
+              "rmse": 18.83573899138291
+            },
+            "sulphur_dioxide": {
+              "mae": 2.771184338778932,
+              "rmse": 4.524357335152389
+            },
+            "carbon_monoxide": {
+              "mae": 97.54022361181268,
+              "rmse": 139.77595836869588
+            }
+          },
+          "naqi_mae": 19.552851317407406,
+          "naqi_rmse": 29.201551594468192,
+          "negative_concentration_clips": 0
+        },
+        "persistence": {
+          "accuracy": 0.36445993031358886,
+          "confusion_matrix": [
+            [
+              88,
+              104,
+              16,
+              0,
+              0,
+              0
+            ],
+            [
+              80,
+              294,
+              220,
+              45,
+              3,
+              0
+            ],
+            [
+              32,
+              161,
+              126,
+              83,
+              15,
+              0
+            ],
+            [
+              4,
+              76,
+              47,
+              15,
+              4,
+              0
+            ],
+            [
+              0,
+              7,
+              12,
+              3,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.25771682154678405,
+          "risk": {
+            "poor_or_worse": {
+              "support": 168,
+              "negative_support": 1267,
+              "misses": 146,
+              "recall": 0.13095238095238096,
+              "false_alarms": 146,
+              "false_alarm_rate": 0.11523283346487766,
+              "precision": 0.13095238095238096,
+              "ranking_average_precision": 0.1379726092993644,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 28,
+                "any_hit": 13,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 22,
+              "negative_support": 1413,
+              "misses": 22,
+              "recall": 0.0,
+              "false_alarms": 22,
+              "false_alarm_rate": 0.01556970983722576,
+              "precision": 0.0,
+              "ranking_average_precision": 0.021424502302789653,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 5,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 1435,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 10.258397212543553,
+              "rmse": 15.160377938344727
+            },
+            "pm10": {
+              "mae": 11.165783972125434,
+              "rmse": 16.269308657136744
+            },
+            "nitrogen_dioxide": {
+              "mae": 24.178118466898955,
+              "rmse": 36.133895213154936
+            },
+            "ozone": {
+              "mae": 53.90731707317073,
+              "rmse": 70.44626785751156
+            },
+            "sulphur_dioxide": {
+              "mae": 5.65595818815331,
+              "rmse": 7.986146105395564
+            },
+            "carbon_monoxide": {
+              "mae": 202.01811846689895,
+              "rmse": 252.95912823515835
+            }
+          },
+          "naqi_mae": 62.60367945617271,
+          "naqi_rmse": 84.20778452377385,
+          "negative_concentration_clips": 0
+        },
+        "v1_fixed_mean": {
+          "accuracy": 0.7386759581881533,
+          "confusion_matrix": [
+            [
+              156,
+              52,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              51,
+              561,
+              30,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              133,
+              272,
+              12,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              75,
+              71,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              22,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.5622080336908966,
+          "risk": {
+            "poor_or_worse": {
+              "support": 168,
+              "negative_support": 1267,
+              "misses": 75,
+              "recall": 0.5535714285714286,
+              "false_alarms": 12,
+              "false_alarm_rate": 0.009471191791633781,
+              "precision": 0.8857142857142857,
+              "ranking_average_precision": 0.8428035094721397,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 28,
+                "any_hit": 21,
+                "full_hit": 4,
+                "onset_hit": 4
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 22,
+              "negative_support": 1413,
+              "misses": 22,
+              "recall": 0.0,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": 0.3307663056922875,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 5,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 1435,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 6.556963533641948,
+              "rmse": 9.054864832513793
+            },
+            "pm10": {
+              "mae": 8.56476934962671,
+              "rmse": 11.261804791248448
+            },
+            "nitrogen_dioxide": {
+              "mae": 8.833843541937398,
+              "rmse": 16.370947229108282
+            },
+            "ozone": {
+              "mae": 14.36940255770915,
+              "rmse": 18.953744078669775
+            },
+            "sulphur_dioxide": {
+              "mae": 2.570707351433515,
+              "rmse": 4.2288848145659985
+            },
+            "carbon_monoxide": {
+              "mae": 106.868981969825,
+              "rmse": 149.92901238374887
+            }
+          },
+          "naqi_mae": 18.936316637313734,
+          "naqi_rmse": 28.20007901852887,
+          "negative_concentration_clips": 3
+        }
+      }
+    },
+    {
+      "partition": "diagnostic_pollution",
+      "count": 2107,
+      "legacy_class_support": {
+        "good": 32,
+        "satisfactory": 982,
+        "moderate": 845,
+        "poor": 237,
+        "severe": 11,
+        "hazardous": 0
+      },
+      "models": {
+        "tcn_seed_0": {
+          "accuracy": 0.7807308970099668,
+          "confusion_matrix": [
+            [
+              0,
+              32,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              919,
+              63,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              185,
+              623,
+              37,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              134,
+              103,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              10,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.429599742481704,
+          "risk": {
+            "poor_or_worse": {
+              "support": 248,
+              "negative_support": 1859,
+              "misses": 135,
+              "recall": 0.45564516129032256,
+              "false_alarms": 37,
+              "false_alarm_rate": 0.019903173749327596,
+              "precision": 0.7533333333333333,
+              "ranking_average_precision": 0.7147620582210203,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 49,
+                "any_hit": 37,
+                "full_hit": 10,
+                "onset_hit": 21
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 11,
+              "negative_support": 2096,
+              "misses": 11,
+              "recall": 0.0,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": 0.17236262873075753,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 4,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 2107,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 5.982278236642838,
+              "rmse": 7.7419259085904795
+            },
+            "pm10": {
+              "mae": 7.49532339079118,
+              "rmse": 9.510200837889368
+            },
+            "nitrogen_dioxide": {
+              "mae": 5.746781492098351,
+              "rmse": 9.784395343029797
+            },
+            "ozone": {
+              "mae": 12.847041351669551,
+              "rmse": 16.741553455834005
+            },
+            "sulphur_dioxide": {
+              "mae": 2.432984074913425,
+              "rmse": 3.385135592818704
+            },
+            "carbon_monoxide": {
+              "mae": 83.74858862934511,
+              "rmse": 127.41979466446553
+            }
+          },
+          "naqi_mae": 17.103567836278938,
+          "naqi_rmse": 24.609023101253143,
+          "negative_concentration_clips": 120
+        },
+        "tcn_seed_1": {
+          "accuracy": 0.7892738490745135,
+          "confusion_matrix": [
+            [
+              2,
+              30,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              942,
+              39,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              211,
+              601,
+              33,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              119,
+              118,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              11,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.46506976436501113,
+          "risk": {
+            "poor_or_worse": {
+              "support": 248,
+              "negative_support": 1859,
+              "misses": 119,
+              "recall": 0.5201612903225806,
+              "false_alarms": 33,
+              "false_alarm_rate": 0.01775147928994083,
+              "precision": 0.7962962962962963,
+              "ranking_average_precision": 0.7846009315398557,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 49,
+                "any_hit": 36,
+                "full_hit": 6,
+                "onset_hit": 11
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 11,
+              "negative_support": 2096,
+              "misses": 11,
+              "recall": 0.0,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": 0.11104185680557271,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 4,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 2107,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 6.186892367363328,
+              "rmse": 7.917274125302587
+            },
+            "pm10": {
+              "mae": 7.916211131004596,
+              "rmse": 10.003278945609551
+            },
+            "nitrogen_dioxide": {
+              "mae": 6.645853516230029,
+              "rmse": 10.288657677944162
+            },
+            "ozone": {
+              "mae": 12.456515398462246,
+              "rmse": 16.12089633078383
+            },
+            "sulphur_dioxide": {
+              "mae": 2.532916486447283,
+              "rmse": 3.397448684735488
+            },
+            "carbon_monoxide": {
+              "mae": 91.65061509099478,
+              "rmse": 134.1162483356518
+            }
+          },
+          "naqi_mae": 16.45418025194359,
+          "naqi_rmse": 23.35885670091206,
+          "negative_concentration_clips": 22
+        },
+        "tcn_seed_2": {
+          "accuracy": 0.7783578547698149,
+          "confusion_matrix": [
+            [
+              6,
+              26,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              3,
+              945,
+              34,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              225,
+              580,
+              40,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              127,
+              109,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              4,
+              7,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.48886408155298167,
+          "risk": {
+            "poor_or_worse": {
+              "support": 248,
+              "negative_support": 1859,
+              "misses": 132,
+              "recall": 0.46774193548387094,
+              "false_alarms": 40,
+              "false_alarm_rate": 0.02151694459386767,
+              "precision": 0.7435897435897436,
+              "ranking_average_precision": 0.7241032629138425,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 49,
+                "any_hit": 36,
+                "full_hit": 5,
+                "onset_hit": 9
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 11,
+              "negative_support": 2096,
+              "misses": 11,
+              "recall": 0.0,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": 0.17335984324529083,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 4,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 2107,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 5.980575945429845,
+              "rmse": 7.7393126514178086
+            },
+            "pm10": {
+              "mae": 7.273856369838971,
+              "rmse": 9.155720945910476
+            },
+            "nitrogen_dioxide": {
+              "mae": 6.199169743005926,
+              "rmse": 9.903923899067216
+            },
+            "ozone": {
+              "mae": 12.57174491357796,
+              "rmse": 16.611378407799606
+            },
+            "sulphur_dioxide": {
+              "mae": 2.410290458028847,
+              "rmse": 3.4021981572360387
+            },
+            "carbon_monoxide": {
+              "mae": 83.9834966722631,
+              "rmse": 123.24197162470492
+            }
+          },
+          "naqi_mae": 16.936516770351197,
+          "naqi_rmse": 24.657888417086735,
+          "negative_concentration_clips": 13
+        },
+        "tcn_fixed_mean": {
+          "accuracy": 0.783578547698149,
+          "confusion_matrix": [
+            [
+              3,
+              29,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              2,
+              944,
+              36,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              214,
+              599,
+              32,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              132,
+              105,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              10,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.46443996198642223,
+          "risk": {
+            "poor_or_worse": {
+              "support": 248,
+              "negative_support": 1859,
+              "misses": 133,
+              "recall": 0.4637096774193548,
+              "false_alarms": 32,
+              "false_alarm_rate": 0.017213555675094135,
+              "precision": 0.782312925170068,
+              "ranking_average_precision": 0.7570843992361227,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 49,
+                "any_hit": 33,
+                "full_hit": 9,
+                "onset_hit": 14
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 11,
+              "negative_support": 2096,
+              "misses": 11,
+              "recall": 0.0,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": 0.17663645623639146,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 4,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 2107,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 5.941983406062558,
+              "rmse": 7.650688806090216
+            },
+            "pm10": {
+              "mae": 7.365460088937175,
+              "rmse": 9.265327519369059
+            },
+            "nitrogen_dioxide": {
+              "mae": 5.862768895356373,
+              "rmse": 9.66718165784713
+            },
+            "ozone": {
+              "mae": 12.085782567455698,
+              "rmse": 15.821189848156958
+            },
+            "sulphur_dioxide": {
+              "mae": 2.375946377745087,
+              "rmse": 3.307725790419915
+            },
+            "carbon_monoxide": {
+              "mae": 82.55990192840576,
+              "rmse": 123.70832398261163
+            }
+          },
+          "naqi_mae": 16.262443015559015,
+          "naqi_rmse": 23.600323856169084,
+          "negative_concentration_clips": 22
+        },
+        "paired_lightgbm": {
+          "accuracy": 0.7944945420028476,
+          "confusion_matrix": [
+            [
+              7,
+              25,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              3,
+              936,
+              43,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              195,
+              623,
+              27,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              129,
+              108,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              11,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.5065285515722041,
+          "risk": {
+            "poor_or_worse": {
+              "support": 248,
+              "negative_support": 1859,
+              "misses": 129,
+              "recall": 0.4798387096774194,
+              "false_alarms": 27,
+              "false_alarm_rate": 0.014523937600860678,
+              "precision": 0.815068493150685,
+              "ranking_average_precision": 0.8043083402078749,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 49,
+                "any_hit": 29,
+                "full_hit": 10,
+                "onset_hit": 16
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 11,
+              "negative_support": 2096,
+              "misses": 11,
+              "recall": 0.0,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": 0.2703746773482653,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 4,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 2107,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 5.803663028441821,
+              "rmse": 7.616236478076294
+            },
+            "pm10": {
+              "mae": 6.779333819327099,
+              "rmse": 8.828822562753446
+            },
+            "nitrogen_dioxide": {
+              "mae": 5.067108266203318,
+              "rmse": 9.399230990963428
+            },
+            "ozone": {
+              "mae": 11.956651626241195,
+              "rmse": 15.521617036016853
+            },
+            "sulphur_dioxide": {
+              "mae": 2.5384153403065697,
+              "rmse": 3.609681857378116
+            },
+            "carbon_monoxide": {
+              "mae": 83.34388311927478,
+              "rmse": 129.15435375052067
+            }
+          },
+          "naqi_mae": 16.151728828984226,
+          "naqi_rmse": 23.013005055209327,
+          "negative_concentration_clips": 0
+        },
+        "persistence": {
+          "accuracy": 0.3853820598006645,
+          "confusion_matrix": [
+            [
+              4,
+              28,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              9,
+              466,
+              417,
+              87,
+              3,
+              0
+            ],
+            [
+              15,
+              364,
+              325,
+              133,
+              8,
+              0
+            ],
+            [
+              4,
+              118,
+              98,
+              17,
+              0,
+              0
+            ],
+            [
+              0,
+              9,
+              2,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.21116946054210528,
+          "risk": {
+            "poor_or_worse": {
+              "support": 248,
+              "negative_support": 1859,
+              "misses": 231,
+              "recall": 0.06854838709677419,
+              "false_alarms": 231,
+              "false_alarm_rate": 0.1242603550295858,
+              "precision": 0.06854838709677419,
+              "ranking_average_precision": 0.09960207373983972,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 49,
+                "any_hit": 15,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 11,
+              "negative_support": 2096,
+              "misses": 11,
+              "recall": 0.0,
+              "false_alarms": 11,
+              "false_alarm_rate": 0.005248091603053435,
+              "precision": 0.0,
+              "ranking_average_precision": 0.003729471740881964,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 4,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 2107,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 8.966160417655432,
+              "rmse": 11.941001342087368
+            },
+            "pm10": {
+              "mae": 9.34499288087328,
+              "rmse": 12.47871752534535
+            },
+            "nitrogen_dioxide": {
+              "mae": 16.018699572852398,
+              "rmse": 23.471888890890575
+            },
+            "ozone": {
+              "mae": 47.44423350735643,
+              "rmse": 60.03574714267028
+            },
+            "sulphur_dioxide": {
+              "mae": 5.675272899857617,
+              "rmse": 7.3263371439515295
+            },
+            "carbon_monoxide": {
+              "mae": 227.40863787375415,
+              "rmse": 287.3182155737339
+            }
+          },
+          "naqi_mae": 62.98479157244293,
+          "naqi_rmse": 81.96161928460899,
+          "negative_concentration_clips": 0
+        },
+        "v1_fixed_mean": {
+          "accuracy": 0.7887992406264831,
+          "confusion_matrix": [
+            [
+              4,
+              28,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              2,
+              935,
+              45,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              207,
+              597,
+              41,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              111,
+              126,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              11,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.48677966384675686,
+          "risk": {
+            "poor_or_worse": {
+              "support": 248,
+              "negative_support": 1859,
+              "misses": 111,
+              "recall": 0.5524193548387096,
+              "false_alarms": 41,
+              "false_alarm_rate": 0.022054868208714364,
+              "precision": 0.7696629213483146,
+              "ranking_average_precision": 0.7817188077807052,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 49,
+                "any_hit": 37,
+                "full_hit": 9,
+                "onset_hit": 19
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 11,
+              "negative_support": 2096,
+              "misses": 11,
+              "recall": 0.0,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": 0.20721277476824168,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 4,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 2107,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 5.903190651783212,
+              "rmse": 7.648255237233425
+            },
+            "pm10": {
+              "mae": 7.439756478721685,
+              "rmse": 9.510116728828825
+            },
+            "nitrogen_dioxide": {
+              "mae": 5.792385450680768,
+              "rmse": 9.74248829600848
+            },
+            "ozone": {
+              "mae": 11.930422212801231,
+              "rmse": 15.62643305734724
+            },
+            "sulphur_dioxide": {
+              "mae": 2.4068074257691934,
+              "rmse": 3.3292429410869757
+            },
+            "carbon_monoxide": {
+              "mae": 81.73829419447979,
+              "rmse": 121.76083420415306
+            }
+          },
+          "naqi_mae": 15.758052690177582,
+          "naqi_rmse": 22.543076585541208,
+          "negative_concentration_clips": 21
+        }
+      }
+    },
+    {
+      "partition": "diagnostic_other_seasons",
+      "count": 3643,
+      "legacy_class_support": {
+        "good": 1754,
+        "satisfactory": 1494,
+        "moderate": 379,
+        "poor": 16,
+        "severe": 0,
+        "hazardous": 0
+      },
+      "models": {
+        "tcn_seed_0": {
+          "accuracy": 0.8413395553115565,
+          "confusion_matrix": [
+            [
+              1579,
+              175,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              215,
+              1224,
+              55,
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              119,
+              257,
+              2,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              11,
+              5,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.7173883663677,
+          "risk": {
+            "poor_or_worse": {
+              "support": 16,
+              "negative_support": 3627,
+              "misses": 11,
+              "recall": 0.3125,
+              "false_alarms": 2,
+              "false_alarm_rate": 0.0005514199062586159,
+              "precision": 0.7142857142857143,
+              "ranking_average_precision": 0.6222835663323563,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 6,
+                "any_hit": 2,
+                "full_hit": 1,
+                "onset_hit": 2
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 3.5375896278202172,
+              "rmse": 5.549280225214852
+            },
+            "pm10": {
+              "mae": 6.1900458344330005,
+              "rmse": 8.8531943724391
+            },
+            "nitrogen_dioxide": {
+              "mae": 4.955571191779123,
+              "rmse": 8.872650853500419
+            },
+            "ozone": {
+              "mae": 9.563356939091314,
+              "rmse": 13.889054591032037
+            },
+            "sulphur_dioxide": {
+              "mae": 1.2421579907132476,
+              "rmse": 2.2356001431055788
+            },
+            "carbon_monoxide": {
+              "mae": 100.0313681675919,
+              "rmse": 149.71859864756797
+            }
+          },
+          "naqi_mae": 9.633877093292137,
+          "naqi_rmse": 14.487505620214934,
+          "negative_concentration_clips": 15
+        },
+        "tcn_seed_1": {
+          "accuracy": 0.8440845457040901,
+          "confusion_matrix": [
+            [
+              1617,
+              137,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              244,
+              1195,
+              55,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              117,
+              259,
+              3,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              12,
+              4,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.6973200423261731,
+          "risk": {
+            "poor_or_worse": {
+              "support": 16,
+              "negative_support": 3627,
+              "misses": 12,
+              "recall": 0.25,
+              "false_alarms": 3,
+              "false_alarm_rate": 0.0008271298593879239,
+              "precision": 0.5714285714285714,
+              "ranking_average_precision": 0.5168484450496038,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 6,
+                "any_hit": 2,
+                "full_hit": 1,
+                "onset_hit": 1
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 3.4128935730980823,
+              "rmse": 5.336527115684431
+            },
+            "pm10": {
+              "mae": 6.184869172321084,
+              "rmse": 8.621556945211955
+            },
+            "nitrogen_dioxide": {
+              "mae": 4.733642268239736,
+              "rmse": 8.34596068684058
+            },
+            "ozone": {
+              "mae": 8.891050837752164,
+              "rmse": 12.770255262089787
+            },
+            "sulphur_dioxide": {
+              "mae": 1.2398040920515399,
+              "rmse": 2.187864014718769
+            },
+            "carbon_monoxide": {
+              "mae": 95.00337898357458,
+              "rmse": 144.98606885217268
+            }
+          },
+          "naqi_mae": 9.16991227566486,
+          "naqi_rmse": 13.802150497996124,
+          "negative_concentration_clips": 18
+        },
+        "tcn_seed_2": {
+          "accuracy": 0.8506725226461708,
+          "confusion_matrix": [
+            [
+              1637,
+              117,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              252,
+              1199,
+              43,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              116,
+              263,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              16,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.6171538400192111,
+          "risk": {
+            "poor_or_worse": {
+              "support": 16,
+              "negative_support": 3627,
+              "misses": 16,
+              "recall": 0.0,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": 0.5015892757961286,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 6,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 3.6568597571097925,
+              "rmse": 5.549608021483114
+            },
+            "pm10": {
+              "mae": 6.035012173919381,
+              "rmse": 8.571692701334262
+            },
+            "nitrogen_dioxide": {
+              "mae": 5.282675274009801,
+              "rmse": 8.794049965567448
+            },
+            "ozone": {
+              "mae": 9.427952551414485,
+              "rmse": 13.237544699806984
+            },
+            "sulphur_dioxide": {
+              "mae": 1.2661410223326397,
+              "rmse": 2.266775211093114
+            },
+            "carbon_monoxide": {
+              "mae": 91.7360730892899,
+              "rmse": 138.359419725937
+            }
+          },
+          "naqi_mae": 9.468350998739,
+          "naqi_rmse": 14.009163130244524,
+          "negative_concentration_clips": 10
+        },
+        "tcn_fixed_mean": {
+          "accuracy": 0.8495745264891573,
+          "confusion_matrix": [
+            [
+              1629,
+              125,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              247,
+              1200,
+              47,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              116,
+              263,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              13,
+              3,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.6950787725654659,
+          "risk": {
+            "poor_or_worse": {
+              "support": 16,
+              "negative_support": 3627,
+              "misses": 13,
+              "recall": 0.1875,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": 1.0,
+              "ranking_average_precision": 0.6833748097631543,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 6,
+                "any_hit": 1,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 3.426920789581229,
+              "rmse": 5.352000822147046
+            },
+            "pm10": {
+              "mae": 6.003748780788203,
+              "rmse": 8.510435223322235
+            },
+            "nitrogen_dioxide": {
+              "mae": 4.7608864895215,
+              "rmse": 8.410109625774579
+            },
+            "ozone": {
+              "mae": 8.714366099562467,
+              "rmse": 12.649427579505094
+            },
+            "sulphur_dioxide": {
+              "mae": 1.169282495040435,
+              "rmse": 2.1566734937830834
+            },
+            "carbon_monoxide": {
+              "mae": 92.8632633247033,
+              "rmse": 140.827314662894
+            }
+          },
+          "naqi_mae": 8.957162870412843,
+          "naqi_rmse": 13.616507101858724,
+          "negative_concentration_clips": 0
+        },
+        "paired_lightgbm": {
+          "accuracy": 0.8399670601152895,
+          "confusion_matrix": [
+            [
+              1581,
+              173,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              209,
+              1227,
+              58,
+              0,
+              0,
+              0
+            ],
+            [
+              2,
+              122,
+              249,
+              6,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              13,
+              3,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.6644539493090028,
+          "risk": {
+            "poor_or_worse": {
+              "support": 16,
+              "negative_support": 3627,
+              "misses": 13,
+              "recall": 0.1875,
+              "false_alarms": 6,
+              "false_alarm_rate": 0.0016542597187758478,
+              "precision": 0.3333333333333333,
+              "ranking_average_precision": 0.290379607610972,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 6,
+                "any_hit": 1,
+                "full_hit": 1,
+                "onset_hit": 1
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 3.583501000572233,
+              "rmse": 5.61963423380505
+            },
+            "pm10": {
+              "mae": 5.857514449419768,
+              "rmse": 8.36290412271366
+            },
+            "nitrogen_dioxide": {
+              "mae": 4.56680602623732,
+              "rmse": 8.479329859081307
+            },
+            "ozone": {
+              "mae": 8.786535109623118,
+              "rmse": 13.088256351976899
+            },
+            "sulphur_dioxide": {
+              "mae": 1.115258540807546,
+              "rmse": 2.095007761675564
+            },
+            "carbon_monoxide": {
+              "mae": 75.53466947299113,
+              "rmse": 124.75071273731741
+            }
+          },
+          "naqi_mae": 9.124521644378838,
+          "naqi_rmse": 14.68341539851381,
+          "negative_concentration_clips": 0
+        },
+        "persistence": {
+          "accuracy": 0.4515509195717815,
+          "confusion_matrix": [
+            [
+              992,
+              737,
+              25,
+              0,
+              0,
+              0
+            ],
+            [
+              682,
+              553,
+              251,
+              8,
+              0,
+              0
+            ],
+            [
+              80,
+              191,
+              100,
+              8,
+              0,
+              0
+            ],
+            [
+              0,
+              14,
+              2,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.29994715899486074,
+          "risk": {
+            "poor_or_worse": {
+              "support": 16,
+              "negative_support": 3627,
+              "misses": 16,
+              "recall": 0.0,
+              "false_alarms": 16,
+              "false_alarm_rate": 0.0044113592500689275,
+              "precision": 0.0,
+              "ranking_average_precision": 0.009450679581546996,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 6,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 5.267279714520999,
+              "rmse": 8.224479739033077
+            },
+            "pm10": {
+              "mae": 7.336398572604996,
+              "rmse": 10.489875515647974
+            },
+            "nitrogen_dioxide": {
+              "mae": 12.427257754597859,
+              "rmse": 18.840231291703855
+            },
+            "ozone": {
+              "mae": 28.774910787812242,
+              "rmse": 39.08175022512167
+            },
+            "sulphur_dioxide": {
+              "mae": 2.3690914081800716,
+              "rmse": 3.80216142641126
+            },
+            "carbon_monoxide": {
+              "mae": 198.87208344770792,
+              "rmse": 274.0504465764188
+            }
+          },
+          "naqi_mae": 28.71590478381855,
+          "naqi_rmse": 39.486254241970265,
+          "negative_concentration_clips": 0
+        },
+        "v1_fixed_mean": {
+          "accuracy": 0.8545155091957178,
+          "confusion_matrix": [
+            [
+              1636,
+              118,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              243,
+              1205,
+              46,
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              109,
+              268,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              12,
+              4,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "macro_f1": 0.7163178383711905,
+          "risk": {
+            "poor_or_worse": {
+              "support": 16,
+              "negative_support": 3627,
+              "misses": 12,
+              "recall": 0.25,
+              "false_alarms": 1,
+              "false_alarm_rate": 0.00027570995312930797,
+              "precision": 0.8,
+              "ranking_average_precision": 0.6476976993860786,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 6,
+                "any_hit": 2,
+                "full_hit": 0,
+                "onset_hit": 1
+              }
+            },
+            "very_poor_or_worse": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            },
+            "severe": {
+              "support": 0,
+              "negative_support": 3643,
+              "misses": 0,
+              "recall": null,
+              "false_alarms": 0,
+              "false_alarm_rate": 0.0,
+              "precision": null,
+              "ranking_average_precision": null,
+              "brier": null,
+              "ece": null,
+              "reliability": null,
+              "episodes": {
+                "episodes": 0,
+                "any_hit": 0,
+                "full_hit": 0,
+                "onset_hit": 0
+              }
+            }
+          },
+          "pollutant_errors": {
+            "pm2_5": {
+              "mae": 3.378039587365979,
+              "rmse": 5.339143281734534
+            },
+            "pm10": {
+              "mae": 5.977840279579973,
+              "rmse": 8.520667078102608
+            },
+            "nitrogen_dioxide": {
+              "mae": 4.60016823021068,
+              "rmse": 8.314929334804036
+            },
+            "ozone": {
+              "mae": 8.53098668315193,
+              "rmse": 12.517495103690122
+            },
+            "sulphur_dioxide": {
+              "mae": 1.1139263755306097,
+              "rmse": 2.095405985304673
+            },
+            "carbon_monoxide": {
+              "mae": 93.7225642184741,
+              "rmse": 144.5645746062971
+            }
+          },
+          "naqi_mae": 8.769720905947532,
+          "naqi_rmse": 13.53850831435156,
+          "negative_concentration_clips": 1
+        }
+      }
+    }
+  ],
+  "resolved_support": {
+    "train": {
+      "eligible_rows": 19663,
+      "support_start": "2023-01-01T00:00:00",
+      "support_end": "2025-03-31T23:00:00",
+      "poor_or_worse_hours": 296,
+      "very_poor_or_worse_hours": 5,
+      "severe_hours": 0,
+      "very_poor_episodes": {
+        "episodes": 1,
+        "any_hit": 1,
+        "full_hit": 1,
+        "onset_hit": 1
+      }
+    },
+    "development": {
+      "eligible_rows": 1435,
+      "support_start": "2025-04-01T00:00:00",
+      "support_end": "2025-05-31T23:00:00",
+      "poor_or_worse_hours": 168,
+      "very_poor_or_worse_hours": 22,
+      "severe_hours": 0,
+      "very_poor_episodes": {
+        "episodes": 5,
+        "any_hit": 5,
+        "full_hit": 5,
+        "onset_hit": 5
+      }
+    },
+    "diagnostic_pollution": {
+      "eligible_rows": 2107,
+      "support_start": "2026-02-01T00:00:00",
+      "support_end": "2026-04-30T23:00:00",
+      "poor_or_worse_hours": 248,
+      "very_poor_or_worse_hours": 11,
+      "severe_hours": 0,
+      "very_poor_episodes": {
+        "episodes": 4,
+        "any_hit": 4,
+        "full_hit": 4,
+        "onset_hit": 4
+      }
+    },
+    "diagnostic_other_seasons": {
+      "eligible_rows": 3643,
+      "support_start": "2026-05-01T00:00:00",
+      "support_end": "2026-09-30T23:00:00",
+      "poor_or_worse_hours": 16,
+      "very_poor_or_worse_hours": 0,
+      "severe_hours": 0,
+      "very_poor_episodes": {
+        "episodes": 0,
+        "any_hit": 0,
+        "full_hit": 0,
+        "onset_hit": 0
+      }
+    }
+  },
+  "utility_gates": [
+    {
+      "candidate": "tcn_seed_0",
+      "reference": "v1_fixed_mean",
+      "research_utility_gate_passed": false,
+      "guardrails_passed": false,
+      "poor_recall_gain_branch": false,
+      "very_poor_episode_gain_branch": false,
+      "paired_periods": [
+        {
+          "partition": "diagnostic_pollution",
+          "checks": {
+            "accuracy": true,
+            "poor_false_alarm_rate": true,
+            "very_poor_false_alarm_rate": true,
+            "very_poor_misses_nonincreasing": true,
+            "poor_episode_any_hits_nondecreasing": true,
+            "very_poor_episode_any_hits_nondecreasing": true
+          },
+          "poor_recall_delta": -0.09677419354838707,
+          "paired_very_poor": {
+            "new_hits_in_fully_missed_reference_episodes": 0,
+            "maximum_new_hits_in_one_reference_missed_episode": 0,
+            "newly_detected_reference_missed_episodes": 0
+          }
+        },
+        {
+          "partition": "diagnostic_other_seasons",
+          "checks": {
+            "accuracy": false,
+            "poor_false_alarm_rate": true,
+            "very_poor_false_alarm_rate": true,
+            "very_poor_misses_nonincreasing": true,
+            "poor_episode_any_hits_nondecreasing": true,
+            "very_poor_episode_any_hits_nondecreasing": true
+          },
+          "poor_recall_delta": 0.0625,
+          "paired_very_poor": {
+            "new_hits_in_fully_missed_reference_episodes": 0,
+            "maximum_new_hits_in_one_reference_missed_episode": 0,
+            "newly_detected_reference_missed_episodes": 0
+          }
+        }
+      ],
+      "unsupported_claims": [
+        "diagnostic_pollution: official Severe recall UNMEASURED",
+        "diagnostic_other_seasons: Very Poor+ recall UNMEASURED",
+        "diagnostic_other_seasons: official Severe recall UNMEASURED"
+      ],
+      "disposition": "RESEARCH_ONLY_NO_AUTOMATIC_PROMOTION"
+    },
+    {
+      "candidate": "tcn_seed_1",
+      "reference": "v1_fixed_mean",
+      "research_utility_gate_passed": false,
+      "guardrails_passed": false,
+      "poor_recall_gain_branch": false,
+      "very_poor_episode_gain_branch": false,
+      "paired_periods": [
+        {
+          "partition": "diagnostic_pollution",
+          "checks": {
+            "accuracy": true,
+            "poor_false_alarm_rate": true,
+            "very_poor_false_alarm_rate": true,
+            "very_poor_misses_nonincreasing": true,
+            "poor_episode_any_hits_nondecreasing": false,
+            "very_poor_episode_any_hits_nondecreasing": true
+          },
+          "poor_recall_delta": -0.032258064516129004,
+          "paired_very_poor": {
+            "new_hits_in_fully_missed_reference_episodes": 0,
+            "maximum_new_hits_in_one_reference_missed_episode": 0,
+            "newly_detected_reference_missed_episodes": 0
+          }
+        },
+        {
+          "partition": "diagnostic_other_seasons",
+          "checks": {
+            "accuracy": false,
+            "poor_false_alarm_rate": true,
+            "very_poor_false_alarm_rate": true,
+            "very_poor_misses_nonincreasing": true,
+            "poor_episode_any_hits_nondecreasing": true,
+            "very_poor_episode_any_hits_nondecreasing": true
+          },
+          "poor_recall_delta": 0.0,
+          "paired_very_poor": {
+            "new_hits_in_fully_missed_reference_episodes": 0,
+            "maximum_new_hits_in_one_reference_missed_episode": 0,
+            "newly_detected_reference_missed_episodes": 0
+          }
+        }
+      ],
+      "unsupported_claims": [
+        "diagnostic_pollution: official Severe recall UNMEASURED",
+        "diagnostic_other_seasons: Very Poor+ recall UNMEASURED",
+        "diagnostic_other_seasons: official Severe recall UNMEASURED"
+      ],
+      "disposition": "RESEARCH_ONLY_NO_AUTOMATIC_PROMOTION"
+    },
+    {
+      "candidate": "tcn_seed_2",
+      "reference": "v1_fixed_mean",
+      "research_utility_gate_passed": false,
+      "guardrails_passed": false,
+      "poor_recall_gain_branch": false,
+      "very_poor_episode_gain_branch": false,
+      "paired_periods": [
+        {
+          "partition": "diagnostic_pollution",
+          "checks": {
+            "accuracy": false,
+            "poor_false_alarm_rate": true,
+            "very_poor_false_alarm_rate": true,
+            "very_poor_misses_nonincreasing": true,
+            "poor_episode_any_hits_nondecreasing": false,
+            "very_poor_episode_any_hits_nondecreasing": true
+          },
+          "poor_recall_delta": -0.08467741935483869,
+          "paired_very_poor": {
+            "new_hits_in_fully_missed_reference_episodes": 0,
+            "maximum_new_hits_in_one_reference_missed_episode": 0,
+            "newly_detected_reference_missed_episodes": 0
+          }
+        },
+        {
+          "partition": "diagnostic_other_seasons",
+          "checks": {
+            "accuracy": true,
+            "poor_false_alarm_rate": true,
+            "very_poor_false_alarm_rate": true,
+            "very_poor_misses_nonincreasing": true,
+            "poor_episode_any_hits_nondecreasing": false,
+            "very_poor_episode_any_hits_nondecreasing": true
+          },
+          "poor_recall_delta": -0.25,
+          "paired_very_poor": {
+            "new_hits_in_fully_missed_reference_episodes": 0,
+            "maximum_new_hits_in_one_reference_missed_episode": 0,
+            "newly_detected_reference_missed_episodes": 0
+          }
+        }
+      ],
+      "unsupported_claims": [
+        "diagnostic_pollution: official Severe recall UNMEASURED",
+        "diagnostic_other_seasons: Very Poor+ recall UNMEASURED",
+        "diagnostic_other_seasons: official Severe recall UNMEASURED"
+      ],
+      "disposition": "RESEARCH_ONLY_NO_AUTOMATIC_PROMOTION"
+    },
+    {
+      "candidate": "tcn_fixed_mean",
+      "reference": "v1_fixed_mean",
+      "research_utility_gate_passed": false,
+      "guardrails_passed": false,
+      "poor_recall_gain_branch": false,
+      "very_poor_episode_gain_branch": false,
+      "paired_periods": [
+        {
+          "partition": "diagnostic_pollution",
+          "checks": {
+            "accuracy": true,
+            "poor_false_alarm_rate": true,
+            "very_poor_false_alarm_rate": true,
+            "very_poor_misses_nonincreasing": true,
+            "poor_episode_any_hits_nondecreasing": false,
+            "very_poor_episode_any_hits_nondecreasing": true
+          },
+          "poor_recall_delta": -0.08870967741935482,
+          "paired_very_poor": {
+            "new_hits_in_fully_missed_reference_episodes": 0,
+            "maximum_new_hits_in_one_reference_missed_episode": 0,
+            "newly_detected_reference_missed_episodes": 0
+          }
+        },
+        {
+          "partition": "diagnostic_other_seasons",
+          "checks": {
+            "accuracy": true,
+            "poor_false_alarm_rate": true,
+            "very_poor_false_alarm_rate": true,
+            "very_poor_misses_nonincreasing": true,
+            "poor_episode_any_hits_nondecreasing": false,
+            "very_poor_episode_any_hits_nondecreasing": true
+          },
+          "poor_recall_delta": -0.0625,
+          "paired_very_poor": {
+            "new_hits_in_fully_missed_reference_episodes": 0,
+            "maximum_new_hits_in_one_reference_missed_episode": 0,
+            "newly_detected_reference_missed_episodes": 0
+          }
+        }
+      ],
+      "unsupported_claims": [
+        "diagnostic_pollution: official Severe recall UNMEASURED",
+        "diagnostic_other_seasons: Very Poor+ recall UNMEASURED",
+        "diagnostic_other_seasons: official Severe recall UNMEASURED"
+      ],
+      "disposition": "RESEARCH_ONLY_NO_AUTOMATIC_PROMOTION"
+    }
+  ],
+  "official_category_names": {
+    "good": "Good",
+    "satisfactory": "Satisfactory",
+    "moderate": "Moderately polluted",
+    "poor": "Poor",
+    "severe": "Very Poor",
+    "hazardous": "Severe"
+  },
+  "elapsed_seconds": 335.298413404,
+  "billing": "UNMEASURED",
+  "disposition": "RESEARCH_ONLY_NO_AUTOMATIC_PROMOTION"
+}

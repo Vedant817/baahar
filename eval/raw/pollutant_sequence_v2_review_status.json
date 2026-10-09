@@ -1,0 +1,17 @@
+{
+  "status": "SECONDARY_REVIEW_BLOCKED",
+  "native_reason": "provider usage limit",
+  "alternate_task_id": "node:delegated-task:command%3Amcp%3A396c1f44-6a4b-4034-85c4-7cff698ab9ce%3Adelegate-task%3Abahaar-v2-loss-review-20261009",
+  "alternate_status": "FAILED",
+  "alternate_reason": "Claude authentication unavailable",
+  "root_review": "docs/POLLUTANT_SEQUENCE_V1_REVIEW.md",
+  "offline_pytest": "PASSED",
+  "ruff": "PASSED",
+  "paired_report_sanity": "Identical incumbent cannot pass improvement gate",
+  "second_alternate": {
+    "task_id": "node:delegated-task:command%3Amcp%3A396c1f44-6a4b-4034-85c4-7cff698ab9ce%3Adelegate-task%3Abahaar-v2-grok-review-20261009",
+    "provider": "grok",
+    "status": "FAILED",
+    "reason": "Usage balance exhausted (402)"
+  }
+}
