@@ -1,0 +1,642 @@
+{
+  "status": "COMPLETED",
+  "canonical_target_checks": 32826,
+  "protocol": {
+    "windows": {
+      "train": [
+        "2023-01-01",
+        "2025-04-01"
+      ],
+      "development": [
+        "2025-04-01",
+        "2025-06-01"
+      ],
+      "diagnostic_pollution": [
+        "2026-02-01",
+        "2026-05-01"
+      ],
+      "diagnostic_other_seasons": [
+        "2026-05-01",
+        "2026-10-01"
+      ]
+    },
+    "source_fixtures": [
+      {
+        "path": "data/samples/archival_aq_2023-01-01_2023-12-31.json",
+        "sha256": "80e2095817debe677445dfc694b99dfa0f9bcc39ead3f1f5bf7ff58b70d92bf0"
+      },
+      {
+        "path": "data/samples/archival_aq_2024-01-01_2024-12-31.json",
+        "sha256": "81ab6e6b0c1027fc203772aaa0e5a92e30ce42d89dfd4f4c584c41c7bdde7fb7"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-01-01_2025-10-31.json",
+        "sha256": "a9c677e876d844c9ebe1ff25fc439e9b7755e489bd26dc03a5d4ee14af4b2d5c"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-11-01_2025-12-31.json",
+        "sha256": "443d5d398a13d44a83bd613ecfd68f99497f84081877e67862c55c0d65595b30"
+      },
+      {
+        "path": "data/samples/archival_aq_2026-01-01_2026-09-30.json",
+        "sha256": "3323aeb31e3f513b23f7b759be7cc7e3ceadf3f9348f937e11e76fa7225102ff"
+      },
+      {
+        "path": "data/samples/archival_wx_2023-01-01_2023-12-31.json",
+        "sha256": "3d71fbd3972525ab52d8613357a7ce8680ef2d40882649cb5eb14357fe41ab7c"
+      },
+      {
+        "path": "data/samples/archival_wx_2024-01-01_2024-12-31.json",
+        "sha256": "e0f0c92cdc67454504372e9292ff5c895d467a7b0d55b937322837970a923c9b"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-01-01_2025-10-31.json",
+        "sha256": "8d7e98f8a9c9cefe1a54a38779e7e367bdab294f96afc25e1f2291ec4e86bf4a"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-11-01_2025-12-31.json",
+        "sha256": "7779cce7765fbfc341212dc5d216e6b2cc95a4b0a4bd4dfe4eca56b99ce4810d"
+      },
+      {
+        "path": "data/samples/archival_wx_2026-01-01_2026-09-30.json",
+        "sha256": "726d32e9ff366b8a0d1e954008c35d75894538fc5078e8ee94d969eb6c9e0528"
+      }
+    ],
+    "rows_sha256": "064684cdc77b2612a5e9910528eacf6340677a7cdb8f238effff9918cce55951",
+    "row_count": 32826,
+    "code_sha256": {
+      "scripts/audit_pollutant_target_contract_modal.py": "09160adecd621c591d5a7bb10eeee5df1aa9d626548561440981d7fe02add589",
+      "src/baahar/naqi.py": "f755b308baef2fec28877c81f500e95d5b7dc9e1231dff677c208ca61b5b21dc",
+      "src/baahar/__init__.py": "5e8311583c6c5a260d36fbf0a578efdd08834872a75aabd642b57e50bee6cab4",
+      "docs/POLLUTANT_TARGET_AUDIT_PROTOCOL.md": "2938ae0fd3b349601560c9e42e9ef8cf870fd386e38974c8fcd694b1b02c6ff7"
+    }
+  },
+  "source_metadata": [
+    {
+      "path": "data/samples/archival_aq_2023-01-01_2023-12-31.json",
+      "sha256": "80e2095817debe677445dfc694b99dfa0f9bcc39ead3f1f5bf7ff58b70d92bf0",
+      "hourly_units": {
+        "time": "iso8601",
+        "pm2_5": "\u03bcg/m\u00b3",
+        "pm10": "\u03bcg/m\u00b3",
+        "nitrogen_dioxide": "\u03bcg/m\u00b3",
+        "ozone": "\u03bcg/m\u00b3",
+        "sulphur_dioxide": "\u03bcg/m\u00b3",
+        "carbon_monoxide": "\u03bcg/m\u00b3"
+      },
+      "timezone": "Asia/Kolkata",
+      "utc_offset_seconds": 19800
+    },
+    {
+      "path": "data/samples/archival_aq_2024-01-01_2024-12-31.json",
+      "sha256": "81ab6e6b0c1027fc203772aaa0e5a92e30ce42d89dfd4f4c584c41c7bdde7fb7",
+      "hourly_units": {
+        "time": "iso8601",
+        "pm2_5": "\u03bcg/m\u00b3",
+        "pm10": "\u03bcg/m\u00b3",
+        "nitrogen_dioxide": "\u03bcg/m\u00b3",
+        "ozone": "\u03bcg/m\u00b3",
+        "sulphur_dioxide": "\u03bcg/m\u00b3",
+        "carbon_monoxide": "\u03bcg/m\u00b3"
+      },
+      "timezone": "Asia/Kolkata",
+      "utc_offset_seconds": 19800
+    },
+    {
+      "path": "data/samples/archival_aq_2025-01-01_2025-10-31.json",
+      "sha256": "a9c677e876d844c9ebe1ff25fc439e9b7755e489bd26dc03a5d4ee14af4b2d5c",
+      "hourly_units": {
+        "time": "iso8601",
+        "pm2_5": "\u03bcg/m\u00b3",
+        "pm10": "\u03bcg/m\u00b3",
+        "nitrogen_dioxide": "\u03bcg/m\u00b3",
+        "ozone": "\u03bcg/m\u00b3",
+        "sulphur_dioxide": "\u03bcg/m\u00b3",
+        "carbon_monoxide": "\u03bcg/m\u00b3"
+      },
+      "timezone": "Asia/Kolkata",
+      "utc_offset_seconds": 19800
+    },
+    {
+      "path": "data/samples/archival_aq_2025-11-01_2025-12-31.json",
+      "sha256": "443d5d398a13d44a83bd613ecfd68f99497f84081877e67862c55c0d65595b30",
+      "hourly_units": {
+        "time": "iso8601",
+        "pm2_5": "\u03bcg/m\u00b3",
+        "pm10": "\u03bcg/m\u00b3",
+        "nitrogen_dioxide": "\u03bcg/m\u00b3",
+        "ozone": "\u03bcg/m\u00b3",
+        "sulphur_dioxide": "\u03bcg/m\u00b3",
+        "carbon_monoxide": "\u03bcg/m\u00b3"
+      },
+      "timezone": "Asia/Kolkata",
+      "utc_offset_seconds": 19800
+    },
+    {
+      "path": "data/samples/archival_aq_2026-01-01_2026-09-30.json",
+      "sha256": "3323aeb31e3f513b23f7b759be7cc7e3ceadf3f9348f937e11e76fa7225102ff",
+      "hourly_units": {
+        "time": "iso8601",
+        "pm2_5": "\u03bcg/m\u00b3",
+        "pm10": "\u03bcg/m\u00b3",
+        "nitrogen_dioxide": "\u03bcg/m\u00b3",
+        "ozone": "\u03bcg/m\u00b3",
+        "sulphur_dioxide": "\u03bcg/m\u00b3",
+        "carbon_monoxide": "\u03bcg/m\u00b3"
+      },
+      "timezone": "Asia/Kolkata",
+      "utc_offset_seconds": 19800
+    }
+  ],
+  "partitions": {
+    "train": {
+      "eligible_rows": 19663,
+      "exclusions": {
+        "phase_boundary": 29
+      },
+      "origin_times_sha256": "a3a58de56800c57489c958b6fada622c84aea1aa0734b8a973b2db96bdda793f",
+      "target_band_support": {
+        "instantaneous": {
+          "satisfactory": 9849,
+          "moderate": 4377,
+          "good": 5141,
+          "poor": 291,
+          "severe": 5
+        },
+        "complete_trailing": {
+          "satisfactory": 10018,
+          "moderate": 4171,
+          "good": 5400,
+          "poor": 74
+        },
+        "conservative": {
+          "satisfactory": 9452,
+          "moderate": 5817,
+          "poor": 339,
+          "good": 4050,
+          "severe": 5
+        }
+      },
+      "target_risk_support": {
+        "instantaneous": {
+          "201": {
+            "hours": 296,
+            "episodes": 86,
+            "recall_if_no_support": null
+          },
+          "301": {
+            "hours": 5,
+            "episodes": 1,
+            "recall_if_no_support": null
+          },
+          "401": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          }
+        },
+        "complete_trailing": {
+          "201": {
+            "hours": 74,
+            "episodes": 21,
+            "recall_if_no_support": null
+          },
+          "301": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          },
+          "401": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          }
+        },
+        "conservative": {
+          "201": {
+            "hours": 344,
+            "episodes": 86,
+            "recall_if_no_support": null
+          },
+          "301": {
+            "hours": 5,
+            "episodes": 1,
+            "recall_if_no_support": null
+          },
+          "401": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          }
+        }
+      },
+      "instantaneous_to_trailing_band_transitions": {
+        "satisfactory->satisfactory": 7026,
+        "moderate->satisfactory": 1881,
+        "moderate->moderate": 2441,
+        "satisfactory->moderate": 1480,
+        "satisfactory->good": 1341,
+        "good->satisfactory": 1085,
+        "poor->moderate": 242,
+        "good->good": 4050,
+        "good->moderate": 6,
+        "poor->satisfactory": 26,
+        "moderate->poor": 46,
+        "poor->poor": 23,
+        "satisfactory->poor": 2,
+        "moderate->good": 9,
+        "severe->moderate": 2,
+        "severe->poor": 3
+      },
+      "trailing_controlling_pollutants": {
+        "o3": 17974,
+        "pm25": 1034,
+        "co": 321,
+        "no2": 190,
+        "pm10": 144
+      },
+      "trailing_minus_instantaneous_index": {
+        "mean": -4.278657606340864,
+        "min": -178.5084558823529,
+        "max": 133.48675
+      },
+      "oracle_reconstruction_max_error": 0.0,
+      "causal_persistence_trailing": {
+        "naqi_mae": 17.07620239784237,
+        "poor_plus_counts": {
+          "tn": 19344,
+          "fp": 245,
+          "fn": 28,
+          "tp": 46
+        },
+        "poor_plus_recall": 0.6216216216216216,
+        "poor_plus_precision": 0.15807560137457044
+      }
+    },
+    "development": {
+      "eligible_rows": 1435,
+      "exclusions": {
+        "phase_boundary": 29
+      },
+      "origin_times_sha256": "30f2a36f341015c7a2880f8a2ef7ab9adef44485100e7f9ad0eaefcfd3ace84a",
+      "target_band_support": {
+        "instantaneous": {
+          "satisfactory": 642,
+          "moderate": 417,
+          "good": 208,
+          "poor": 146,
+          "severe": 22
+        },
+        "complete_trailing": {
+          "moderate": 411,
+          "satisfactory": 744,
+          "good": 186,
+          "poor": 88,
+          "severe": 6
+        },
+        "conservative": {
+          "moderate": 488,
+          "satisfactory": 623,
+          "poor": 186,
+          "severe": 27,
+          "good": 111
+        }
+      },
+      "target_risk_support": {
+        "instantaneous": {
+          "201": {
+            "hours": 168,
+            "episodes": 28,
+            "recall_if_no_support": null
+          },
+          "301": {
+            "hours": 22,
+            "episodes": 5,
+            "recall_if_no_support": null
+          },
+          "401": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          }
+        },
+        "complete_trailing": {
+          "201": {
+            "hours": 94,
+            "episodes": 21,
+            "recall_if_no_support": null
+          },
+          "301": {
+            "hours": 6,
+            "episodes": 3,
+            "recall_if_no_support": null
+          },
+          "401": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          }
+        },
+        "conservative": {
+          "201": {
+            "hours": 213,
+            "episodes": 28,
+            "recall_if_no_support": null
+          },
+          "301": {
+            "hours": 27,
+            "episodes": 5,
+            "recall_if_no_support": null
+          },
+          "401": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          }
+        }
+      },
+      "instantaneous_to_trailing_band_transitions": {
+        "satisfactory->moderate": 112,
+        "satisfactory->satisfactory": 453,
+        "moderate->satisfactory": 182,
+        "moderate->moderate": 192,
+        "satisfactory->good": 73,
+        "good->satisfactory": 97,
+        "moderate->good": 2,
+        "poor->moderate": 95,
+        "poor->satisfactory": 12,
+        "poor->poor": 34,
+        "moderate->poor": 41,
+        "severe->moderate": 12,
+        "severe->poor": 9,
+        "severe->severe": 1,
+        "poor->severe": 5,
+        "satisfactory->poor": 4,
+        "good->good": 111
+      },
+      "trailing_controlling_pollutants": {
+        "o3": 1233,
+        "pm25": 182,
+        "no2": 17,
+        "co": 3
+      },
+      "trailing_minus_instantaneous_index": {
+        "mean": -11.023181994830454,
+        "min": -185.811887254902,
+        "max": 160.451875
+      },
+      "oracle_reconstruction_max_error": 0.0,
+      "causal_persistence_trailing": {
+        "naqi_mae": 30.469693309762928,
+        "poor_plus_counts": {
+          "tn": 1234,
+          "fp": 107,
+          "fn": 33,
+          "tp": 61
+        },
+        "poor_plus_recall": 0.648936170212766,
+        "poor_plus_precision": 0.3630952380952381
+      }
+    },
+    "diagnostic_pollution": {
+      "eligible_rows": 2107,
+      "exclusions": {
+        "phase_boundary": 29
+      },
+      "origin_times_sha256": "1b4506bebe3578822c3b1ca441345e2fd9b22535960c0eafd14c1e7ae4f7d6f8",
+      "target_band_support": {
+        "instantaneous": {
+          "satisfactory": 982,
+          "moderate": 845,
+          "poor": 237,
+          "good": 32,
+          "severe": 11
+        },
+        "complete_trailing": {
+          "satisfactory": 931,
+          "moderate": 1037,
+          "poor": 113,
+          "good": 26
+        },
+        "conservative": {
+          "satisfactory": 667,
+          "moderate": 1111,
+          "poor": 306,
+          "good": 12,
+          "severe": 11
+        }
+      },
+      "target_risk_support": {
+        "instantaneous": {
+          "201": {
+            "hours": 248,
+            "episodes": 49,
+            "recall_if_no_support": null
+          },
+          "301": {
+            "hours": 11,
+            "episodes": 4,
+            "recall_if_no_support": null
+          },
+          "401": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          }
+        },
+        "complete_trailing": {
+          "201": {
+            "hours": 113,
+            "episodes": 31,
+            "recall_if_no_support": null
+          },
+          "301": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          },
+          "401": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          }
+        },
+        "conservative": {
+          "201": {
+            "hours": 317,
+            "episodes": 49,
+            "recall_if_no_support": null
+          },
+          "301": {
+            "hours": 11,
+            "episodes": 4,
+            "recall_if_no_support": null
+          },
+          "401": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          }
+        }
+      },
+      "instantaneous_to_trailing_band_transitions": {
+        "satisfactory->satisfactory": 634,
+        "moderate->satisfactory": 265,
+        "moderate->moderate": 514,
+        "satisfactory->moderate": 331,
+        "poor->moderate": 183,
+        "poor->poor": 42,
+        "moderate->poor": 65,
+        "satisfactory->poor": 4,
+        "good->satisfactory": 20,
+        "good->good": 12,
+        "satisfactory->good": 13,
+        "poor->satisfactory": 12,
+        "severe->moderate": 9,
+        "severe->poor": 2,
+        "moderate->good": 1
+      },
+      "trailing_controlling_pollutants": {
+        "o3": 2059,
+        "pm25": 48
+      },
+      "trailing_minus_instantaneous_index": {
+        "mean": -5.945816873260933,
+        "min": -191.91,
+        "max": 148.06187500000001
+      },
+      "oracle_reconstruction_max_error": 0.0,
+      "causal_persistence_trailing": {
+        "naqi_mae": 29.69311838630801,
+        "poor_plus_counts": {
+          "tn": 1823,
+          "fn": 39,
+          "tp": 74,
+          "fp": 171
+        },
+        "poor_plus_recall": 0.6548672566371682,
+        "poor_plus_precision": 0.3020408163265306
+      }
+    },
+    "diagnostic_other_seasons": {
+      "eligible_rows": 3643,
+      "exclusions": {
+        "phase_boundary": 23
+      },
+      "origin_times_sha256": "9299b279bfb66a9c898c1d48a9e877c5fbd82012fa8025b1f32a3863842ee246",
+      "target_band_support": {
+        "instantaneous": {
+          "satisfactory": 1494,
+          "moderate": 379,
+          "poor": 16,
+          "good": 1754
+        },
+        "complete_trailing": {
+          "satisfactory": 1590,
+          "moderate": 309,
+          "good": 1744
+        },
+        "conservative": {
+          "satisfactory": 1805,
+          "moderate": 513,
+          "poor": 16,
+          "good": 1309
+        }
+      },
+      "target_risk_support": {
+        "instantaneous": {
+          "201": {
+            "hours": 16,
+            "episodes": 6,
+            "recall_if_no_support": null
+          },
+          "301": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          },
+          "401": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          }
+        },
+        "complete_trailing": {
+          "201": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          },
+          "301": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          },
+          "401": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          }
+        },
+        "conservative": {
+          "201": {
+            "hours": 16,
+            "episodes": 6,
+            "recall_if_no_support": null
+          },
+          "301": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          },
+          "401": {
+            "hours": 0,
+            "episodes": 0,
+            "recall_if_no_support": "UNMEASURED"
+          }
+        }
+      },
+      "instantaneous_to_trailing_band_transitions": {
+        "satisfactory->satisfactory": 927,
+        "moderate->satisfactory": 217,
+        "poor->moderate": 15,
+        "moderate->moderate": 160,
+        "satisfactory->moderate": 134,
+        "satisfactory->good": 433,
+        "good->good": 1309,
+        "good->satisfactory": 445,
+        "poor->satisfactory": 1,
+        "moderate->good": 2
+      },
+      "trailing_controlling_pollutants": {
+        "o3": 3446,
+        "co": 59,
+        "pm10": 13,
+        "pm25": 99,
+        "no2": 26
+      },
+      "trailing_minus_instantaneous_index": {
+        "mean": -3.0784383716017287,
+        "min": -122.0975,
+        "max": 102.81551470588235
+      },
+      "oracle_reconstruction_max_error": 0.0,
+      "causal_persistence_trailing": {
+        "naqi_mae": 13.92231841566174,
+        "poor_plus_counts": {
+          "tn": 3628,
+          "fp": 15
+        },
+        "poor_plus_recall": null,
+        "poor_plus_precision": 0.0
+      }
+    }
+  },
+  "limitations": [
+    "Consumed CAMS modeled archive, not station observations",
+    "Full-window period approximation, not official station AQI",
+    "Persistence is the only causal forecast scored; oracle identity is arithmetic",
+    "Saved neural results retain h6 only, insufficient for averaged reconstruction",
+    "Zero-support recall is UNMEASURED; point Brier/ECE unavailable"
+  ]
+}

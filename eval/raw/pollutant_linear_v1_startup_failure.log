@@ -1,0 +1,56 @@
+2026-10-09 12:51:24+05:30   File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+2026-10-09 12:51:24+05:30   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-09 12:51:24+05:30   File "/root/train_pollutant_linear_modal.py", line 10, in <module>
+2026-10-09 12:51:24+05:30     from probe_pollutant_lag_modal import digest, features, origins_digest, write
+2026-10-09 12:51:24+05:30 ModuleNotFoundError: No module named 'probe_pollutant_lag_modal'
+2026-10-09 12:51:24+05:30 Runner failed with exception: ModuleNotFoundError("No module named 'probe_pollutant_lag_modal'")
+2026-10-09 13:01:24+05:30 Traceback (most recent call last):
+2026-10-09 13:01:24+05:30   File "/pkg/modal/_runtime/task_lifecycle_manager.py", line 84, in handle_task_lifecycle_exception
+2026-10-09 13:01:24+05:30     yield
+2026-10-09 13:01:24+05:30   File "/pkg/modal/_container_entrypoint.py", line 362, in hydrate_function
+2026-10-09 13:01:24+05:30     service = get_function_service(function_def, _client)
+2026-10-09 13:01:24+05:30               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09 13:01:24+05:30   File "/pkg/modal/_container_entrypoint.py", line 340, in get_function_service
+2026-10-09 13:01:24+05:30     service = import_single_function_service(
+2026-10-09 13:01:24+05:30               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09 13:01:24+05:30   File "/pkg/modal/_runtime/user_code_imports.py", line 509, in import_single_function_service
+2026-10-09 13:01:24+05:30     module = importlib.import_module(function_def.module_name)
+2026-10-09 13:01:24+05:30              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09 13:01:24+05:30   File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+2026-10-09 13:01:24+05:30     return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-09 13:01:24+05:30            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09 13:01:24+05:30   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+2026-10-09 13:01:24+05:30   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+2026-10-09 13:01:24+05:30   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+2026-10-09 13:01:24+05:30   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2026-10-09 13:01:24+05:30   File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+2026-10-09 13:01:24+05:30   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-09 13:01:24+05:30   File "/root/train_pollutant_linear_modal.py", line 10, in <module>
+2026-10-09 13:01:24+05:30     from probe_pollutant_lag_modal import digest, features, origins_digest, write
+2026-10-09 13:01:24+05:30 ModuleNotFoundError: No module named 'probe_pollutant_lag_modal'
+2026-10-09 13:01:24+05:30 Runner failed with exception: ModuleNotFoundError("No module named 'probe_pollutant_lag_modal'")
+2026-10-09 13:11:25+05:30 Traceback (most recent call last):
+2026-10-09 13:11:25+05:30   File "/pkg/modal/_runtime/task_lifecycle_manager.py", line 84, in handle_task_lifecycle_exception
+2026-10-09 13:11:25+05:30     yield
+2026-10-09 13:11:25+05:30   File "/pkg/modal/_container_entrypoint.py", line 362, in hydrate_function
+2026-10-09 13:11:25+05:30     service = get_function_service(function_def, _client)
+2026-10-09 13:11:25+05:30               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09 13:11:25+05:30   File "/pkg/modal/_container_entrypoint.py", line 340, in get_function_service
+2026-10-09 13:11:25+05:30     service = import_single_function_service(
+2026-10-09 13:11:25+05:30               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09 13:11:25+05:30   File "/pkg/modal/_runtime/user_code_imports.py", line 509, in import_single_function_service
+2026-10-09 13:11:25+05:30     module = importlib.import_module(function_def.module_name)
+2026-10-09 13:11:25+05:30              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09 13:11:25+05:30   File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+2026-10-09 13:11:25+05:30     return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-09 13:11:25+05:30            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-09 13:11:25+05:30   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+2026-10-09 13:11:25+05:30   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+2026-10-09 13:11:25+05:30   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+2026-10-09 13:11:25+05:30   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2026-10-09 13:11:25+05:30   File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+2026-10-09 13:11:25+05:30   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2026-10-09 13:11:25+05:30   File "/root/train_pollutant_linear_modal.py", line 10, in <module>
+2026-10-09 13:11:25+05:30     from probe_pollutant_lag_modal import digest, features, origins_digest, write
+2026-10-09 13:11:25+05:30 ModuleNotFoundError: No module named 'probe_pollutant_lag_modal'
+2026-10-09 13:11:25+05:30 Runner failed with exception: ModuleNotFoundError("No module named 'probe_pollutant_lag_modal'")

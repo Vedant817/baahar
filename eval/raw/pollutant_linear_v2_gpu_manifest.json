@@ -1,0 +1,110 @@
+{
+  "status": "COMPLETED",
+  "created_at": "2026-10-09T07:50:12.617140+00:00",
+  "run_name": "pollutant_linear_v2_gpu",
+  "replaces_failed_call": "fc-01M4FQDNY8YWCV2VQ90CRFNKZE",
+  "replay": {
+    "rows_sha256": "064684cdc77b2612a5e9910528eacf6340677a7cdb8f238effff9918cce55951",
+    "row_count": 32826,
+    "excluded_history_n": 30,
+    "excluded_quality_n": 0,
+    "source_fixtures": [
+      {
+        "path": "data/samples/archival_aq_2023-01-01_2023-12-31.json",
+        "sha256": "80e2095817debe677445dfc694b99dfa0f9bcc39ead3f1f5bf7ff58b70d92bf0"
+      },
+      {
+        "path": "data/samples/archival_aq_2024-01-01_2024-12-31.json",
+        "sha256": "81ab6e6b0c1027fc203772aaa0e5a92e30ce42d89dfd4f4c584c41c7bdde7fb7"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-01-01_2025-10-31.json",
+        "sha256": "a9c677e876d844c9ebe1ff25fc439e9b7755e489bd26dc03a5d4ee14af4b2d5c"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-11-01_2025-12-31.json",
+        "sha256": "443d5d398a13d44a83bd613ecfd68f99497f84081877e67862c55c0d65595b30"
+      },
+      {
+        "path": "data/samples/archival_aq_2026-01-01_2026-09-30.json",
+        "sha256": "3323aeb31e3f513b23f7b759be7cc7e3ceadf3f9348f937e11e76fa7225102ff"
+      },
+      {
+        "path": "data/samples/archival_wx_2023-01-01_2023-12-31.json",
+        "sha256": "3d71fbd3972525ab52d8613357a7ce8680ef2d40882649cb5eb14357fe41ab7c"
+      },
+      {
+        "path": "data/samples/archival_wx_2024-01-01_2024-12-31.json",
+        "sha256": "e0f0c92cdc67454504372e9292ff5c895d467a7b0d55b937322837970a923c9b"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-01-01_2025-10-31.json",
+        "sha256": "8d7e98f8a9c9cefe1a54a38779e7e367bdab294f96afc25e1f2291ec4e86bf4a"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-11-01_2025-12-31.json",
+        "sha256": "7779cce7765fbfc341212dc5d216e6b2cc95a4b0a4bd4dfe4eca56b99ce4810d"
+      },
+      {
+        "path": "data/samples/archival_wx_2026-01-01_2026-09-30.json",
+        "sha256": "726d32e9ff366b8a0d1e954008c35d75894538fc5078e8ee94d969eb6c9e0528"
+      }
+    ],
+    "source_kind": "CAMS/ERA5 modelled archive"
+  },
+  "partitions": {
+    "train": [
+      "2023-01-01",
+      "2025-04-01"
+    ],
+    "development": [
+      "2025-04-01",
+      "2025-06-01"
+    ],
+    "diagnostic_pollution": [
+      "2026-02-01",
+      "2026-05-01"
+    ],
+    "diagnostic_other_seasons": [
+      "2026-05-01",
+      "2026-10-01"
+    ]
+  },
+  "expected_eligible_rows": {
+    "train": 19663,
+    "development": 1435,
+    "diagnostic_pollution": 2107,
+    "diagnostic_other_seasons": 3643
+  },
+  "reference": {
+    "path": "eval/raw/pollutant_sequence_v3_results.json",
+    "result_sha256": "cb79a2291e227da16960ecec7a23040769e3bff1e13b7d2d2b2dcddaa6f68b3a",
+    "call_id": "fc-01M4FH3RPFGP8WW3B4HP033708"
+  },
+  "protocol": {
+    "algorithm": "GPU weighted centered Ridge",
+    "alpha": 10.0,
+    "context_hours": 24,
+    "cpu": 2,
+    "memory_mb": 8192,
+    "timeout_seconds": 7200,
+    "retries": 0,
+    "max_containers": 1,
+    "gpu": "T4"
+  },
+  "source_sha256": {
+    "scripts/train_pollutant_linear_v2_gpu_modal.py": "daf3e4edd37892c46e5562d98526c8f4825f091c206ae2bcef3eaf9950570150",
+    "scripts/report_pollutant_linear_v2_gpu.py": "2721eb85f53ff1a9bae0adb84fe3106bc68df2dc07db575b95c1703e0882dbbb",
+    "scripts/probe_pollutant_lag_modal.py": "9569e788f0fb8ff6b1a6034642921ecae769c3748c9b66dc315228303f93ebb6",
+    "scripts/train_pollutant_sequence_v3_modal.py": "efe82a600ce728c9b7376f5d97501a76047faa0fb5873fe137432ac411e56d80",
+    "scripts/analyze_linear_ozone_complementarity.py": "7468e7e6f6d09acc1993db971f49d391f3dcbae13f74a824555084f40cd5464d",
+    "docs/POLLUTANT_LINEAR_V2_GPU_PROTOCOL.md": "62f2be6a4306fa4765f83336f369543d636dffe0b37ba635db60cd9b361aa17d",
+    "eval/raw/pollutant_sequence_v3_results.json": "cb79a2291e227da16960ecec7a23040769e3bff1e13b7d2d2b2dcddaa6f68b3a",
+    "src/baahar/naqi.py": "f755b308baef2fec28877c81f500e95d5b7dc9e1231dff677c208ca61b5b21dc",
+    "src/baahar/__init__.py": "5e8311583c6c5a260d36fbf0a578efdd08834872a75aabd642b57e50bee6cab4"
+  },
+  "call_id": "fc-01M4FTBBWBW3T3PVG117M4KSTR",
+  "app_id": "ap-mfPHT0qPcuLooRX6AiFKZy",
+  "result_sha256": "09b66b05348f2002bf5f4a95baf03afdb8dc5f8d0eb83fbb315d33bf940ebc3b",
+  "completed_at": "2026-10-09T07:52:31.362865+00:00"
+}

@@ -79,6 +79,7 @@ loop_*.out
 nohup.out
 *.log
 !docs/**/*.log
+!eval/raw/**/*.log
 
 # Local Modal credentials/state and optional model download caches.
 .modal/

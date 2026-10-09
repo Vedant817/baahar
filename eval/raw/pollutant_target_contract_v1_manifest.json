@@ -1,0 +1,79 @@
+{
+  "status": "COMPLETED",
+  "created_at": "2026-10-09T06:56:05.675284+00:00",
+  "protocol": {
+    "windows": {
+      "train": [
+        "2023-01-01",
+        "2025-04-01"
+      ],
+      "development": [
+        "2025-04-01",
+        "2025-06-01"
+      ],
+      "diagnostic_pollution": [
+        "2026-02-01",
+        "2026-05-01"
+      ],
+      "diagnostic_other_seasons": [
+        "2026-05-01",
+        "2026-10-01"
+      ]
+    },
+    "source_fixtures": [
+      {
+        "path": "data/samples/archival_aq_2023-01-01_2023-12-31.json",
+        "sha256": "80e2095817debe677445dfc694b99dfa0f9bcc39ead3f1f5bf7ff58b70d92bf0"
+      },
+      {
+        "path": "data/samples/archival_aq_2024-01-01_2024-12-31.json",
+        "sha256": "81ab6e6b0c1027fc203772aaa0e5a92e30ce42d89dfd4f4c584c41c7bdde7fb7"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-01-01_2025-10-31.json",
+        "sha256": "a9c677e876d844c9ebe1ff25fc439e9b7755e489bd26dc03a5d4ee14af4b2d5c"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-11-01_2025-12-31.json",
+        "sha256": "443d5d398a13d44a83bd613ecfd68f99497f84081877e67862c55c0d65595b30"
+      },
+      {
+        "path": "data/samples/archival_aq_2026-01-01_2026-09-30.json",
+        "sha256": "3323aeb31e3f513b23f7b759be7cc7e3ceadf3f9348f937e11e76fa7225102ff"
+      },
+      {
+        "path": "data/samples/archival_wx_2023-01-01_2023-12-31.json",
+        "sha256": "3d71fbd3972525ab52d8613357a7ce8680ef2d40882649cb5eb14357fe41ab7c"
+      },
+      {
+        "path": "data/samples/archival_wx_2024-01-01_2024-12-31.json",
+        "sha256": "e0f0c92cdc67454504372e9292ff5c895d467a7b0d55b937322837970a923c9b"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-01-01_2025-10-31.json",
+        "sha256": "8d7e98f8a9c9cefe1a54a38779e7e367bdab294f96afc25e1f2291ec4e86bf4a"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-11-01_2025-12-31.json",
+        "sha256": "7779cce7765fbfc341212dc5d216e6b2cc95a4b0a4bd4dfe4eca56b99ce4810d"
+      },
+      {
+        "path": "data/samples/archival_wx_2026-01-01_2026-09-30.json",
+        "sha256": "726d32e9ff366b8a0d1e954008c35d75894538fc5078e8ee94d969eb6c9e0528"
+      }
+    ],
+    "rows_sha256": "064684cdc77b2612a5e9910528eacf6340677a7cdb8f238effff9918cce55951",
+    "row_count": 32826,
+    "code_sha256": {
+      "scripts/audit_pollutant_target_contract_modal.py": "09160adecd621c591d5a7bb10eeee5df1aa9d626548561440981d7fe02add589",
+      "src/baahar/naqi.py": "f755b308baef2fec28877c81f500e95d5b7dc9e1231dff677c208ca61b5b21dc",
+      "src/baahar/__init__.py": "5e8311583c6c5a260d36fbf0a578efdd08834872a75aabd642b57e50bee6cab4",
+      "docs/POLLUTANT_TARGET_AUDIT_PROTOCOL.md": "2938ae0fd3b349601560c9e42e9ef8cf870fd386e38974c8fcd694b1b02c6ff7"
+    }
+  },
+  "timeout_seconds": 600,
+  "retries": 0,
+  "call_id": "fc-01M4FQ5AR38P77DCWRDAZ9N2M3",
+  "app_id": "ap-EYjomUeIBrjTquMy5bYdOv",
+  "result_sha256": "6d4959dd5baa5aa450d6ad07621778c71c6238fb6a35d46c94676a93329c1915"
+}
