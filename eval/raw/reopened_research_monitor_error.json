@@ -1,0 +1,9 @@
+{
+  "step": "linear_v1_container_startup",
+  "consecutive_count": 1,
+  "reason": "ModuleNotFoundError: probe_pollutant_lag_modal before remote_train began",
+  "call_id": "fc-01M4FQDNY8YWCV2VQ90CRFNKZE",
+  "app_id": "ap-WKqEXk9UEV8FEfre0BhVkz",
+  "no_performance_scores": true,
+  "action": "Preserved failed source/call; distinct GPU v2 required"
+}
