@@ -1,0 +1,238 @@
+{
+  "status": "COMPLETED",
+  "run_id": "20261007T195439Z-1e4b8ff8",
+  "candidate": "qwen3_4b",
+  "model": "Qwen/Qwen3-4B-Instruct-2507",
+  "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+  "parameters": {
+    "max_len": 1024,
+    "microbatch": 1,
+    "gradient_accumulation": 16,
+    "epochs": 3,
+    "learning_rate": 5e-05,
+    "rank": 16,
+    "alpha": 32,
+    "dropout": 0.05,
+    "warmup_fraction": 0.05,
+    "seed": 0,
+    "max_new_tokens": 160,
+    "early_stopping_patience": 1
+  },
+  "dataset": {
+    "counts": {
+      "train": 969,
+      "val": 80,
+      "test": 88,
+      "stress": 64
+    },
+    "sha256": {
+      "train": "f3f0676a8c5b3029acffbee14404544d169812b487d0dd9e2a9ab18445da45da",
+      "val": "2839127fe671337e1038910307972cf34428bf496ca2e6bc5e47838e79669564",
+      "test": "b4f5a8157fa78eeeb55d15d4df9d0f7a304c0d388bfb6ef1ac8694d33c07428e",
+      "stress": "4dd3843480522aeffabf7c576194af3bc3e24732369ce62b92332c92bc3ff4d3"
+    },
+    "contract_sha256": "848c2d15003ede0c30b52b82a09e2c4d5da46fbd54d679d64c9f24f8e01d5fae",
+    "recorded_day_ranges": {
+      "train": [
+        "2025-11-01",
+        "2026-06-25"
+      ],
+      "val": [
+        "2026-06-28",
+        "2026-08-14"
+      ],
+      "test": [
+        "2026-08-19",
+        "2026-10-05"
+      ],
+      "stress": []
+    },
+    "source_kind_counts": {
+      "train": {
+        "recorded_archive": 841,
+        "synthetic_stress": 128
+      },
+      "val": {
+        "recorded_archive": 80,
+        "synthetic_stress": 0
+      },
+      "test": {
+        "recorded_archive": 88,
+        "synthetic_stress": 0
+      },
+      "stress": {
+        "recorded_archive": 0,
+        "synthetic_stress": 64
+      }
+    }
+  },
+  "excluded_case_ids": {
+    "train": [],
+    "val": []
+  },
+  "usable_counts": {
+    "train": 969,
+    "val": 80
+  },
+  "base_val_loss": 3.55908511220427,
+  "adapted_val_loss": 0.018084045032779404,
+  "best_epoch": 3,
+  "selection": "minimum validation loss only; test untouched",
+  "curve": [
+    {
+      "epoch": 1,
+      "train_loss": 0.8466066061503255,
+      "val_loss": 0.039765759570375925
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.023154402056633456,
+      "val_loss": 0.020937095012316723
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.018397741418317726,
+      "val_loss": 0.018084045032779404
+    }
+  ],
+  "setup_and_baseline_eval_seconds": 603.018309622,
+  "train_seconds": 1432.4746586019999,
+  "total_seconds": 3230.86868787,
+  "hardware": {
+    "gpu": "NVIDIA L40S",
+    "gpu_total_bytes": 47695921152,
+    "peak_allocated_bytes": 9666763776,
+    "peak_reserved_bytes": 14455668736
+  },
+  "versions": {
+    "torch": "2.9.1",
+    "transformers": "4.57.6",
+    "peft": "0.18.1",
+    "accelerate": "1.15.0"
+  },
+  "adapter_path": "candidates/20261007T195439Z-1e4b8ff8/qwen3_4b/adapter",
+  "trainable_parameters": 33030144,
+  "evaluation": {
+    "base": {
+      "val": {
+        "n": 80,
+        "raw_accepted_count": 1,
+        "raw_safety_error_count": 64,
+        "raw_harmful_encouragement_count": 0,
+        "raw_defect_counts": {
+          "air_safety_claim": 17,
+          "invented_forecast": 1,
+          "length": 27,
+          "missing_indian_scale": 49,
+          "missing_night_reason": 3,
+          "premature_pocket_mode": 1,
+          "skip_direction": 12,
+          "ungrounded_number": 21,
+          "wait_direction": 23,
+          "wrong_air_band": 6
+        },
+        "guarded_accepted_count": 80,
+        "guarded_safety_error_count": 0,
+        "fallback_count": 79,
+        "rejection_rate": 0.9875,
+        "latency_median_seconds": 2.425138375500012,
+        "latency_p95_seconds": 3.011899212000003
+      },
+      "test": {
+        "n": 88,
+        "raw_accepted_count": 3,
+        "raw_safety_error_count": 74,
+        "raw_harmful_encouragement_count": 0,
+        "raw_defect_counts": {
+          "air_safety_claim": 15,
+          "length": 16,
+          "medical_claim": 2,
+          "missing_indian_scale": 52,
+          "missing_night_reason": 8,
+          "skip_direction": 12,
+          "ungrounded_number": 20,
+          "wait_direction": 38,
+          "wrong_air_band": 10
+        },
+        "guarded_accepted_count": 88,
+        "guarded_safety_error_count": 0,
+        "fallback_count": 85,
+        "rejection_rate": 0.9659090909090909,
+        "latency_median_seconds": 2.6380652234999786,
+        "latency_p95_seconds": 3.1689116500000125
+      },
+      "stress": {
+        "n": 64,
+        "raw_accepted_count": 0,
+        "raw_safety_error_count": 61,
+        "raw_harmful_encouragement_count": 0,
+        "raw_defect_counts": {
+          "air_safety_claim": 16,
+          "length": 10,
+          "missing_indian_scale": 38,
+          "missing_naqi": 1,
+          "missing_night_reason": 13,
+          "premature_pocket_mode": 1,
+          "skip_direction": 42,
+          "ungrounded_number": 4,
+          "wait_direction": 16,
+          "wrong_air_band": 2,
+          "wrong_naqi": 2
+        },
+        "guarded_accepted_count": 64,
+        "guarded_safety_error_count": 0,
+        "fallback_count": 64,
+        "rejection_rate": 1.0,
+        "latency_median_seconds": 2.4780033510000408,
+        "latency_p95_seconds": 3.048112305000018
+      }
+    },
+    "adapted": {
+      "val": {
+        "n": 80,
+        "raw_accepted_count": 80,
+        "raw_safety_error_count": 0,
+        "raw_harmful_encouragement_count": 0,
+        "raw_defect_counts": {},
+        "guarded_accepted_count": 80,
+        "guarded_safety_error_count": 0,
+        "fallback_count": 0,
+        "rejection_rate": 0.0,
+        "latency_median_seconds": 4.977917964499966,
+        "latency_p95_seconds": 5.494566991999818
+      },
+      "test": {
+        "n": 88,
+        "raw_accepted_count": 88,
+        "raw_safety_error_count": 0,
+        "raw_harmful_encouragement_count": 0,
+        "raw_defect_counts": {},
+        "guarded_accepted_count": 88,
+        "guarded_safety_error_count": 0,
+        "fallback_count": 0,
+        "rejection_rate": 0.0,
+        "latency_median_seconds": 5.149697018500092,
+        "latency_p95_seconds": 5.565182312999696
+      },
+      "stress": {
+        "n": 64,
+        "raw_accepted_count": 64,
+        "raw_safety_error_count": 0,
+        "raw_harmful_encouragement_count": 0,
+        "raw_defect_counts": {},
+        "guarded_accepted_count": 64,
+        "guarded_safety_error_count": 0,
+        "fallback_count": 0,
+        "rejection_rate": 0.0,
+        "latency_median_seconds": 5.278232370999831,
+        "latency_p95_seconds": 6.048889005000092
+      }
+    }
+  },
+  "limitations": [
+    "One seed; deterministic targets do not establish prose quality.",
+    "Synthetic stress cases are not recorded field observations.",
+    "Guarded success includes fallback; inspect raw rejection rate.",
+    "Compute estimate is not measured billed cost; no live deployment."
+  ]
+}

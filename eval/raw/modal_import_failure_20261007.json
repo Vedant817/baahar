@@ -1,0 +1,13 @@
+{
+  "observed_at": "2026-10-07T18:20:19.6872073Z",
+  "provider": "Modal",
+  "app_id": "ap-2cHr9BC6xWYBaSydcThFnV",
+  "call_id": "fc-01M4BSA1J9GF82X702RK25QB22",
+  "status": "FAILED",
+  "stage": "container_import",
+  "error_type": "ModuleNotFoundError",
+  "error": "No module named dotenv",
+  "training_started": false,
+  "fix": "Load dotenv only when modal.is_local() is true.",
+  "replacement_call_id": "fc-01M4BSBBTH8BWPBN0FFQ5KEPDY"
+}

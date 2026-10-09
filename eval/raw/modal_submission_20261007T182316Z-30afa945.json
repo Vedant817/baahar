@@ -1,0 +1,16 @@
+{
+  "status": "SUBMITTED",
+  "run_id": "20261007T182316Z-30afa945",
+  "call_id": "fc-01M4BSP70RR77VS6YMQET3D0QE",
+  "parameters": {
+    "lora_rank": 16,
+    "epochs": 3,
+    "learning_rate": 0.0002,
+    "batch_size": 2,
+    "max_len": 768,
+    "run_id": "20261007T182316Z-30afa945"
+  },
+  "volume": "baahar-training",
+  "gpu": "L4",
+  "base_model": "Qwen/Qwen2.5-1.5B-Instruct"
+}

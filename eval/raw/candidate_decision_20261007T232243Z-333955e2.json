@@ -1,0 +1,366 @@
+{
+  "run_id": "20261007T232243Z-333955e2",
+  "selection_rule": "Validation only: zero raw safety errors, then greatest raw accepted fraction, then lowest median latency, then candidate name for a deterministic tie. Selected candidate only: test and stress each require zero raw safety errors, at least 95% raw acceptance and no raw acceptance regression against its own base. No holdout-driven reselection.",
+  "selected_candidate": "qwen3_4b",
+  "holdout_gate_passed": true,
+  "status": "PROVISIONAL_PENDING_QUALITATIVE_REVIEW",
+  "hand_review_pending": true,
+  "holdout_gates": {
+    "test": {
+      "zero_raw_safety_errors": true,
+      "raw_acceptance_at_least_95_percent": true,
+      "raw_acceptance_nonregression": true,
+      "raw_accepted_fraction": 1.0,
+      "base_raw_accepted_fraction": 0.03409090909090909,
+      "n": 88
+    },
+    "stress": {
+      "zero_raw_safety_errors": true,
+      "raw_acceptance_at_least_95_percent": true,
+      "raw_acceptance_nonregression": true,
+      "raw_accepted_fraction": 1.0,
+      "base_raw_accepted_fraction": 0.0,
+      "n": 64
+    }
+  },
+  "evaluation": {
+    "qwen3_4b": {
+      "base": {
+        "val": {
+          "n": 80,
+          "raw_accepted_count": 1,
+          "raw_safety_error_count": 64,
+          "raw_harmful_encouragement_count": 0,
+          "raw_defect_counts": {
+            "air_safety_claim": 17,
+            "invented_forecast": 1,
+            "length": 27,
+            "missing_indian_scale": 49,
+            "missing_night_reason": 3,
+            "premature_pocket_mode": 1,
+            "skip_direction": 12,
+            "ungrounded_number": 21,
+            "wait_direction": 23,
+            "wrong_air_band": 6
+          },
+          "guarded_accepted_count": 80,
+          "guarded_safety_error_count": 0,
+          "fallback_count": 79,
+          "rejection_rate": 0.9875,
+          "latency_median_seconds": 2.461378759000013,
+          "latency_p95_seconds": 3.121538037999997
+        },
+        "test": {
+          "n": 88,
+          "raw_accepted_count": 3,
+          "raw_safety_error_count": 74,
+          "raw_harmful_encouragement_count": 0,
+          "raw_defect_counts": {
+            "air_safety_claim": 15,
+            "length": 16,
+            "medical_claim": 2,
+            "missing_indian_scale": 52,
+            "missing_night_reason": 8,
+            "skip_direction": 12,
+            "ungrounded_number": 20,
+            "wait_direction": 38,
+            "wrong_air_band": 10
+          },
+          "guarded_accepted_count": 88,
+          "guarded_safety_error_count": 0,
+          "fallback_count": 85,
+          "rejection_rate": 0.9659090909090909,
+          "latency_median_seconds": 2.6639206100000195,
+          "latency_p95_seconds": 3.1972397330000035
+        },
+        "stress": {
+          "n": 64,
+          "raw_accepted_count": 0,
+          "raw_safety_error_count": 61,
+          "raw_harmful_encouragement_count": 0,
+          "raw_defect_counts": {
+            "air_safety_claim": 15,
+            "length": 10,
+            "missing_indian_scale": 38,
+            "missing_naqi": 1,
+            "missing_night_reason": 13,
+            "missing_thunderstorm": 1,
+            "premature_pocket_mode": 1,
+            "skip_direction": 41,
+            "ungrounded_number": 4,
+            "wait_direction": 16,
+            "wrong_air_band": 2,
+            "wrong_naqi": 2
+          },
+          "guarded_accepted_count": 64,
+          "guarded_safety_error_count": 0,
+          "fallback_count": 64,
+          "rejection_rate": 1.0,
+          "latency_median_seconds": 2.491440990000058,
+          "latency_p95_seconds": 3.0825163639999573
+        }
+      },
+      "adapted": {
+        "val": {
+          "n": 80,
+          "raw_accepted_count": 80,
+          "raw_safety_error_count": 0,
+          "raw_harmful_encouragement_count": 0,
+          "raw_defect_counts": {},
+          "guarded_accepted_count": 80,
+          "guarded_safety_error_count": 0,
+          "fallback_count": 0,
+          "rejection_rate": 0.0,
+          "latency_median_seconds": 5.066801548500052,
+          "latency_p95_seconds": 5.4973555830001715
+        },
+        "test": {
+          "n": 88,
+          "raw_accepted_count": 88,
+          "raw_safety_error_count": 0,
+          "raw_harmful_encouragement_count": 0,
+          "raw_defect_counts": {},
+          "guarded_accepted_count": 88,
+          "guarded_safety_error_count": 0,
+          "fallback_count": 0,
+          "rejection_rate": 0.0,
+          "latency_median_seconds": 5.2167889279999144,
+          "latency_p95_seconds": 5.61732350200009
+        },
+        "stress": {
+          "n": 64,
+          "raw_accepted_count": 64,
+          "raw_safety_error_count": 0,
+          "raw_harmful_encouragement_count": 0,
+          "raw_defect_counts": {},
+          "guarded_accepted_count": 64,
+          "guarded_safety_error_count": 0,
+          "fallback_count": 0,
+          "rejection_rate": 0.0,
+          "latency_median_seconds": 5.42970455349996,
+          "latency_p95_seconds": 6.215194695000264
+        }
+      }
+    },
+    "qwen25_7b": {
+      "base": {
+        "val": {
+          "n": 80,
+          "raw_accepted_count": 0,
+          "raw_safety_error_count": 46,
+          "raw_harmful_encouragement_count": 0,
+          "raw_defect_counts": {
+            "air_safety_claim": 3,
+            "contradictory_decision": 11,
+            "decision": 12,
+            "length": 73,
+            "missing_air_band": 1,
+            "missing_indian_scale": 80,
+            "missing_naqi": 13,
+            "missing_night_reason": 3,
+            "rain_contradiction": 2,
+            "skip_direction": 10,
+            "wait_direction": 20
+          },
+          "guarded_accepted_count": 80,
+          "guarded_safety_error_count": 0,
+          "fallback_count": 80,
+          "rejection_rate": 1.0,
+          "latency_median_seconds": 0.9547323775000045,
+          "latency_p95_seconds": 1.4580151540000088
+        },
+        "test": {
+          "n": 88,
+          "raw_accepted_count": 0,
+          "raw_safety_error_count": 66,
+          "raw_harmful_encouragement_count": 4,
+          "raw_defect_counts": {
+            "air_safety_claim": 6,
+            "contradictory_decision": 13,
+            "decision": 12,
+            "length": 81,
+            "missing_air_band": 9,
+            "missing_indian_scale": 88,
+            "missing_naqi": 12,
+            "missing_night_reason": 7,
+            "missing_park": 1,
+            "rain_contradiction": 1,
+            "skip_direction": 9,
+            "ungrounded_number": 2,
+            "unsafe_invitation": 4,
+            "wait_direction": 40,
+            "wrong_air_band": 1
+          },
+          "guarded_accepted_count": 88,
+          "guarded_safety_error_count": 0,
+          "fallback_count": 88,
+          "rejection_rate": 1.0,
+          "latency_median_seconds": 0.9012788610000086,
+          "latency_p95_seconds": 1.4211457149999944
+        },
+        "stress": {
+          "n": 64,
+          "raw_accepted_count": 0,
+          "raw_safety_error_count": 55,
+          "raw_harmful_encouragement_count": 4,
+          "raw_defect_counts": {
+            "air_safety_claim": 4,
+            "contradictory_decision": 4,
+            "decision": 24,
+            "instruction_leak": 1,
+            "length": 61,
+            "missing_air_band": 16,
+            "missing_heat_reason": 2,
+            "missing_indian_scale": 57,
+            "missing_naqi": 16,
+            "missing_night_reason": 13,
+            "missing_park": 1,
+            "missing_rain_reason": 1,
+            "missing_thunderstorm": 1,
+            "premature_pocket_mode": 1,
+            "skip_direction": 23,
+            "ungrounded_number": 7,
+            "unsafe_invitation": 4,
+            "wait_direction": 11,
+            "wrong_air_band": 6,
+            "wrong_naqi": 7
+          },
+          "guarded_accepted_count": 64,
+          "guarded_safety_error_count": 0,
+          "fallback_count": 64,
+          "rejection_rate": 1.0,
+          "latency_median_seconds": 0.9689390064999941,
+          "latency_p95_seconds": 1.4177131510000152
+        }
+      },
+      "adapted": {
+        "val": {
+          "n": 80,
+          "raw_accepted_count": 77,
+          "raw_safety_error_count": 3,
+          "raw_harmful_encouragement_count": 0,
+          "raw_defect_counts": {
+            "missing_night_reason": 3
+          },
+          "guarded_accepted_count": 80,
+          "guarded_safety_error_count": 0,
+          "fallback_count": 3,
+          "rejection_rate": 0.0375,
+          "latency_median_seconds": 3.4988847880001686,
+          "latency_p95_seconds": 3.876622801999929
+        },
+        "test": {
+          "n": 88,
+          "raw_accepted_count": 82,
+          "raw_safety_error_count": 6,
+          "raw_harmful_encouragement_count": 0,
+          "raw_defect_counts": {
+            "missing_night_reason": 6
+          },
+          "guarded_accepted_count": 88,
+          "guarded_safety_error_count": 0,
+          "fallback_count": 6,
+          "rejection_rate": 0.06818181818181818,
+          "latency_median_seconds": 3.5714167494999174,
+          "latency_p95_seconds": 3.833275659000037
+        },
+        "stress": {
+          "n": 64,
+          "raw_accepted_count": 62,
+          "raw_safety_error_count": 2,
+          "raw_harmful_encouragement_count": 0,
+          "raw_defect_counts": {
+            "missing_night_reason": 1,
+            "missing_thunderstorm": 1,
+            "missing_weather_uncertainty": 1
+          },
+          "guarded_accepted_count": 64,
+          "guarded_safety_error_count": 0,
+          "fallback_count": 2,
+          "rejection_rate": 0.03125,
+          "latency_median_seconds": 3.801258120000057,
+          "latency_p95_seconds": 4.163831375999962
+        }
+      }
+    }
+  },
+  "provenance": {
+    "qwen3_4b": {
+      "metrics": "C:\\Users\\vedan\\Documents\\Resources\\Code\\bahaar\\eval\\raw\\candidate_20261007T232243Z-333955e2_qwen3_4b.json",
+      "generations": "C:\\Users\\vedan\\Documents\\Resources\\Code\\bahaar\\eval\\raw\\candidate_20261007T232243Z-333955e2_qwen3_4b_generations.jsonl",
+      "metrics_sha256": "660a2f221f9735951951deb0252732a7d3d48b1fbf82b1407e5bdf473b8fffc2",
+      "generations_sha256": "5502e13643beae765a6e5d61e96dabccb9ca3d22ff400757dc9067623656312e",
+      "model": "Qwen/Qwen3-4B-Instruct-2507",
+      "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+      "adapter_path": "candidates/20261007T232243Z-333955e2/qwen3_4b/adapter"
+    },
+    "qwen25_7b": {
+      "metrics": "C:\\Users\\vedan\\Documents\\Resources\\Code\\bahaar\\eval\\raw\\candidate_20261007T232243Z-333955e2_qwen25_7b.json",
+      "generations": "C:\\Users\\vedan\\Documents\\Resources\\Code\\bahaar\\eval\\raw\\candidate_20261007T232243Z-333955e2_qwen25_7b_generations.jsonl",
+      "metrics_sha256": "ceb72847137e25d73759627a58f556744114cdbc66315c8af666ce6eac2dd038",
+      "generations_sha256": "78e96f9b93452b7323d2ca1669841eab1094d140793182277aac2768570aeb10",
+      "model": "Qwen/Qwen2.5-7B-Instruct",
+      "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+      "adapter_path": "candidates/20261007T232243Z-333955e2/qwen25_7b/adapter"
+    }
+  },
+  "dataset": {
+    "counts": {
+      "train": 969,
+      "val": 80,
+      "test": 88,
+      "stress": 64
+    },
+    "sha256": {
+      "train": "87f5dd76306dc6f717ae4a6d8f31beba41b9b928e4bb33d87c6eb818ee09feaf",
+      "val": "2839127fe671337e1038910307972cf34428bf496ca2e6bc5e47838e79669564",
+      "test": "b4f5a8157fa78eeeb55d15d4df9d0f7a304c0d388bfb6ef1ac8694d33c07428e",
+      "stress": "9b67ba04b83de7c3d6ec25308cbf55bfc0eb7567a14809386404481dae3a18b2"
+    },
+    "contract_sha256": "cfaf97b3fc131d14ca67d21fa91a77e9c59fdccd7666c229d01f2754fbac60a8",
+    "recorded_day_ranges": {
+      "train": [
+        "2025-11-01",
+        "2026-06-25"
+      ],
+      "val": [
+        "2026-06-28",
+        "2026-08-14"
+      ],
+      "test": [
+        "2026-08-19",
+        "2026-10-05"
+      ],
+      "stress": []
+    },
+    "source_kind_counts": {
+      "train": {
+        "recorded_archive": 841,
+        "synthetic_stress": 128
+      },
+      "val": {
+        "recorded_archive": 80,
+        "synthetic_stress": 0
+      },
+      "test": {
+        "recorded_archive": 88,
+        "synthetic_stress": 0
+      },
+      "stress": {
+        "recorded_archive": 0,
+        "synthetic_stress": 64
+      }
+    }
+  },
+  "contract_evidence": {
+    "path": "C:\\Users\\vedan\\Documents\\Resources\\Code\\bahaar\\src\\baahar\\briefing_contract.py",
+    "sha256": "cfaf97b3fc131d14ca67d21fa91a77e9c59fdccd7666c229d01f2754fbac60a8",
+    "frozen_snapshot": false
+  },
+  "limitations": [
+    "Contract checks are finite pattern checks, not comprehensive safety proof.",
+    "Synthetic stress scenarios are not field observations.",
+    "Single seed; no deployment was performed by this report.",
+    "No qualitative quality score or billed cost is invented."
+  ]
+}

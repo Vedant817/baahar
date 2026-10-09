@@ -1,0 +1,86 @@
+{
+  "run_id": "20261007T182316Z-30afa945",
+  "volume": "baahar-training",
+  "adapter_path": "runs/20261007T182316Z-30afa945/adapter",
+  "run_at": "2026-10-07T18:26:02+0000",
+  "task": "LoRA fine-tune of an open model on Baahar briefings, on a Modal GPU",
+  "why_modal": "The CPU run took over 40 minutes of wall clock and was making the laptop unusable. Modal runs the training loop on a remote GPU. Same measurement as fine_tune_local.py.",
+  "not_a_tinker_run": "This does not claim the Tinker prize category. Tinker's API is verified reachable but its balance is exhausted and recharging requires a card. See docs/adr/001-tinker-outcome.md.",
+  "provider": "Modal",
+  "gpu": "L4",
+  "device": "cuda",
+  "base_model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "lora_rank": 16,
+  "lora_target_modules": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj"
+  ],
+  "trainable_parameters": 4358144,
+  "total_parameters": 1548072448,
+  "epochs": 3,
+  "learning_rate": 0.0002,
+  "batch_size": 2,
+  "n_train": 198,
+  "n_val": 22,
+  "discarded_train": 0,
+  "discarded_val": 0,
+  "dataset_sha256": {
+    "train": "fd4498c5b02ac808595bf94ac1926d2480a946cf604b087000335e68284c4f1e",
+    "val": "934ac0b3cb98b3ae6988425241b933046521d2f27cfc0c8d80b12c015ddb1fe0"
+  },
+  "loss": "mean token-level cross-entropy, assistant tokens only",
+  "baseline": {
+    "train": 2.391158,
+    "val": 2.296414
+  },
+  "fine_tuned": {
+    "train": 0.016646,
+    "val": 0.015992
+  },
+  "curve": [
+    {
+      "epoch": 1,
+      "mean_train_loss": 0.521583,
+      "val_loss": 0.083291
+    },
+    {
+      "epoch": 2,
+      "mean_train_loss": 0.037722,
+      "val_loss": 0.02562
+    },
+    {
+      "epoch": 3,
+      "mean_train_loss": 0.021316,
+      "val_loss": 0.015992
+    }
+  ],
+  "val_delta": -2.280421,
+  "train_delta": -2.374512,
+  "generated": [
+    {
+      "decision": "SKIP",
+      "reference": "Stay in today. 4.7 mm rain in the hour.. Air is NAQI 62 (satisfactory). No walk worth the trouble -- try again tomorrow or check the evening window. Not a doctor, just someone reading the numbers honestly.",
+      "fine_tuned": "Stay in today. 4.7 mm rain in the hour.. Air is NAQI 62 (satisfactory). No walk worth the trouble -- try again tomorrow or check the evening window. Not a doctor, just someone reading the numbers honestly."
+    },
+    {
+      "decision": "GO",
+      "reference": "Go at 08:00-09:00. Air is clean enough (NAQI 37). Around 22C. Head to Hesaraghatta Lake. A real wild patch of north Bengaluru - migratory birds in season. Once you are out: Find one thing in the park you have never noticed before. Put the phone away now and notice the place instead.",
+      "fine_tuned": "Go at 08:00-09:00. Air is clean enough (NAQI 37). Around 22C. Head to Hesaraghatta Lake. A real wild patch of north Bengaluru - migratory birds in season. Once you are out: Find one thing in the park you have never noticed before. Put the phone away now and notice the place instead."
+    },
+    {
+      "decision": "SKIP",
+      "reference": "Stay in today. 8.6 mm rain in the hour.. Air is NAQI 47 (good). No walk worth the trouble -- try again tomorrow or check the evening window. Not a doctor, just someone reading the numbers honestly.",
+      "fine_tuned": "Stay in today. 8.6 mm rain in the hour.. Air is NAQI 47 (good). No walk worth the trouble -- try again tomorrow or check the evening window. Not a doctor, just someone reading the numbers honestly."
+    }
+  ],
+  "setup_seconds": 4.2,
+  "train_seconds": 104.2,
+  "caveats": [
+    "The targets were written by the deterministic local writer, so a low loss means the model learned that writer's template. This is style transfer, not evidence that the prose is good; the briefing rubric in eval/RESULTS.md remains the only measurement of readability.",
+    "Single seed, single configuration (lora_rank=16, learning_rate=0.0002, epochs=3). One point on a hyper-parameter surface, not a tuned result.",
+    "22 validation examples is a small held-out set; a few-hundredths move should not be read as decisive.",
+    "This held-out set is 22 briefing examples, not the tabular holdout. The two are not comparable."
+  ]
+}

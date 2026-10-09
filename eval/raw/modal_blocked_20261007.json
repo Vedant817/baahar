@@ -1,0 +1,15 @@
+{
+  "observed_at": "2026-10-07T18:07:20.436762+00:00",
+  "provider": "Modal",
+  "workspace": "vedantmahajan271",
+  "environment": "main",
+  "status": "SKIPPED",
+  "stage": "FunctionCreate",
+  "gpu": "T4",
+  "base_model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "training_started": false,
+  "image_build_succeeded": true,
+  "error_type": "modal.exception.InvalidError",
+  "error": "Please add a payment method to use T4 GPU functions.",
+  "action": "Aborted under AGENTS.md no-card constraint; local CPU training stopped; no GPU benchmarks or adapter produced."
+}

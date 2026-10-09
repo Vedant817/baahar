@@ -1,0 +1,254 @@
+{
+  "status": "COMPLETED",
+  "run_id": "20261008T042136Z-cc07565d",
+  "candidate": "qwen25_7b",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+  "parameters": {
+    "max_len": 1024,
+    "microbatch": 1,
+    "gradient_accumulation": 16,
+    "epochs": 3,
+    "learning_rate": 7e-05,
+    "rank": 16,
+    "alpha": 32,
+    "dropout": 0.05,
+    "warmup_fraction": 0.05,
+    "seed": 0,
+    "max_new_tokens": 160,
+    "early_stopping_patience": 1
+  },
+  "dataset": {
+    "counts": {
+      "train": 969,
+      "val": 80,
+      "test": 88,
+      "stress": 64
+    },
+    "sha256": {
+      "train": "87f5dd76306dc6f717ae4a6d8f31beba41b9b928e4bb33d87c6eb818ee09feaf",
+      "val": "2839127fe671337e1038910307972cf34428bf496ca2e6bc5e47838e79669564",
+      "test": "b4f5a8157fa78eeeb55d15d4df9d0f7a304c0d388bfb6ef1ac8694d33c07428e",
+      "stress": "9b67ba04b83de7c3d6ec25308cbf55bfc0eb7567a14809386404481dae3a18b2"
+    },
+    "contract_sha256": "cfaf97b3fc131d14ca67d21fa91a77e9c59fdccd7666c229d01f2754fbac60a8",
+    "recorded_day_ranges": {
+      "train": [
+        "2025-11-01",
+        "2026-06-25"
+      ],
+      "val": [
+        "2026-06-28",
+        "2026-08-14"
+      ],
+      "test": [
+        "2026-08-19",
+        "2026-10-05"
+      ],
+      "stress": []
+    },
+    "source_kind_counts": {
+      "train": {
+        "recorded_archive": 841,
+        "synthetic_stress": 128
+      },
+      "val": {
+        "recorded_archive": 80,
+        "synthetic_stress": 0
+      },
+      "test": {
+        "recorded_archive": 88,
+        "synthetic_stress": 0
+      },
+      "stress": {
+        "recorded_archive": 0,
+        "synthetic_stress": 64
+      }
+    }
+  },
+  "excluded_case_ids": {
+    "train": [],
+    "val": []
+  },
+  "usable_counts": {
+    "train": 969,
+    "val": 80
+  },
+  "base_val_loss": 2.881741967915818,
+  "adapted_val_loss": 0.018365891645080644,
+  "best_epoch": 3,
+  "selection": "minimum validation loss only; test untouched",
+  "curve": [
+    {
+      "epoch": 1,
+      "train_loss": 0.5654187034401004,
+      "val_loss": 0.026206444582781038
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.020505440801068264,
+      "val_loss": 0.019529614171747367
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.017704646107829958,
+      "val_loss": 0.018365891645080644
+    }
+  ],
+  "setup_and_baseline_eval_seconds": 255.39655695,
+  "train_seconds": 1070.293990703,
+  "total_seconds": 2201.883801843,
+  "hardware": {
+    "gpu": "NVIDIA L40S",
+    "gpu_total_bytes": 47695921152,
+    "peak_allocated_bytes": 17013462016,
+    "peak_reserved_bytes": 21401436160
+  },
+  "versions": {
+    "torch": "2.9.1",
+    "transformers": "4.57.6",
+    "peft": "0.18.1",
+    "accelerate": "1.15.0"
+  },
+  "adapter_path": "candidates/20261008T042136Z-cc07565d/qwen25_7b/adapter",
+  "trainable_parameters": 40370176,
+  "evaluation": {
+    "base": {
+      "val": {
+        "n": 80,
+        "raw_accepted_count": 0,
+        "raw_safety_error_count": 46,
+        "raw_harmful_encouragement_count": 0,
+        "raw_defect_counts": {
+          "air_safety_claim": 3,
+          "contradictory_decision": 11,
+          "decision": 12,
+          "length": 73,
+          "missing_air_band": 1,
+          "missing_indian_scale": 80,
+          "missing_naqi": 13,
+          "missing_night_reason": 3,
+          "rain_contradiction": 2,
+          "skip_direction": 10,
+          "wait_direction": 20
+        },
+        "guarded_accepted_count": 80,
+        "guarded_safety_error_count": 0,
+        "fallback_count": 80,
+        "rejection_rate": 1.0,
+        "latency_median_seconds": 0.958709359500002,
+        "latency_p95_seconds": 1.4427010140000007
+      },
+      "test": {
+        "n": 88,
+        "raw_accepted_count": 0,
+        "raw_safety_error_count": 66,
+        "raw_harmful_encouragement_count": 4,
+        "raw_defect_counts": {
+          "air_safety_claim": 6,
+          "contradictory_decision": 13,
+          "decision": 12,
+          "length": 81,
+          "missing_air_band": 9,
+          "missing_indian_scale": 88,
+          "missing_naqi": 12,
+          "missing_night_reason": 7,
+          "missing_park": 1,
+          "rain_contradiction": 1,
+          "skip_direction": 9,
+          "ungrounded_number": 2,
+          "unsafe_invitation": 4,
+          "wait_direction": 40,
+          "wrong_air_band": 1
+        },
+        "guarded_accepted_count": 88,
+        "guarded_safety_error_count": 0,
+        "fallback_count": 88,
+        "rejection_rate": 1.0,
+        "latency_median_seconds": 0.9171355384999913,
+        "latency_p95_seconds": 1.472082271000005
+      },
+      "stress": {
+        "n": 64,
+        "raw_accepted_count": 0,
+        "raw_safety_error_count": 55,
+        "raw_harmful_encouragement_count": 4,
+        "raw_defect_counts": {
+          "air_safety_claim": 4,
+          "contradictory_decision": 4,
+          "decision": 24,
+          "instruction_leak": 1,
+          "length": 61,
+          "missing_air_band": 16,
+          "missing_heat_reason": 2,
+          "missing_indian_scale": 57,
+          "missing_naqi": 16,
+          "missing_night_reason": 13,
+          "missing_park": 1,
+          "missing_rain_reason": 1,
+          "missing_thunderstorm": 1,
+          "premature_pocket_mode": 1,
+          "skip_direction": 23,
+          "ungrounded_number": 7,
+          "unsafe_invitation": 4,
+          "wait_direction": 11,
+          "wrong_air_band": 6,
+          "wrong_naqi": 7
+        },
+        "guarded_accepted_count": 64,
+        "guarded_safety_error_count": 0,
+        "fallback_count": 64,
+        "rejection_rate": 1.0,
+        "latency_median_seconds": 1.0031197885000012,
+        "latency_p95_seconds": 1.4513340099999823
+      }
+    },
+    "adapted": {
+      "val": {
+        "n": 80,
+        "raw_accepted_count": 80,
+        "raw_safety_error_count": 0,
+        "raw_harmful_encouragement_count": 0,
+        "raw_defect_counts": {},
+        "guarded_accepted_count": 80,
+        "guarded_safety_error_count": 0,
+        "fallback_count": 0,
+        "rejection_rate": 0.0,
+        "latency_median_seconds": 3.6630302444999643,
+        "latency_p95_seconds": 3.9669181899998875
+      },
+      "test": {
+        "n": 88,
+        "raw_accepted_count": 88,
+        "raw_safety_error_count": 0,
+        "raw_harmful_encouragement_count": 0,
+        "raw_defect_counts": {},
+        "guarded_accepted_count": 88,
+        "guarded_safety_error_count": 0,
+        "fallback_count": 0,
+        "rejection_rate": 0.0,
+        "latency_median_seconds": 3.736482520499976,
+        "latency_p95_seconds": 3.945154343000013
+      },
+      "stress": {
+        "n": 64,
+        "raw_accepted_count": 64,
+        "raw_safety_error_count": 0,
+        "raw_harmful_encouragement_count": 0,
+        "raw_defect_counts": {},
+        "guarded_accepted_count": 64,
+        "guarded_safety_error_count": 0,
+        "fallback_count": 0,
+        "rejection_rate": 0.0,
+        "latency_median_seconds": 3.898390423000137,
+        "latency_p95_seconds": 4.353452603000051
+      }
+    }
+  },
+  "limitations": [
+    "One seed; deterministic targets do not establish prose quality.",
+    "Synthetic stress cases are not recorded field observations.",
+    "Guarded success includes fallback; inspect raw rejection rate.",
+    "Compute estimate is not measured billed cost; no live deployment."
+  ]
+}

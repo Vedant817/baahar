@@ -1,0 +1,38 @@
+{
+  "checked_at": "2026-10-07T19:21:38.719559+00:00",
+  "checks": {
+    "default_no_modal": {
+      "passed": 652,
+      "skipped": 1,
+      "failed": 0,
+      "exit_code": 0,
+      "external_network": "blocked by socket guard; loopback allowed",
+      "credentials": "ordinary tests isolate real provider credentials"
+    },
+    "optional_modal_runner": {
+      "passed": 5,
+      "skipped": 0,
+      "failed": 0,
+      "exit_code": 0,
+      "external_network": "blocked by socket guard; loopback allowed",
+      "credentials": "ordinary tests isolate real provider credentials"
+    },
+    "full_modal_previous_snapshot": {
+      "passed": 656,
+      "skipped": 0,
+      "failed": 0,
+      "exit_code": 0,
+      "command": "uv run --group modal pytest -q -rA",
+      "external_network": "blocked by socket guard; loopback allowed",
+      "credentials": "ordinary tests isolate real provider credentials"
+    }
+  },
+  "dashboard_observation": {
+    "app_id": "ap-sddJ1LenM8NSh6Sz1TsU7K",
+    "live_containers": 2,
+    "gpu": "L40S",
+    "displayed_cycle_usage_usd": 1.33,
+    "not_final_billed_cost": true
+  },
+  "current_total_verified": 657
+}

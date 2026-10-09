@@ -1,0 +1,91 @@
+{
+  "run_id": "20261007T205750Z-6d593cb9",
+  "status": "SUBMITTED",
+  "candidates": {
+    "qwen3_4b": {
+      "model": "Qwen/Qwen3-4B-Instruct-2507",
+      "revision": "cdbee75f17c01a7cc42f958dc650907174af0554"
+    },
+    "qwen25_7b": {
+      "model": "Qwen/Qwen2.5-7B-Instruct",
+      "revision": "a09a35458c702b33eeacc393d103063234e8bc28"
+    }
+  },
+  "parameters": {
+    "max_len": 1024,
+    "microbatch": 1,
+    "gradient_accumulation": 16,
+    "epochs": 3,
+    "learning_rate": 5e-05,
+    "rank": 16,
+    "alpha": 32,
+    "dropout": 0.05,
+    "warmup_fraction": 0.05,
+    "seed": 0,
+    "max_new_tokens": 160,
+    "early_stopping_patience": 1
+  },
+  "dataset": {
+    "counts": {
+      "train": 969,
+      "val": 80,
+      "test": 88,
+      "stress": 64
+    },
+    "sha256": {
+      "train": "87f5dd76306dc6f717ae4a6d8f31beba41b9b928e4bb33d87c6eb818ee09feaf",
+      "val": "2839127fe671337e1038910307972cf34428bf496ca2e6bc5e47838e79669564",
+      "test": "b4f5a8157fa78eeeb55d15d4df9d0f7a304c0d388bfb6ef1ac8694d33c07428e",
+      "stress": "9b67ba04b83de7c3d6ec25308cbf55bfc0eb7567a14809386404481dae3a18b2"
+    },
+    "contract_sha256": "cfaf97b3fc131d14ca67d21fa91a77e9c59fdccd7666c229d01f2754fbac60a8",
+    "recorded_day_ranges": {
+      "train": [
+        "2025-11-01",
+        "2026-06-25"
+      ],
+      "val": [
+        "2026-06-28",
+        "2026-08-14"
+      ],
+      "test": [
+        "2026-08-19",
+        "2026-10-05"
+      ],
+      "stress": []
+    },
+    "source_kind_counts": {
+      "train": {
+        "recorded_archive": 841,
+        "synthetic_stress": 128
+      },
+      "val": {
+        "recorded_archive": 80,
+        "synthetic_stress": 0
+      },
+      "test": {
+        "recorded_archive": 88,
+        "synthetic_stress": 0
+      },
+      "stress": {
+        "recorded_archive": 0,
+        "synthetic_stress": 64
+      }
+    }
+  },
+  "volume": "baahar-training",
+  "max_pair_compute_estimate_usd": 9.205055999999999,
+  "calls": {
+    "qwen3_4b": {
+      "call_id": "fc-01M4C2H9JHRP9A68W9N21GFDZE",
+      "status": "COMPLETED",
+      "artifact": "eval/raw/candidate_20261007T205750Z-6d593cb9_qwen3_4b.json"
+    },
+    "qwen25_7b": {
+      "call_id": "fc-01M4C2HA5GSP1W3F2X3XR5SXQ4",
+      "status": "COMPLETED",
+      "artifact": "eval/raw/candidate_20261007T205750Z-6d593cb9_qwen25_7b.json"
+    }
+  },
+  "app_id": "ap-jA5X0fEqqX9qrPJURu2aGn"
+}

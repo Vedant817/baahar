@@ -1,0 +1,54 @@
+{
+  "case_kind": "explicit synthetic regression, not recorded upstream data",
+  "checked_at": "2026-10-07T19:08:28.075389+00:00",
+  "facts": {
+    "decision": "SKIP",
+    "park": null,
+    "naqi": 350,
+    "band": "severe",
+    "apparent_c": 25,
+    "precip_mm": 0.0,
+    "precip_prob": 0,
+    "is_day": true,
+    "time": "10:00",
+    "air_available": true,
+    "weather_available": true,
+    "weather_code": null,
+    "reasons": [
+      "NAQI 350 is Severe or worse."
+    ],
+    "allowed_park_names": [
+      "Cubbon Park",
+      "Lalbagh Botanical Garden",
+      "Bugle Rock Park",
+      "Ulsoor Lake",
+      "Sankey Lake",
+      "Kanteerava Outer Ring",
+      "Jnanabharathi Woods",
+      "Hesaraghatta Lake",
+      "Kadugodi Tree Park",
+      "Bagmane Lake, Whitefield",
+      "Corporation Park, Jayanagar",
+      "Venkatagiri Park, Jayanagar"
+    ]
+  },
+  "counterexample": "SKIP. Stay indoors, but go walking now if you feel ready. Indian NAQI is 350, in the severe band. It feels like 25 C. Expected rain is 0 mm this hour. The chance of rain is 0%. Keep your attention on your surroundings and choose what feels right for you.",
+  "frozen_checker": {
+    "accepted": true,
+    "passed": true,
+    "errors": [],
+    "safety_errors": [],
+    "defects": [],
+    "word_count": 50
+  },
+  "runtime_result": {
+    "text": "SKIP. Stay indoors and skip the outdoor walk. Indian NAQI is 350, in the severe band. It feels like 25 C. Expected rain is 0 mm this hour. The chance of rain is 0%. A later forecast must be checked before making another plan.",
+    "model": "template",
+    "writer": "template",
+    "word_count": 44,
+    "note": "WAIT/SKIP uses the authoritative local briefing; model and cache bypassed.",
+    "audio_url": null,
+    "latency_ms": 2
+  },
+  "conclusion": "Finite checker misses this encouragement; production WAIT/SKIP bypasses model and cache entirely."
+}
