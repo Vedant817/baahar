@@ -1,26 +1,10 @@
-"""Briefing generation.
+"""Short grounded briefings with an always-available local writer.
 
-Four writers, one interface, and an explicit record of which one ran:
-
-``template``
-    Deterministic, local, no network, no key. Always available. This is what a
-    judge with no keys and an offline laptop sees, and it is why the product is
-    demoable at 3am on a plane.
-``gemma``
-    Open-weight Gemma via the Google AI Studio free tier. The default when a
-    key is present.
-``tinker``
-    A hosted fine-tune served from Tinker's API, if a LoRA has been trained.
-    Requires ``TINKER_API_KEY``.
-``hybrid``
-    Gemma (or Tinker) draft, then a local post-pass that repairs the two
-    failures that actually matter: a missing safety caveat and a wrong park
-    name. Falls back to the template if the model call fails.
-
-Safety is enforced after generation, not requested politely in a prompt. A
-prompt says "include a safety caveat"; :func:`enforce_safety` checks whether one
-is actually there and appends a plain-language line if not. Prompts are not
-contracts.
+Gemma, Tinker and explicitly selected private Modal writers return model drafts.
+The full local briefing contract checks drafts before any repair, and rejected
+text is replaced by deterministic factual prose with visible fallback provenance.
+The legacy template remains the zero-key path. Cached model drafts are checked
+again against the current request's exact dated facts.
 """
 
 from __future__ import annotations
@@ -28,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import math
 import os
 import re
 import time
@@ -36,6 +21,12 @@ from typing import Any, Protocol
 
 import httpx
 
+from .briefing_contract import (
+    build_contract_case,
+    deterministic_fallback,
+    evaluate,
+    render_messages,
+)
 from .config import get_settings
 from .http_client import UpstreamError
 from .models import Briefing, Decision, OutdoorPlan, Park
@@ -125,6 +116,17 @@ class Writer(Protocol):
 # ---------------------------------------------------------------------------
 # Context assembly
 # ---------------------------------------------------------------------------
+def _finite_context(value: Any) -> Any:
+    """Treat non-finite numeric context as unavailable across every writer."""
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    if isinstance(value, dict):
+        return {k: _finite_context(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_finite_context(v) for v in value]
+    return value
+
+
 def build_context(plan: OutdoorPlan, park: Park | None = None) -> dict[str, Any]:
     """The structured facts a writer is allowed to use. Nothing else."""
     park = park or plan.park
@@ -132,7 +134,7 @@ def build_context(plan: OutdoorPlan, park: Park | None = None) -> dict[str, Any]
     weather = slot.weather if slot else None
     air = slot.air if slot else None
 
-    return {
+    ctx = {
         "city": plan.city,
         "decision": plan.overall.value,
         "best_time": plan.best_time.strftime("%H:%M") if plan.best_time else None,
@@ -179,6 +181,8 @@ def build_context(plan: OutdoorPlan, park: Park | None = None) -> dict[str, Any]
         else None,
         "safety_reasons": [s.reasons[0] for s in plan.slots[:1] if s.reasons],
     }
+
+    return _finite_context(ctx)
 
 
 def build_user_prompt(ctx: dict[str, Any]) -> str:
@@ -266,9 +270,9 @@ def write_template(plan: OutdoorPlan, **kwargs: Any) -> str:
         if naqi >= 200:
             air_bits = f" Air is poor (NAQI {naqi:.0f}, {band}), so keep it easy and stay on quieter paths."
         elif naqi >= 100:
-            air_bits = f" Air is moderate (NAQI {naqi:.0f}) -- fine for an easy loop."
+            air_bits = f" Air is in the moderate band (Indian NAQI {naqi:.0f})."
         else:
-            air_bits = f" Air is clean enough (NAQI {naqi:.0f})."
+            air_bits = f" Air is in the {band} band (Indian NAQI {naqi:.0f})."
 
     temp_bits = ""
     if weather.get("temp_c") is not None:
@@ -386,10 +390,10 @@ def write_gemma(plan: OutdoorPlan, model: str | None = None, **kwargs: Any) -> s
         raise UpstreamError("GEMINI_API_KEY is not set")
 
     model = model or settings.gemma_model
-    ctx = build_context(plan, kwargs.get("park"))
+    messages = render_messages(build_contract_case(plan, kwargs.get("park"))["facts"])
     payload = {
-        "contents": [{"parts": [{"text": build_user_prompt(ctx)}]}],
-        "systemInstruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+        "contents": [{"parts": [{"text": messages[1]["content"]}]}],
+        "systemInstruction": {"parts": [{"text": messages[0]["content"]}]},
         "generationConfig": {
             # T=0 rather than 0.4: measured reasoning traces shrink and the
             # output is more reliably on-style (a briefing is not a creative
@@ -601,6 +605,32 @@ def enforce_safety(text: str, plan: OutdoorPlan, park: Park | None = None) -> st
     delete the safety caveat it had just inserted. That bug shipped once: the
     caveat was added and removed in the same call.
     """
+    case = build_contract_case(plan, park)
+    from .walk import eligibility
+
+    if not eligibility(plan)[0]:
+        return deterministic_fallback(case)
+    verdict = evaluate(text, case)
+    if plan.overall is not Decision.GO and re.search(
+        r"\b(?:go walking|go for a walk|venture outside|head outside)\b", text, re.IGNORECASE
+    ):
+        return deterministic_fallback(case)
+    # Preserve the legacy prose shape here; model drafts have the full contract
+    # applied in generate(), before any text repair can hide a model failure.
+    if any(
+        code in verdict["errors"]
+        for code in (
+            "unsafe_invitation",
+            "premature_pocket_mode",
+            "wrong_naqi",
+            "wrong_apparent_c",
+            "wrong_precip_mm",
+            "wrong_precip_prob",
+            "heat_contradiction",
+            "rain_contradiction",
+        )
+    ):
+        return deterministic_fallback(case)
     text = _strip_to_words(text)
     fixed: list[str] = []
 
@@ -782,30 +812,28 @@ def speak_result(text: str) -> tuple[str | None, str | None]:
 # ---------------------------------------------------------------------------
 # Cache
 # ---------------------------------------------------------------------------
-def _cache_key(plan: OutdoorPlan, park: Park | None, writer: str) -> str:
-    """Stable key for a briefing request.
-
-    Built from the *rounded* conditions, not the raw floats, so that two calls
-    in the same weather state reuse one model call instead of paying 45 s
-    twice. The consequence -- a cached text that is a few minutes stale for a
-    slowly-drifting NAQI -- is acceptable for a 20-minute walk plan, and the
-    key is exposed in the response so nothing is hidden.
-    """
-    slot = plan.best_slot
-    air, weather = (slot.air, slot.weather) if slot else (None, None)
+def _cache_key(
+    plan: OutdoorPlan, park: Park | None, writer: str, notice_this: str | None = None
+) -> str:
+    """Cache only an identical dated, grounded request and model identity."""
+    settings = get_settings()
     payload = {
-        "w": writer,
-        "city": plan.city,
-        "decision": plan.overall.value,
-        "hour": plan.best_time.strftime("%H") if plan.best_time else None,
-        "park": park.name if park else None,
-        "naqi": round(air.naqi_effective / 10) * 10
-        if air and air.naqi_effective is not None
-        else None,
-        "apparent": round(weather.apparent_c) if weather and weather.apparent_c else None,
-        "precip": round(weather.precip_prob / 10) * 10 if weather and weather.precip_prob else None,
+        "contract_version": 1,
+        "gemma_model": settings.gemma_model,
+        "gemma_fallback": settings.gemma_model_fallback,
+        "tinker_adapter": settings.tinker_lora_path,
+        "writer": writer,
+        "notice_this": notice_this,
+        "context": build_context(plan, park),
+        "facts": build_contract_case(plan, park)["facts"],
+        "slot_time": str(plan.best_slot.time) if plan.best_slot else None,
+        "weather_source": str(plan.weather_source),
+        "air_source": str(plan.air_source),
+        "modal_run": os.getenv("BAAHAR_MODAL_RUN_ID", ""),
+        "modal_candidate": os.getenv("BAAHAR_MODAL_CANDIDATE", ""),
     }
-    blob = json.dumps(payload, sort_keys=True)
+
+    blob = json.dumps(_finite_context(payload), sort_keys=True, default=str, allow_nan=False)
     return hashlib.sha256(blob.encode()).hexdigest()[:16]
 
 
@@ -866,7 +894,7 @@ def generate(
     With a model key present, this costs tens of seconds (measured -- see
     `eval/RESULTS.md`). Since a user who has just asked "can I go for a walk?"
     will not wait a minute for a paragraph, successful model briefings are
-    cached on the rounded conditions and the cache is checked first. Use
+    cached only for identical dated conditions and the cache is checked first. Use
     `writer="template"` to always skip the model, or clear it with
     `baahar.cache-clear`.
     """
@@ -875,17 +903,42 @@ def generate(
     writer = (writer or "auto").lower()
     note_parts: list[str] = []
 
-    key = _cache_key(plan, park, writer)
-    if writer != "template" and get_settings().cache_enabled:
+    case = build_contract_case(plan, park)
+    key = _cache_key(plan, park, writer, notice_this)
+    from .walk import eligibility
+
+    walk_allowed, _ = eligibility(plan)
+    if writer != "template" and walk_allowed and settings.cache_enabled:
         cached = _read_cache(key)
-        if cached is not None:
+        if cached is not None and evaluate(cached.text, case)["accepted"]:
             cached.note = (cached.note + " " if cached.note else "") + "served from cache"
             return cached
 
     def finish(t: str, w: str, note: str = "") -> Briefing:
+        if w != "template" and not eligibility(plan)[0]:
+            t = deterministic_fallback(build_contract_case(plan, park))
+            w = "template"
+            note = "Conditions must be refreshed before walking; used the local briefing."
+        if w != "template":
+            verdict = evaluate(t, case)
+            if not verdict["accepted"]:
+                note = " ".join(
+                    (
+                        note,
+                        "Model draft rejected by the grounding contract ("
+                        + ", ".join(verdict["errors"])
+                        + "); used the deterministic local briefing.",
+                    )
+                )
+                t, w = deterministic_fallback(case), "template"
         repaired = enforce_safety(t, plan, park=park)
         grounded = _ground_park_names(repaired, park)
         final = _complete_last_sentence(_strip_to_words(grounded))
+        if w != "template" and not evaluate(final, case)["accepted"]:
+            final, w = deterministic_fallback(case), "template"
+            note = " ".join(
+                (note, "Final text failed the grounding contract; used the local briefing.")
+            )
         audio_url, voice_error = speak_result(final) if voice else (None, None)
         briefing = Briefing(
             text=final,
@@ -903,8 +956,32 @@ def generate(
             _write_cache(key, briefing)
         return briefing
 
+    # Withholding a walk is authoritative policy, never unrestricted model prose.
+    # A finite language checker cannot recognize every contradictory paraphrase.
+    if not walk_allowed:
+        return finish(
+            deterministic_fallback(case),
+            "template",
+            "WAIT/SKIP uses the authoritative local briefing; model and cache bypassed."
+            if writer != "template"
+            else "",
+        )
+
     if writer == "template":
         return finish(write_template(plan, park=park, notice_this=notice_this), "template")
+
+    if writer == "modal":
+        from .modal_writer import write_modal
+
+        try:
+            raw = write_modal(plan, park=park, notice_this=notice_this)
+            return finish(raw, "hybrid", "Generated by the selected Modal adapter; safety-checked.")
+        except UpstreamError as exc:
+            return finish(
+                write_template(plan, park=park, notice_this=notice_this),
+                "template",
+                f"Modal unavailable ({exc}); used the local template writer.",
+            )
 
     if writer in {"gemma", "tinker"}:
         chosen = writer

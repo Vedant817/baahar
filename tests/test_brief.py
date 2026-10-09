@@ -67,10 +67,15 @@ class TestSkipDirection:
         assert "beautiful morning for a walk" not in out.lower()
         assert any(m in out.lower() for m in ("stay in", "skip", "wait", "indoors"))
 
-    def test_a_correct_skip_text_is_left_alone(self, skip_plan) -> None:
-        honest = "Stay in. The air is severe at NAQI 409 and it feels like 41C."
+    def test_skip_text_uses_authoritative_local_prose(self, skip_plan) -> None:
+        from baahar.briefing_contract import build_contract_case, deterministic_fallback
+
+        honest = (
+            f"Stay in. The air is hazardous at NAQI "
+            f"{skip_plan.best_slot.air.naqi_effective:.0f} and it feels like 41C."
+        )
         out = enforce_safety(honest, skip_plan, park=skip_plan.park)
-        assert out == honest
+        assert out == deterministic_fallback(build_contract_case(skip_plan, skip_plan.park))
 
 
 class TestCaveats:
@@ -208,7 +213,8 @@ class TestTemplateWriter:
 
     def test_template_respects_skip(self, skip_plan) -> None:
         briefing = generate(skip_plan, writer="template", park=skip_plan.park)
-        assert briefing.text.lower().startswith("stay in")
+        assert briefing.text.startswith("SKIP.")
+        assert "stay indoors" in briefing.text.lower()
 
     def test_template_is_deterministic(self, go_plan) -> None:
         a = generate(go_plan, writer="template", park=go_plan.park)
