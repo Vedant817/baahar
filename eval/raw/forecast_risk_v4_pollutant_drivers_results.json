@@ -1,0 +1,862 @@
+{
+  "protocol": {
+    "source_fixtures": [
+      {
+        "path": "data/samples/archival_aq_2023-01-01_2023-12-31.json",
+        "sha256": "80e2095817debe677445dfc694b99dfa0f9bcc39ead3f1f5bf7ff58b70d92bf0"
+      },
+      {
+        "path": "data/samples/archival_aq_2024-01-01_2024-12-31.json",
+        "sha256": "81ab6e6b0c1027fc203772aaa0e5a92e30ce42d89dfd4f4c584c41c7bdde7fb7"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-01-01_2025-10-31.json",
+        "sha256": "a9c677e876d844c9ebe1ff25fc439e9b7755e489bd26dc03a5d4ee14af4b2d5c"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-11-01_2025-12-31.json",
+        "sha256": "443d5d398a13d44a83bd613ecfd68f99497f84081877e67862c55c0d65595b30"
+      },
+      {
+        "path": "data/samples/archival_aq_2026-01-01_2026-09-30.json",
+        "sha256": "3323aeb31e3f513b23f7b759be7cc7e3ceadf3f9348f937e11e76fa7225102ff"
+      },
+      {
+        "path": "data/samples/archival_wx_2023-01-01_2023-12-31.json",
+        "sha256": "3d71fbd3972525ab52d8613357a7ce8680ef2d40882649cb5eb14357fe41ab7c"
+      },
+      {
+        "path": "data/samples/archival_wx_2024-01-01_2024-12-31.json",
+        "sha256": "e0f0c92cdc67454504372e9292ff5c895d467a7b0d55b937322837970a923c9b"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-01-01_2025-10-31.json",
+        "sha256": "8d7e98f8a9c9cefe1a54a38779e7e367bdab294f96afc25e1f2291ec4e86bf4a"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-11-01_2025-12-31.json",
+        "sha256": "7779cce7765fbfc341212dc5d216e6b2cc95a4b0a4bd4dfe4eca56b99ce4810d"
+      },
+      {
+        "path": "data/samples/archival_wx_2026-01-01_2026-09-30.json",
+        "sha256": "726d32e9ff366b8a0d1e954008c35d75894538fc5078e8ee94d969eb6c9e0528"
+      }
+    ],
+    "rows_sha256": "064684cdc77b2612a5e9910528eacf6340677a7cdb8f238effff9918cce55951",
+    "training_partition": [
+      "2023-01-01",
+      "2025-06-01"
+    ],
+    "evaluation_cases": [
+      {
+        "partition": "diagnostic_pollution",
+        "time": "2026-03-06T07:00",
+        "target_band": "severe"
+      },
+      {
+        "partition": "diagnostic_pollution",
+        "time": "2026-03-06T08:00",
+        "target_band": "severe"
+      },
+      {
+        "partition": "diagnostic_pollution",
+        "time": "2026-03-06T09:00",
+        "target_band": "severe"
+      },
+      {
+        "partition": "diagnostic_pollution",
+        "time": "2026-03-06T10:00",
+        "target_band": "severe"
+      },
+      {
+        "partition": "diagnostic_pollution",
+        "time": "2026-04-10T06:00",
+        "target_band": "severe"
+      },
+      {
+        "partition": "diagnostic_pollution",
+        "time": "2026-04-10T07:00",
+        "target_band": "severe"
+      },
+      {
+        "partition": "diagnostic_pollution",
+        "time": "2026-04-10T08:00",
+        "target_band": "severe"
+      },
+      {
+        "partition": "diagnostic_pollution",
+        "time": "2026-04-20T06:00",
+        "target_band": "severe"
+      },
+      {
+        "partition": "diagnostic_pollution",
+        "time": "2026-04-20T07:00",
+        "target_band": "severe"
+      },
+      {
+        "partition": "diagnostic_pollution",
+        "time": "2026-04-29T06:00",
+        "target_band": "severe"
+      },
+      {
+        "partition": "diagnostic_pollution",
+        "time": "2026-04-29T07:00",
+        "target_band": "severe"
+      },
+      {
+        "partition": "diagnostic_other_seasons",
+        "time": "2026-05-01T06:00",
+        "target_band": "severe"
+      },
+      {
+        "partition": "diagnostic_other_seasons",
+        "time": "2026-05-01T07:00",
+        "target_band": "severe"
+      }
+    ]
+  },
+  "verified_source_count": 10,
+  "training_severe_n": 27,
+  "training_severe_dominant_counts": {
+    "o3": 27
+  },
+  "evaluation_severe_n": 13,
+  "evaluation_target_dominant_counts": {
+    "o3": 13
+  },
+  "evaluation_current_dominant_counts": {
+    "o3": 10,
+    "pm25": 3
+  },
+  "cases": [
+    {
+      "partition": "diagnostic_pollution",
+      "time": "2026-03-06T07:00",
+      "target_band": "severe",
+      "target_time": "2026-03-06T13:00",
+      "current": {
+        "index": 83.3,
+        "band": "satisfactory",
+        "band_label": "Satisfactory",
+        "health_impact": "Minor breathing discomfort to sensitive people.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 81.5,
+          "pm10": 53.6,
+          "no2": 38.1,
+          "o3": 83.3,
+          "co": 43.0,
+          "so2": 25.2
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "target": {
+        "index": 301.2,
+        "band": "severe",
+        "band_label": "Severe",
+        "health_impact": "Respiratory illness on prolonged exposure.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 51.5,
+          "pm10": 32.6,
+          "no2": 3.1,
+          "o3": 301.2,
+          "co": 18.2,
+          "so2": 15.0
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "current_pollutants": {
+        "pm25": 48.7,
+        "pm10": 52.7,
+        "no2": 30.5,
+        "o3": 83.0,
+        "so2": 20.2,
+        "co": 860.0
+      }
+    },
+    {
+      "partition": "diagnostic_pollution",
+      "time": "2026-03-06T08:00",
+      "target_band": "severe",
+      "target_time": "2026-03-06T14:00",
+      "current": {
+        "index": 91.2,
+        "band": "satisfactory",
+        "band_label": "Satisfactory",
+        "health_impact": "Minor breathing discomfort to sensitive people.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 63.2,
+          "pm10": 40.5,
+          "no2": 38.4,
+          "o3": 91.2,
+          "co": 49.7,
+          "so2": 28.6
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "target": {
+        "index": 301.4,
+        "band": "severe",
+        "band_label": "Severe",
+        "health_impact": "Respiratory illness on prolonged exposure.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 49.3,
+          "pm10": 32.1,
+          "no2": 4.6,
+          "o3": 301.4,
+          "co": 17.5,
+          "so2": 13.5
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "current_pollutants": {
+        "pm25": 37.5,
+        "pm10": 40.5,
+        "no2": 30.7,
+        "o3": 91.0,
+        "so2": 22.9,
+        "co": 994.0
+      }
+    },
+    {
+      "partition": "diagnostic_pollution",
+      "time": "2026-03-06T09:00",
+      "target_band": "severe",
+      "target_time": "2026-03-06T15:00",
+      "current": {
+        "index": 130.1,
+        "band": "moderate",
+        "band_label": "Moderate",
+        "health_impact": "Breathing discomfort for people with lung, asthma or heart conditions.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 58.0,
+          "pm10": 37.4,
+          "no2": 29.4,
+          "o3": 130.1,
+          "co": 44.4,
+          "so2": 27.1
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "target": {
+        "index": 301.9,
+        "band": "severe",
+        "band_label": "Severe",
+        "health_impact": "Respiratory illness on prolonged exposure.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 48.3,
+          "pm10": 31.7,
+          "no2": 1.2,
+          "o3": 301.9,
+          "co": 16.8,
+          "so2": 11.8
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "current_pollutants": {
+        "pm25": 34.3,
+        "pm10": 37.4,
+        "no2": 23.5,
+        "o3": 120.0,
+        "so2": 21.7,
+        "co": 888.0
+      }
+    },
+    {
+      "partition": "diagnostic_pollution",
+      "time": "2026-03-06T10:00",
+      "target_band": "severe",
+      "target_time": "2026-03-06T16:00",
+      "current": {
+        "index": 186.9,
+        "band": "moderate",
+        "band_label": "Moderate",
+        "health_impact": "Breathing discomfort for people with lung, asthma or heart conditions.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 57.2,
+          "pm10": 36.8,
+          "no2": 15.6,
+          "o3": 186.9,
+          "co": 33.0,
+          "so2": 23.0
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "target": {
+        "index": 301.7,
+        "band": "severe",
+        "band_label": "Severe",
+        "health_impact": "Respiratory illness on prolonged exposure.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 47.0,
+          "pm10": 31.1,
+          "no2": 0.0,
+          "o3": 301.7,
+          "co": 17.1,
+          "so2": 10.4
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "current_pollutants": {
+        "pm25": 33.8,
+        "pm10": 36.8,
+        "no2": 12.5,
+        "o3": 159.0,
+        "so2": 18.4,
+        "co": 660.0
+      }
+    },
+    {
+      "partition": "diagnostic_pollution",
+      "time": "2026-04-10T06:00",
+      "target_band": "severe",
+      "target_time": "2026-04-10T12:00",
+      "current": {
+        "index": 63.2,
+        "band": "satisfactory",
+        "band_label": "Satisfactory",
+        "health_impact": "Minor breathing discomfort to sensitive people.",
+        "dominant_pollutant": "pm25",
+        "dominant_label": "PM2.5",
+        "sub_indices": {
+          "pm25": 63.2,
+          "pm10": 46.3,
+          "no2": 61.2,
+          "o3": 28.0,
+          "co": 23.7,
+          "so2": 20.1
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "target": {
+        "index": 301.7,
+        "band": "severe",
+        "band_label": "Severe",
+        "health_impact": "Respiratory illness on prolonged exposure.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 48.8,
+          "pm10": 39.1,
+          "no2": 3.8,
+          "o3": 301.7,
+          "co": 14.9,
+          "so2": 11.5
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "current_pollutants": {
+        "pm25": 37.5,
+        "pm10": 46.3,
+        "no2": 48.3,
+        "o3": 28.0,
+        "so2": 16.1,
+        "co": 474.0
+      }
+    },
+    {
+      "partition": "diagnostic_pollution",
+      "time": "2026-04-10T07:00",
+      "target_band": "severe",
+      "target_time": "2026-04-10T13:00",
+      "current": {
+        "index": 53.9,
+        "band": "satisfactory",
+        "band_label": "Satisfactory",
+        "health_impact": "Minor breathing discomfort to sensitive people.",
+        "dominant_pollutant": "pm25",
+        "dominant_label": "PM2.5",
+        "sub_indices": {
+          "pm25": 53.9,
+          "pm10": 41.4,
+          "no2": 44.7,
+          "o3": 48.0,
+          "co": 29.3,
+          "so2": 21.9
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "target": {
+        "index": 301.9,
+        "band": "severe",
+        "band_label": "Severe",
+        "health_impact": "Respiratory illness on prolonged exposure.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 49.5,
+          "pm10": 39.0,
+          "no2": 4.0,
+          "o3": 301.9,
+          "co": 15.6,
+          "so2": 10.2
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "current_pollutants": {
+        "pm25": 31.8,
+        "pm10": 41.4,
+        "no2": 35.8,
+        "o3": 48.0,
+        "so2": 17.5,
+        "co": 587.0
+      }
+    },
+    {
+      "partition": "diagnostic_pollution",
+      "time": "2026-04-10T08:00",
+      "target_band": "severe",
+      "target_time": "2026-04-10T14:00",
+      "current": {
+        "index": 75.5,
+        "band": "satisfactory",
+        "band_label": "Satisfactory",
+        "health_impact": "Minor breathing discomfort to sensitive people.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 44.5,
+          "pm10": 42.7,
+          "no2": 30.9,
+          "o3": 75.5,
+          "co": 31.8,
+          "so2": 22.1
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "target": {
+        "index": 301.4,
+        "band": "severe",
+        "band_label": "Severe",
+        "health_impact": "Respiratory illness on prolonged exposure.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 50.0,
+          "pm10": 38.8,
+          "no2": 5.0,
+          "o3": 301.4,
+          "co": 16.8,
+          "so2": 9.2
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "current_pollutants": {
+        "pm25": 26.7,
+        "pm10": 42.7,
+        "no2": 24.7,
+        "o3": 75.0,
+        "so2": 17.7,
+        "co": 636.0
+      }
+    },
+    {
+      "partition": "diagnostic_pollution",
+      "time": "2026-04-20T06:00",
+      "target_band": "severe",
+      "target_time": "2026-04-20T12:00",
+      "current": {
+        "index": 59.8,
+        "band": "satisfactory",
+        "band_label": "Satisfactory",
+        "health_impact": "Minor breathing discomfort to sensitive people.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 49.7,
+          "pm10": 31.8,
+          "no2": 30.6,
+          "o3": 59.8,
+          "co": 31.8,
+          "so2": 17.5
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "target": {
+        "index": 301.6,
+        "band": "severe",
+        "band_label": "Severe",
+        "health_impact": "Respiratory illness on prolonged exposure.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 44.8,
+          "pm10": 31.8,
+          "no2": 4.2,
+          "o3": 301.6,
+          "co": 17.4,
+          "so2": 12.4
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "current_pollutants": {
+        "pm25": 29.8,
+        "pm10": 31.8,
+        "no2": 24.5,
+        "o3": 59.0,
+        "so2": 14.0,
+        "co": 636.0
+      }
+    },
+    {
+      "partition": "diagnostic_pollution",
+      "time": "2026-04-20T07:00",
+      "target_band": "severe",
+      "target_time": "2026-04-20T13:00",
+      "current": {
+        "index": 78.4,
+        "band": "satisfactory",
+        "band_label": "Satisfactory",
+        "health_impact": "Minor breathing discomfort to sensitive people.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 57.7,
+          "pm10": 36.1,
+          "no2": 28.2,
+          "o3": 78.4,
+          "co": 30.6,
+          "so2": 20.0
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "target": {
+        "index": 301.6,
+        "band": "severe",
+        "band_label": "Severe",
+        "health_impact": "Respiratory illness on prolonged exposure.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 43.5,
+          "pm10": 31.2,
+          "no2": 4.2,
+          "o3": 301.6,
+          "co": 16.6,
+          "so2": 10.5
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "current_pollutants": {
+        "pm25": 34.1,
+        "pm10": 36.1,
+        "no2": 22.6,
+        "o3": 78.0,
+        "so2": 16.0,
+        "co": 612.0
+      }
+    },
+    {
+      "partition": "diagnostic_pollution",
+      "time": "2026-04-29T06:00",
+      "target_band": "severe",
+      "target_time": "2026-04-29T12:00",
+      "current": {
+        "index": 66.7,
+        "band": "satisfactory",
+        "band_label": "Satisfactory",
+        "health_impact": "Minor breathing discomfort to sensitive people.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 55.6,
+          "pm10": 37.3,
+          "no2": 28.5,
+          "o3": 66.7,
+          "co": 23.8,
+          "so2": 13.8
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "target": {
+        "index": 301.7,
+        "band": "severe",
+        "band_label": "Severe",
+        "health_impact": "Respiratory illness on prolonged exposure.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 57.9,
+          "pm10": 47.6,
+          "no2": 4.0,
+          "o3": 301.7,
+          "co": 23.2,
+          "so2": 10.0
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "current_pollutants": {
+        "pm25": 32.8,
+        "pm10": 37.3,
+        "no2": 22.8,
+        "o3": 66.0,
+        "so2": 11.0,
+        "co": 476.0
+      }
+    },
+    {
+      "partition": "diagnostic_pollution",
+      "time": "2026-04-29T07:00",
+      "target_band": "severe",
+      "target_time": "2026-04-29T13:00",
+      "current": {
+        "index": 83.3,
+        "band": "satisfactory",
+        "band_label": "Satisfactory",
+        "health_impact": "Minor breathing discomfort to sensitive people.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 60.8,
+          "pm10": 39.6,
+          "no2": 25.4,
+          "o3": 83.3,
+          "co": 29.7,
+          "so2": 14.8
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "target": {
+        "index": 301.6,
+        "band": "severe",
+        "band_label": "Severe",
+        "health_impact": "Respiratory illness on prolonged exposure.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 56.7,
+          "pm10": 49.4,
+          "no2": 4.1,
+          "o3": 301.6,
+          "co": 20.9,
+          "so2": 9.2
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "current_pollutants": {
+        "pm25": 36.0,
+        "pm10": 39.6,
+        "no2": 20.3,
+        "o3": 83.0,
+        "so2": 11.8,
+        "co": 594.0
+      }
+    },
+    {
+      "partition": "diagnostic_other_seasons",
+      "time": "2026-05-01T06:00",
+      "target_band": "severe",
+      "target_time": "2026-05-01T12:00",
+      "current": {
+        "index": 67.2,
+        "band": "satisfactory",
+        "band_label": "Satisfactory",
+        "health_impact": "Minor breathing discomfort to sensitive people.",
+        "dominant_pollutant": "pm25",
+        "dominant_label": "PM2.5",
+        "sub_indices": {
+          "pm25": 67.2,
+          "pm10": 45.6,
+          "no2": 30.9,
+          "o3": 65.7,
+          "co": 30.8,
+          "so2": 16.5
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "target": {
+        "index": 301.2,
+        "band": "severe",
+        "band_label": "Severe",
+        "health_impact": "Respiratory illness on prolonged exposure.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 59.7,
+          "pm10": 45.1,
+          "no2": 3.1,
+          "o3": 301.2,
+          "co": 16.2,
+          "so2": 12.1
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "current_pollutants": {
+        "pm25": 39.9,
+        "pm10": 45.6,
+        "no2": 24.7,
+        "o3": 65.0,
+        "so2": 13.2,
+        "co": 615.0
+      }
+    },
+    {
+      "partition": "diagnostic_other_seasons",
+      "time": "2026-05-01T07:00",
+      "target_band": "severe",
+      "target_time": "2026-05-01T13:00",
+      "current": {
+        "index": 77.5,
+        "band": "satisfactory",
+        "band_label": "Satisfactory",
+        "health_impact": "Minor breathing discomfort to sensitive people.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 69.1,
+          "pm10": 46.4,
+          "no2": 31.0,
+          "o3": 77.5,
+          "co": 36.2,
+          "so2": 18.5
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "target": {
+        "index": 301.2,
+        "band": "severe",
+        "band_label": "Severe",
+        "health_impact": "Respiratory illness on prolonged exposure.",
+        "dominant_pollutant": "o3",
+        "dominant_label": "O3",
+        "sub_indices": {
+          "pm25": 58.7,
+          "pm10": 44.6,
+          "no2": 2.9,
+          "o3": 301.2,
+          "co": 16.2,
+          "so2": 10.9
+        },
+        "missing": [
+          "NH3",
+          "Pb"
+        ],
+        "basis": "cpcb_24h_breakpoints_applied_to_hourly_concentrations"
+      },
+      "current_pollutants": {
+        "pm25": 41.1,
+        "pm10": 46.4,
+        "no2": 24.8,
+        "o3": 77.0,
+        "so2": 14.8,
+        "co": 724.0
+      }
+    }
+  ],
+  "limitation": "Read-only explanatory audit of consumed modeled archive; no fitting or independent validation."
+}

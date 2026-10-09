@@ -1,0 +1,157 @@
+{
+  "status": "COMPLETED",
+  "archive_ranges": [
+    [
+      "2023-01-01",
+      "2023-12-31"
+    ],
+    [
+      "2024-01-01",
+      "2024-12-31"
+    ],
+    [
+      "2025-01-01",
+      "2025-10-31"
+    ],
+    [
+      "2025-11-01",
+      "2025-12-31"
+    ],
+    [
+      "2026-01-01",
+      "2026-09-30"
+    ]
+  ],
+  "partitions": {
+    "expanded_train": [
+      "2023-01-01",
+      "2025-06-01"
+    ],
+    "development": [
+      "2025-06-01",
+      "2026-02-01"
+    ],
+    "diagnostic_pollution": [
+      "2026-02-01",
+      "2026-05-01"
+    ],
+    "diagnostic_other_seasons": [
+      "2026-05-01",
+      "2026-10-01"
+    ]
+  },
+  "label_gap_hours": 6,
+  "seed": 0,
+  "timeout_seconds": 3600,
+  "compute_ceiling_estimate_usd": 0.158256,
+  "limitations": "Research-informed fixed 2x3 factorial ablation on exact consumed v3 archive. All settings fixed; development and diagnostics do not select candidates. Six severe training episodes only. No probability calibration for regressors, no pristine holdout, deployment or medical safety claim.",
+  "run_name": "forecast_risk_v4",
+  "experiment": "target_feature_ablation",
+  "supersedes": "eval/raw/forecast_risk_v3_manifest.json",
+  "replay_dataset": {
+    "rows_path": "/artifacts/forecast_risk_v3/rows.jsonl",
+    "rows_sha256": "064684cdc77b2612a5e9910528eacf6340677a7cdb8f238effff9918cce55951",
+    "source_fixtures": [
+      {
+        "path": "data/samples/archival_aq_2023-01-01_2023-12-31.json",
+        "sha256": "80e2095817debe677445dfc694b99dfa0f9bcc39ead3f1f5bf7ff58b70d92bf0"
+      },
+      {
+        "path": "data/samples/archival_aq_2024-01-01_2024-12-31.json",
+        "sha256": "81ab6e6b0c1027fc203772aaa0e5a92e30ce42d89dfd4f4c584c41c7bdde7fb7"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-01-01_2025-10-31.json",
+        "sha256": "a9c677e876d844c9ebe1ff25fc439e9b7755e489bd26dc03a5d4ee14af4b2d5c"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-11-01_2025-12-31.json",
+        "sha256": "443d5d398a13d44a83bd613ecfd68f99497f84081877e67862c55c0d65595b30"
+      },
+      {
+        "path": "data/samples/archival_aq_2026-01-01_2026-09-30.json",
+        "sha256": "3323aeb31e3f513b23f7b759be7cc7e3ceadf3f9348f937e11e76fa7225102ff"
+      },
+      {
+        "path": "data/samples/archival_wx_2023-01-01_2023-12-31.json",
+        "sha256": "3d71fbd3972525ab52d8613357a7ce8680ef2d40882649cb5eb14357fe41ab7c"
+      },
+      {
+        "path": "data/samples/archival_wx_2024-01-01_2024-12-31.json",
+        "sha256": "e0f0c92cdc67454504372e9292ff5c895d467a7b0d55b937322837970a923c9b"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-01-01_2025-10-31.json",
+        "sha256": "8d7e98f8a9c9cefe1a54a38779e7e367bdab294f96afc25e1f2291ec4e86bf4a"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-11-01_2025-12-31.json",
+        "sha256": "7779cce7765fbfc341212dc5d216e6b2cc95a4b0a4bd4dfe4eca56b99ce4810d"
+      },
+      {
+        "path": "data/samples/archival_wx_2026-01-01_2026-09-30.json",
+        "sha256": "726d32e9ff366b8a0d1e954008c35d75894538fc5078e8ee94d969eb6c9e0528"
+      }
+    ]
+  },
+  "model_parameters": {
+    "n_estimators": 450,
+    "learning_rate": 0.04,
+    "num_leaves": 28,
+    "subsample": 0.85,
+    "colsample_bytree": 0.85,
+    "reg_alpha": 0.5,
+    "reg_lambda": 1.0,
+    "random_state": 0,
+    "verbosity": -1,
+    "n_jobs": 2
+  },
+  "class_weights": [
+    1,
+    1,
+    1,
+    4,
+    16,
+    16
+  ],
+  "minimum_severe_train_hours": 20,
+  "quantiles": [
+    0.5,
+    0.9
+  ],
+  "feature_ablation": "28 original vs 28+7 timestamp-aligned instantaneous history columns",
+  "reference_prediction_sha256": {
+    "diagnostic_pollution": "7da695a7a1c4f698959f63965d972d8d6435488efb3bb5d47f32a305b12917cf",
+    "diagnostic_other_seasons": "2d6c43322ab589d80a8f1e52c6f6507c4ed9d5318880934e72aeecf6c1865ed3"
+  },
+  "source_sha256": {
+    "src/baahar/air.py": "017041d0bc3a6beeccdc70717c4cc01f04b5e74f80e57381f88cb8cc0d287537",
+    "src/baahar/app.py": "431a17e12b9bfff4ccd4a9a4a2d9dcaea63a5f3a0276f5aab07302cf77df9671",
+    "src/baahar/brief.py": "721169227061247421a4d76445980348326cd7d9aa2c3e0167392644cb72c52e",
+    "src/baahar/briefing_contract.py": "382d6a4f70fd49b88e3858592cb18a84f6801840a708f45a38d1ac99f39f71ed",
+    "src/baahar/cli.py": "45e169bf6b33ac2f6727e1070f1d8c0904b2a6a8564a2e0e872965655bb3428c",
+    "src/baahar/config.py": "42d1a8beafd569d37e15c8249d77af25e1e87f75934751e264484bcf3889bd7c",
+    "src/baahar/features.py": "346b84cbcb8c32a4a46b3cd41608926b380f8453986775fd8fb32f70a0d3b8d4",
+    "src/baahar/forecast.py": "dcc1362fc6a5277d50b0b170e5ab0bd3b6d4bcb3c3cf851243a8881ec8aa6a89",
+    "src/baahar/http_client.py": "1f9c6d02f1659de77aecec7476d0b00028995dfefb7e0e8a34ad1728bb43aaed",
+    "src/baahar/journal.py": "9aaa06b4b54f871a08642a52e690d69a472aa51cc55ef871dfb54eb84dc66ead",
+    "src/baahar/modal_writer.py": "d6916faad9bbf31e70e7a761f99ef22bdf5c1e3366de61b3e8d64f655c9a7b7e",
+    "src/baahar/models.py": "1dfc0e87cd54ad67c009ac4d1d6b215ee6f7ff923c9c05827e7d14334f5837ea",
+    "src/baahar/naqi.py": "f755b308baef2fec28877c81f500e95d5b7dc9e1231dff677c208ca61b5b21dc",
+    "src/baahar/parks.py": "1fcc2ce280afef20b479f092be6ac3dddd2597c3c51bcbbe7e3ba3e1887824c7",
+    "src/baahar/pocket.py": "7b7c417de24c28457a5cde97a15fe04803ecf36f0fae22237c7f956aa6e1a459",
+    "src/baahar/score.py": "dfd887bd723eaa1c9cddccacc0e0d8949382fd72b2dd0d83456c1e509f7bde4e",
+    "src/baahar/seasonal.py": "c496a16ad9a15cad0650fbe23ccc5b66a32929330e99a64650de67f09c05cf83",
+    "src/baahar/stations.py": "0a858820fba6291a016598eed604a4e0adbd0de9ad13e68ec79dc7a2fdfbc2d8",
+    "src/baahar/walk.py": "f33010de87fd28c3687c9e59473077475e98b9ff614f56bf1344d52e1c653d26",
+    "src/baahar/weather.py": "d1281213bdf13444f461d86e2949c1c134d563b4f73f2b7dc395c2b175deda0b",
+    "src/baahar/__init__.py": "5e8311583c6c5a260d36fbf0a578efdd08834872a75aabd642b57e50bee6cab4",
+    "scripts/run_eval.py": "ddcf520c72ad4dc1320f0517f68019bd0ed6ff1e2a7f492076f80597870a4021",
+    "scripts/build_dataset.py": "ce9061becdacfd6c710e48917f35e0daeffbef097803169dbd095913be58de8e",
+    "scripts/forecast_risk.py": "f6bfb8338fa87ef8dbfb4d3eedc3f61964be94adba4b3513de8754a2cca59a90",
+    "scripts/train_forecast_risk_modal.py": "979cd64d52f73230e059f3057cca605b518f344d84a2ae3da12bc53cd17cc39e"
+  },
+  "call_id": "fc-01M4EBSTJZ47V6AP869HNPJWSE",
+  "app_id": "ap-qVURJBAvmhWEbiCv2SAidh",
+  "results": "eval\\raw\\forecast_risk_v4_results.json"
+}
