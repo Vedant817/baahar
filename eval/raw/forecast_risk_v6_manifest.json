@@ -1,0 +1,222 @@
+{
+  "version": "v6",
+  "run_name": "forecast_risk_v6",
+  "status": "COMPLETED",
+  "approach": "quantile_floor",
+  "created_at": "2026-10-08T18:45:08.708681+00:00",
+  "dataset": {
+    "rows_sha256": "064684cdc77b2612a5e9910528eacf6340677a7cdb8f238effff9918cce55951",
+    "row_count": 32826,
+    "excluded_history_n": 30,
+    "excluded_quality_n": 0,
+    "source_fixtures": [
+      {
+        "path": "data/samples/archival_aq_2023-01-01_2023-12-31.json",
+        "sha256": "80e2095817debe677445dfc694b99dfa0f9bcc39ead3f1f5bf7ff58b70d92bf0"
+      },
+      {
+        "path": "data/samples/archival_aq_2024-01-01_2024-12-31.json",
+        "sha256": "81ab6e6b0c1027fc203772aaa0e5a92e30ce42d89dfd4f4c584c41c7bdde7fb7"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-01-01_2025-10-31.json",
+        "sha256": "a9c677e876d844c9ebe1ff25fc439e9b7755e489bd26dc03a5d4ee14af4b2d5c"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-11-01_2025-12-31.json",
+        "sha256": "443d5d398a13d44a83bd613ecfd68f99497f84081877e67862c55c0d65595b30"
+      },
+      {
+        "path": "data/samples/archival_aq_2026-01-01_2026-09-30.json",
+        "sha256": "3323aeb31e3f513b23f7b759be7cc7e3ceadf3f9348f937e11e76fa7225102ff"
+      },
+      {
+        "path": "data/samples/archival_wx_2023-01-01_2023-12-31.json",
+        "sha256": "3d71fbd3972525ab52d8613357a7ce8680ef2d40882649cb5eb14357fe41ab7c"
+      },
+      {
+        "path": "data/samples/archival_wx_2024-01-01_2024-12-31.json",
+        "sha256": "e0f0c92cdc67454504372e9292ff5c895d467a7b0d55b937322837970a923c9b"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-01-01_2025-10-31.json",
+        "sha256": "8d7e98f8a9c9cefe1a54a38779e7e367bdab294f96afc25e1f2291ec4e86bf4a"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-11-01_2025-12-31.json",
+        "sha256": "7779cce7765fbfc341212dc5d216e6b2cc95a4b0a4bd4dfe4eca56b99ce4810d"
+      },
+      {
+        "path": "data/samples/archival_wx_2026-01-01_2026-09-30.json",
+        "sha256": "726d32e9ff366b8a0d1e954008c35d75894538fc5078e8ee94d969eb6c9e0528"
+      }
+    ],
+    "source_kind": "CAMS/ERA5 modelled archive"
+  },
+  "partitions": {
+    "expanded_train": [
+      "2023-01-01",
+      "2025-06-01"
+    ],
+    "development": [
+      "2025-06-01",
+      "2026-02-01"
+    ],
+    "diagnostic_pollution": [
+      "2026-02-01",
+      "2026-05-01"
+    ],
+    "diagnostic_other_seasons": [
+      "2026-05-01",
+      "2026-10-01"
+    ]
+  },
+  "model_parameters": {
+    "n_estimators": 450,
+    "learning_rate": 0.04,
+    "num_leaves": 28,
+    "subsample": 0.85,
+    "colsample_bytree": 0.85,
+    "reg_alpha": 0.5,
+    "reg_lambda": 1.0,
+    "random_state": 0,
+    "verbosity": -1,
+    "n_jobs": 2
+  },
+  "class_weights": [
+    1,
+    1,
+    1,
+    4,
+    16,
+    16
+  ],
+  "reference_prediction_sha256": {
+    "development": "28e380371580dc1194025a5a0ba1466c03146f02dffed78f33645da2d92233a4",
+    "diagnostic_pollution": "eefce3cc9613a7c89586b3a902842573871405830ed84f3c369ab2f0db2e80f9",
+    "diagnostic_other_seasons": "81091e2f0234b03d50fe1585407a7d35497dfa59a752ee1366bc32454c365b9f"
+  },
+  "reference": "eval/raw/forecast_risk_v4_results.json",
+  "reference_sha256": "6cfde1137002ab77ea8407d8fe35c8bc55c5990b33de773027f55cfa0cb61c40",
+  "protocol_sha256": "81d04e9ccafba91fceb10c841affa78e8778f254056c4ef22fcd5eed3122adc5",
+  "gate_reporter_sha256": "1e84374b2d8477aa1606a7cc923e71e25e9c248e1b26862015e9d330b1fdf3ec",
+  "selection_disclosure": "Approach motivated by previously consumed diagnostics; no pristine evaluation or proof of global optimum",
+  "plateau_criterion": {
+    "accuracy_loss_max": 0.01,
+    "poor_far_increase_max": 0.01,
+    "poor_far_max": 0.05,
+    "severe_far_increase_max": 0.0025,
+    "severe_far_max": 0.01,
+    "poor_recall_gain_min": 0.05,
+    "new_severe_hours_min": 2,
+    "no_more_severe_misses": true,
+    "no_fewer_poor_or_severe_episode_any_hits": true
+  },
+  "stop_rule": "Maximum 7 research cycles or 2 consecutive no useful improvement; no automatic serving adoption",
+  "inference_only": true,
+  "execution_mode": "evaluate_reused_v4_models_no_fitting",
+  "reused_model_path": "/artifacts/forecast_risk_v4/target_feature_candidates.joblib",
+  "reused_model_contract": {
+    "model_parameters": {
+      "n_estimators": 450,
+      "learning_rate": 0.04,
+      "num_leaves": 28,
+      "subsample": 0.85,
+      "colsample_bytree": 0.85,
+      "reg_alpha": 0.5,
+      "reg_lambda": 1.0,
+      "random_state": 0,
+      "verbosity": -1,
+      "n_jobs": 2
+    },
+    "class_weights": [
+      1,
+      1,
+      1,
+      4,
+      16,
+      16
+    ],
+    "partitions": {
+      "expanded_train": [
+        "2023-01-01",
+        "2025-06-01"
+      ],
+      "development": [
+        "2025-06-01",
+        "2026-02-01"
+      ],
+      "diagnostic_pollution": [
+        "2026-02-01",
+        "2026-05-01"
+      ],
+      "diagnostic_other_seasons": [
+        "2026-05-01",
+        "2026-10-01"
+      ]
+    },
+    "source_sha256": {
+      "src/baahar/air.py": "017041d0bc3a6beeccdc70717c4cc01f04b5e74f80e57381f88cb8cc0d287537",
+      "src/baahar/app.py": "431a17e12b9bfff4ccd4a9a4a2d9dcaea63a5f3a0276f5aab07302cf77df9671",
+      "src/baahar/brief.py": "721169227061247421a4d76445980348326cd7d9aa2c3e0167392644cb72c52e",
+      "src/baahar/briefing_contract.py": "382d6a4f70fd49b88e3858592cb18a84f6801840a708f45a38d1ac99f39f71ed",
+      "src/baahar/cli.py": "45e169bf6b33ac2f6727e1070f1d8c0904b2a6a8564a2e0e872965655bb3428c",
+      "src/baahar/config.py": "42d1a8beafd569d37e15c8249d77af25e1e87f75934751e264484bcf3889bd7c",
+      "src/baahar/features.py": "346b84cbcb8c32a4a46b3cd41608926b380f8453986775fd8fb32f70a0d3b8d4",
+      "src/baahar/forecast.py": "dcc1362fc6a5277d50b0b170e5ab0bd3b6d4bcb3c3cf851243a8881ec8aa6a89",
+      "src/baahar/http_client.py": "1f9c6d02f1659de77aecec7476d0b00028995dfefb7e0e8a34ad1728bb43aaed",
+      "src/baahar/journal.py": "9aaa06b4b54f871a08642a52e690d69a472aa51cc55ef871dfb54eb84dc66ead",
+      "src/baahar/modal_writer.py": "d6916faad9bbf31e70e7a761f99ef22bdf5c1e3366de61b3e8d64f655c9a7b7e",
+      "src/baahar/models.py": "1dfc0e87cd54ad67c009ac4d1d6b215ee6f7ff923c9c05827e7d14334f5837ea",
+      "src/baahar/naqi.py": "f755b308baef2fec28877c81f500e95d5b7dc9e1231dff677c208ca61b5b21dc",
+      "src/baahar/parks.py": "1fcc2ce280afef20b479f092be6ac3dddd2597c3c51bcbbe7e3ba3e1887824c7",
+      "src/baahar/pocket.py": "7b7c417de24c28457a5cde97a15fe04803ecf36f0fae22237c7f956aa6e1a459",
+      "src/baahar/score.py": "dfd887bd723eaa1c9cddccacc0e0d8949382fd72b2dd0d83456c1e509f7bde4e",
+      "src/baahar/seasonal.py": "c496a16ad9a15cad0650fbe23ccc5b66a32929330e99a64650de67f09c05cf83",
+      "src/baahar/stations.py": "0a858820fba6291a016598eed604a4e0adbd0de9ad13e68ec79dc7a2fdfbc2d8",
+      "src/baahar/walk.py": "f33010de87fd28c3687c9e59473077475e98b9ff614f56bf1344d52e1c653d26",
+      "src/baahar/weather.py": "d1281213bdf13444f461d86e2949c1c134d563b4f73f2b7dc395c2b175deda0b",
+      "src/baahar/__init__.py": "5e8311583c6c5a260d36fbf0a578efdd08834872a75aabd642b57e50bee6cab4",
+      "scripts/run_eval.py": "ddcf520c72ad4dc1320f0517f68019bd0ed6ff1e2a7f492076f80597870a4021",
+      "scripts/build_dataset.py": "ce9061becdacfd6c710e48917f35e0daeffbef097803169dbd095913be58de8e",
+      "scripts/forecast_risk.py": "f6bfb8338fa87ef8dbfb4d3eedc3f61964be94adba4b3513de8754a2cca59a90",
+      "scripts/train_forecast_risk_modal.py": "979cd64d52f73230e059f3057cca605b518f344d84a2ae3da12bc53cd17cc39e"
+    }
+  },
+  "reference_quantile_prediction_sha256": {
+    "development": "36fecb36dac3a0fc4a640be53756c721bbc2fafca5d1dfac0785f4776e496cb2",
+    "diagnostic_pollution": "55d371f27ebe7cf05df5299e5596c4cc6f0514ef15b97665ccc752d1c7090bf2",
+    "diagnostic_other_seasons": "fb83fbd5c2f2c8c958c47c3e55887a99bd6fb6b316b12640ac822f2faf2401a8"
+  },
+  "bundle_hash_protocol": "Observe SHA256 before/after load; verify preregistered source/config/order and every stored prediction digest; return actual bundle hash. No prior recorded bundle hash exists.",
+  "source_sha256": {
+    "src/baahar/air.py": "017041d0bc3a6beeccdc70717c4cc01f04b5e74f80e57381f88cb8cc0d287537",
+    "src/baahar/app.py": "431a17e12b9bfff4ccd4a9a4a2d9dcaea63a5f3a0276f5aab07302cf77df9671",
+    "src/baahar/brief.py": "721169227061247421a4d76445980348326cd7d9aa2c3e0167392644cb72c52e",
+    "src/baahar/briefing_contract.py": "382d6a4f70fd49b88e3858592cb18a84f6801840a708f45a38d1ac99f39f71ed",
+    "src/baahar/cli.py": "45e169bf6b33ac2f6727e1070f1d8c0904b2a6a8564a2e0e872965655bb3428c",
+    "src/baahar/config.py": "42d1a8beafd569d37e15c8249d77af25e1e87f75934751e264484bcf3889bd7c",
+    "src/baahar/features.py": "346b84cbcb8c32a4a46b3cd41608926b380f8453986775fd8fb32f70a0d3b8d4",
+    "src/baahar/forecast.py": "dcc1362fc6a5277d50b0b170e5ab0bd3b6d4bcb3c3cf851243a8881ec8aa6a89",
+    "src/baahar/http_client.py": "1f9c6d02f1659de77aecec7476d0b00028995dfefb7e0e8a34ad1728bb43aaed",
+    "src/baahar/journal.py": "9aaa06b4b54f871a08642a52e690d69a472aa51cc55ef871dfb54eb84dc66ead",
+    "src/baahar/modal_writer.py": "d6916faad9bbf31e70e7a761f99ef22bdf5c1e3366de61b3e8d64f655c9a7b7e",
+    "src/baahar/models.py": "1dfc0e87cd54ad67c009ac4d1d6b215ee6f7ff923c9c05827e7d14334f5837ea",
+    "src/baahar/naqi.py": "f755b308baef2fec28877c81f500e95d5b7dc9e1231dff677c208ca61b5b21dc",
+    "src/baahar/parks.py": "1fcc2ce280afef20b479f092be6ac3dddd2597c3c51bcbbe7e3ba3e1887824c7",
+    "src/baahar/pocket.py": "7b7c417de24c28457a5cde97a15fe04803ecf36f0fae22237c7f956aa6e1a459",
+    "src/baahar/score.py": "dfd887bd723eaa1c9cddccacc0e0d8949382fd72b2dd0d83456c1e509f7bde4e",
+    "src/baahar/seasonal.py": "c496a16ad9a15cad0650fbe23ccc5b66a32929330e99a64650de67f09c05cf83",
+    "src/baahar/stations.py": "0a858820fba6291a016598eed604a4e0adbd0de9ad13e68ec79dc7a2fdfbc2d8",
+    "src/baahar/walk.py": "f33010de87fd28c3687c9e59473077475e98b9ff614f56bf1344d52e1c653d26",
+    "src/baahar/weather.py": "d1281213bdf13444f461d86e2949c1c134d563b4f73f2b7dc395c2b175deda0b",
+    "src/baahar/__init__.py": "5e8311583c6c5a260d36fbf0a578efdd08834872a75aabd642b57e50bee6cab4",
+    "scripts/forecast_next_modal.py": "b430b38eb9bf61edbed07ef8b80b79610469cb933175f71d82d61c73af51dd81",
+    "scripts/forecast_risk.py": "f6bfb8338fa87ef8dbfb4d3eedc3f61964be94adba4b3513de8754a2cca59a90",
+    "scripts/run_eval.py": "ddcf520c72ad4dc1320f0517f68019bd0ed6ff1e2a7f492076f80597870a4021",
+    "scripts/build_dataset.py": "ce9061becdacfd6c710e48917f35e0daeffbef097803169dbd095913be58de8e"
+  },
+  "call_id": "fc-01M4EDB2WQ1FXDQEQ8PCMVQN56",
+  "app_id": "ap-augfylPuZmxymsoHaV0H5h",
+  "results": "eval\\raw\\forecast_risk_v6_results.json"
+}
