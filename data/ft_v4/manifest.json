@@ -1,0 +1,81 @@
+{
+  "intervention": "missing-weather and normalized temporal coverage only",
+  "historical_source_sha256": {
+    "train": "24d60362236f38fcb698be081bc8fe2f2d7952a947d3910bb2a166a15735f50d",
+    "val": "87ea4595cd90acda56804d41da7673b478046c707495d29f515cce7dc5844ba8",
+    "test": "70c8f7c5895229dff57dd799eccab7a1887294d283e66b2adca0998cb3549a9c",
+    "stress": "6a66b0bc1ac762aa7f32af174cbbad8e504f651cb448d7d2db668b3dee711313"
+  },
+  "training_added": 96,
+  "training_families": {
+    "missing_heat": 24,
+    "missing_rain": 24,
+    "missing_both": 24,
+    "temporal_missing": 24
+  },
+  "development_count": 32,
+  "development_sha256": "140daa68873c46d42474ab2654697f994a92f014feaa9085a6626502834bed21",
+  "unique_augmented_prompts": 96,
+  "consumed_diagnostic_prompt_overlap": 0,
+  "train_development_prompt_overlap": 0,
+  "all_targets_accepted": true,
+  "limitations": [
+    "Historical val/test/stress reused for tuning; not independent holdouts.",
+    "Development missing-data cases share authored families with training.",
+    "Current contract rerenders synthetic targets; scores not directly comparable to old contract.",
+    "Qualification v15 consumed; retain as regression only."
+  ],
+  "dataset": {
+    "counts": {
+      "train": 1065,
+      "val": 80,
+      "test": 88,
+      "stress": 64
+    },
+    "sha256": {
+      "train": "219008802b869c76962411a548bded4db0be1d4015a9bd9206f5c37a9e52386e",
+      "val": "a90cf7abc48f10f9219942b2fb078001f93b49654f62b3954387e9cff7b9311d",
+      "test": "6a084c26259046ee01f626d24a0c210ec2ef5eba784e8c7966c34bccbd22d442",
+      "stress": "953fb3362fb1fcd0a628b0305d919bc78aedeca90a93cbbdcd6546f6bce08b62"
+    },
+    "contract_sha256": "8c88e40b098cf42483c9a5ded82828aca58e86f3f4f089cddea311690a38d2be",
+    "recorded_day_ranges": {
+      "train": [
+        "2025-11-01",
+        "2026-06-25"
+      ],
+      "val": [
+        "2026-06-28",
+        "2026-08-14"
+      ],
+      "test": [
+        "2026-08-19",
+        "2026-10-05"
+      ],
+      "stress": []
+    },
+    "source_kind_counts": {
+      "train": {
+        "recorded_archive": 841,
+        "synthetic_stress": 224
+      },
+      "val": {
+        "recorded_archive": 80,
+        "synthetic_stress": 0
+      },
+      "test": {
+        "recorded_archive": 88,
+        "synthetic_stress": 0
+      },
+      "stress": {
+        "recorded_archive": 0,
+        "synthetic_stress": 64
+      }
+    },
+    "development": {
+      "count": 32,
+      "sha256": "140daa68873c46d42474ab2654697f994a92f014feaa9085a6626502834bed21",
+      "independent_holdout": false
+    }
+  }
+}
