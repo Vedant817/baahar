@@ -138,6 +138,12 @@ jobs:
       - name: Check RESULTS.md against the raw artifacts
         run: uv run python scripts/check_results.py
 
+      - name: Verify frozen briefing candidate evidence
+        run: >-
+          uv run python scripts/report_briefing_candidates.py
+          eval/raw/candidate_submission_v2_frozen.json
+          --out /tmp/baahar-candidate-checked.json
+
       # The other published prose. post.md, README.md and docs/DOD.md had drifted
       # four separate ways -- a wrong judge model, two stale test counts, a
       # naqi_basis literal the code stopped emitting, and a TabPFN row presented
