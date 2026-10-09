@@ -1,0 +1,273 @@
+{
+  "status": "COMPLETED",
+  "created_at": "2026-10-09T06:04:26.043697+00:00",
+  "protocol": {
+    "contexts": [
+      24,
+      48
+    ],
+    "ridge_alpha": 10.0,
+    "partitions": {
+      "train": [
+        "2023-01-01",
+        "2025-04-01"
+      ],
+      "development": [
+        "2025-04-01",
+        "2025-06-01"
+      ]
+    },
+    "expected_support": {
+      "train": {
+        "candidate_rows": 19692,
+        "boundary_exclusions": 53,
+        "absent_timestamp_exclusions": 0,
+        "missing_sequence_by_gas": {},
+        "eligible_rows": 19639,
+        "poor_or_worse": {
+          "hours": 296,
+          "episodes": 86,
+          "episode_hours": [
+            3,
+            3,
+            3,
+            1,
+            5,
+            1,
+            5,
+            5,
+            7,
+            4,
+            2,
+            4,
+            4,
+            4,
+            2,
+            7,
+            1,
+            5,
+            3,
+            3,
+            2,
+            4,
+            3,
+            2,
+            4,
+            5,
+            1,
+            3,
+            3,
+            1,
+            2,
+            3,
+            4,
+            4,
+            3,
+            3,
+            1,
+            2,
+            3,
+            3,
+            5,
+            2,
+            1,
+            2,
+            4,
+            2,
+            3,
+            2,
+            3,
+            3,
+            2,
+            2,
+            5,
+            5,
+            3,
+            5,
+            5,
+            5,
+            5,
+            2,
+            3,
+            2,
+            2,
+            4,
+            5,
+            3,
+            1,
+            1,
+            3,
+            1,
+            1,
+            3,
+            1,
+            6,
+            8,
+            8,
+            7,
+            1,
+            5,
+            2,
+            4,
+            6,
+            6,
+            6,
+            7,
+            6
+          ]
+        },
+        "very_poor_or_worse": {
+          "hours": 5,
+          "episodes": 1,
+          "episode_hours": [
+            5
+          ]
+        },
+        "official_severe": {
+          "hours": 0,
+          "episodes": 0,
+          "episode_hours": []
+        },
+        "paired_24h_origin_intersection": 19639,
+        "excluded_from_24h_origins": 24,
+        "eligible_origin_times_sha256": "bdc50d75f5943b1c7edbd9703c5e02e455d30481ff59f715b8d900c3c971080c"
+      },
+      "development": {
+        "candidate_rows": 1464,
+        "boundary_exclusions": 53,
+        "absent_timestamp_exclusions": 0,
+        "missing_sequence_by_gas": {},
+        "eligible_rows": 1411,
+        "poor_or_worse": {
+          "hours": 168,
+          "episodes": 28,
+          "episode_hours": [
+            2,
+            3,
+            6,
+            5,
+            6,
+            5,
+            8,
+            8,
+            7,
+            9,
+            8,
+            7,
+            7,
+            3,
+            6,
+            7,
+            5,
+            6,
+            4,
+            3,
+            7,
+            9,
+            8,
+            8,
+            5,
+            5,
+            4,
+            7
+          ]
+        },
+        "very_poor_or_worse": {
+          "hours": 22,
+          "episodes": 5,
+          "episode_hours": [
+            6,
+            2,
+            6,
+            5,
+            3
+          ]
+        },
+        "official_severe": {
+          "hours": 0,
+          "episodes": 0,
+          "episode_hours": []
+        },
+        "paired_24h_origin_intersection": 1411,
+        "excluded_from_24h_origins": 24,
+        "eligible_origin_times_sha256": "14f264bfde38831cfe80a98c1e4b73822b58b7fb02d8d0405b6343099f6260f9"
+      }
+    },
+    "rows_sha256": "064684cdc77b2612a5e9910528eacf6340677a7cdb8f238effff9918cce55951",
+    "source_fixtures": [
+      {
+        "path": "data/samples/archival_aq_2023-01-01_2023-12-31.json",
+        "sha256": "80e2095817debe677445dfc694b99dfa0f9bcc39ead3f1f5bf7ff58b70d92bf0"
+      },
+      {
+        "path": "data/samples/archival_aq_2024-01-01_2024-12-31.json",
+        "sha256": "81ab6e6b0c1027fc203772aaa0e5a92e30ce42d89dfd4f4c584c41c7bdde7fb7"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-01-01_2025-10-31.json",
+        "sha256": "a9c677e876d844c9ebe1ff25fc439e9b7755e489bd26dc03a5d4ee14af4b2d5c"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-11-01_2025-12-31.json",
+        "sha256": "443d5d398a13d44a83bd613ecfd68f99497f84081877e67862c55c0d65595b30"
+      },
+      {
+        "path": "data/samples/archival_aq_2026-01-01_2026-09-30.json",
+        "sha256": "3323aeb31e3f513b23f7b759be7cc7e3ceadf3f9348f937e11e76fa7225102ff"
+      },
+      {
+        "path": "data/samples/archival_wx_2023-01-01_2023-12-31.json",
+        "sha256": "3d71fbd3972525ab52d8613357a7ce8680ef2d40882649cb5eb14357fe41ab7c"
+      },
+      {
+        "path": "data/samples/archival_wx_2024-01-01_2024-12-31.json",
+        "sha256": "e0f0c92cdc67454504372e9292ff5c895d467a7b0d55b937322837970a923c9b"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-01-01_2025-10-31.json",
+        "sha256": "8d7e98f8a9c9cefe1a54a38779e7e367bdab294f96afc25e1f2291ec4e86bf4a"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-11-01_2025-12-31.json",
+        "sha256": "7779cce7765fbfc341212dc5d216e6b2cc95a4b0a4bd4dfe4eca56b99ce4810d"
+      },
+      {
+        "path": "data/samples/archival_wx_2026-01-01_2026-09-30.json",
+        "sha256": "726d32e9ff366b8a0d1e954008c35d75894538fc5078e8ee94d969eb6c9e0528"
+      }
+    ],
+    "support_result_sha256": "06a1eef0213970d5b11f937ae7fe0332a29ae55d5e44903a025cf368ef1475fc",
+    "feature_order": [
+      "pm2_5",
+      "pm10",
+      "nitrogen_dioxide",
+      "ozone",
+      "sulphur_dioxide",
+      "carbon_monoxide",
+      "temperature_2m",
+      "apparent_temperature",
+      "precipitation",
+      "relative_humidity_2m",
+      "wind_speed_10m",
+      "sin_hour",
+      "cos_hour",
+      "sin_month",
+      "cos_month"
+    ]
+  },
+  "source_sha256": {
+    "scripts/probe_pollutant_lag_modal.py": "9569e788f0fb8ff6b1a6034642921ecae769c3748c9b66dc315228303f93ebb6",
+    "scripts/train_pollutant_sequence_v3_modal.py": "efe82a600ce728c9b7376f5d97501a76047faa0fb5873fe137432ac411e56d80",
+    "src/baahar/naqi.py": "f755b308baef2fec28877c81f500e95d5b7dc9e1231dff677c208ca61b5b21dc",
+    "src/baahar/__init__.py": "5e8311583c6c5a260d36fbf0a578efdd08834872a75aabd642b57e50bee6cab4",
+    "eval/raw/pollutant_context_support_v1_results.json": "06a1eef0213970d5b11f937ae7fe0332a29ae55d5e44903a025cf368ef1475fc",
+    "docs/POLLUTANT_LAG_PROBE_V1_PROTOCOL.md": "a6dc2b62dec2b3034775f0f21284505d1003c19b24b70093b058a70af91d2ecb"
+  },
+  "timeout_seconds": 1800,
+  "retries": 0,
+  "gpu": null,
+  "call_id": "fc-01M4FM73AHVNNJFY7F8SGSYD8Q",
+  "app_id": "ap-LOJY41QfJZesEwi80LRam5",
+  "result_sha256": "656b4c8eefca8a2c7c2daf15bc8b6f03516a05ca7596d6d2aded975288a7dc06",
+  "completed_at": "2026-10-09T06:05:41.704474+00:00"
+}

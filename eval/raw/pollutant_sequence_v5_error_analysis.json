@@ -1,0 +1,2082 @@
+{
+  "status": "COMPLETED_SAVED_OUTPUT_ANALYSIS",
+  "sources": {
+    "v3": {
+      "call_id": "fc-01M4FH3RPFGP8WW3B4HP033708",
+      "result_sha256": "cb79a2291e227da16960ecec7a23040769e3bff1e13b7d2d2b2dcddaa6f68b3a"
+    },
+    "v5": {
+      "call_id": "fc-01M4FMJNYMR2C9JAGEFEGAW3RR",
+      "result_sha256": "11a66e6931ba7423034764929ffb9682f1570bbf9f2bc70e821754b388887236"
+    }
+  },
+  "periods": [
+    {
+      "partition": "development",
+      "rows": 1435,
+      "poor_plus_hours": 168,
+      "actual_controlling_gas_on_poor_plus": {
+        "o3": 168
+      },
+      "missed_hours_by_episode_phase": {
+        "v3": {
+          "falling_hit": 70,
+          "falling_miss": 23,
+          "onset_hit": 5,
+          "onset_miss": 23,
+          "peak_hit": 20,
+          "peak_miss": 7,
+          "rising_hit": 11,
+          "rising_miss": 9
+        },
+        "v5": {
+          "falling_hit": 67,
+          "falling_miss": 26,
+          "onset_hit": 4,
+          "onset_miss": 24,
+          "peak_hit": 18,
+          "peak_miss": 9,
+          "rising_hit": 9,
+          "rising_miss": 11
+        }
+      },
+      "missed_hours_by_actual_controlling_gas": {
+        "v3": {
+          "o3": 62
+        },
+        "v5": {
+          "o3": 70
+        }
+      },
+      "episodes": [
+        {
+          "episode": 1,
+          "start": "2025-04-08T06:00",
+          "end": "2025-04-08T07:00",
+          "positive_hours": 2,
+          "peak_time": "2025-04-08T06:00",
+          "peak_actual_naqi": 205.95,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 2,
+          "start": "2025-04-09T05:00",
+          "end": "2025-04-09T07:00",
+          "positive_hours": 3,
+          "peak_time": "2025-04-09T06:00",
+          "peak_actual_naqi": 220.8,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 3,
+          "start": "2025-04-10T05:00",
+          "end": "2025-04-10T10:00",
+          "positive_hours": 6,
+          "peak_time": "2025-04-10T06:00",
+          "peak_actual_naqi": 285.15,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 4,
+          "start": "2025-04-11T05:00",
+          "end": "2025-04-11T09:00",
+          "positive_hours": 5,
+          "peak_time": "2025-04-11T07:00",
+          "peak_actual_naqi": 235.65,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 5,
+          "start": "2025-04-12T05:00",
+          "end": "2025-04-12T10:00",
+          "positive_hours": 6,
+          "peak_time": "2025-04-12T06:00",
+          "peak_actual_naqi": 287.625,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 6,
+          "start": "2025-04-13T05:00",
+          "end": "2025-04-13T09:00",
+          "positive_hours": 5,
+          "peak_time": "2025-04-13T06:00",
+          "peak_actual_naqi": 277.725,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 7,
+          "start": "2025-04-14T03:00",
+          "end": "2025-04-14T10:00",
+          "positive_hours": 8,
+          "peak_time": "2025-04-14T05:00",
+          "peak_actual_naqi": 290.1,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 8,
+          "start": "2025-04-15T04:00",
+          "end": "2025-04-15T11:00",
+          "positive_hours": 8,
+          "peak_time": "2025-04-15T06:00",
+          "peak_actual_naqi": 292.575,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 9,
+          "start": "2025-04-16T05:00",
+          "end": "2025-04-16T11:00",
+          "positive_hours": 7,
+          "peak_time": "2025-04-16T08:00",
+          "peak_actual_naqi": 260.4,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 10,
+          "start": "2025-04-17T03:00",
+          "end": "2025-04-17T11:00",
+          "positive_hours": 9,
+          "peak_time": "2025-04-17T06:00",
+          "peak_actual_naqi": 304.3,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 11,
+          "start": "2025-04-18T04:00",
+          "end": "2025-04-18T11:00",
+          "positive_hours": 8,
+          "peak_time": "2025-04-18T06:00",
+          "peak_actual_naqi": 292.575,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 12,
+          "start": "2025-04-19T05:00",
+          "end": "2025-04-19T11:00",
+          "positive_hours": 7,
+          "peak_time": "2025-04-19T07:00",
+          "peak_actual_naqi": 300.0,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 13,
+          "start": "2025-04-20T04:00",
+          "end": "2025-04-20T10:00",
+          "positive_hours": 7,
+          "peak_time": "2025-04-20T07:00",
+          "peak_actual_naqi": 295.05,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 14,
+          "start": "2025-04-21T05:00",
+          "end": "2025-04-21T07:00",
+          "positive_hours": 3,
+          "peak_time": "2025-04-21T06:00",
+          "peak_actual_naqi": 238.125,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 15,
+          "start": "2025-04-23T05:00",
+          "end": "2025-04-23T10:00",
+          "positive_hours": 6,
+          "peak_time": "2025-04-23T06:00",
+          "peak_actual_naqi": 265.35,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 16,
+          "start": "2025-04-24T04:00",
+          "end": "2025-04-24T10:00",
+          "positive_hours": 7,
+          "peak_time": "2025-04-24T06:00",
+          "peak_actual_naqi": 302.1,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 17,
+          "start": "2025-04-25T05:00",
+          "end": "2025-04-25T09:00",
+          "positive_hours": 5,
+          "peak_time": "2025-04-25T06:00",
+          "peak_actual_naqi": 267.825,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 18,
+          "start": "2025-04-26T04:00",
+          "end": "2025-04-26T09:00",
+          "positive_hours": 6,
+          "peak_time": "2025-04-26T06:00",
+          "peak_actual_naqi": 287.625,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 19,
+          "start": "2025-04-28T07:00",
+          "end": "2025-04-28T10:00",
+          "positive_hours": 4,
+          "peak_time": "2025-04-28T08:00",
+          "peak_actual_naqi": 215.85,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 20,
+          "start": "2025-04-29T07:00",
+          "end": "2025-04-29T09:00",
+          "positive_hours": 3,
+          "peak_time": "2025-04-29T08:00",
+          "peak_actual_naqi": 213.375,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 21,
+          "start": "2025-04-30T05:00",
+          "end": "2025-04-30T11:00",
+          "positive_hours": 7,
+          "peak_time": "2025-04-30T06:00",
+          "peak_actual_naqi": 280.2,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 22,
+          "start": "2025-05-01T04:00",
+          "end": "2025-05-01T12:00",
+          "positive_hours": 9,
+          "peak_time": "2025-05-01T07:00",
+          "peak_actual_naqi": 304.48333333333335,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 23,
+          "start": "2025-05-02T04:00",
+          "end": "2025-05-02T11:00",
+          "positive_hours": 8,
+          "peak_time": "2025-05-02T07:00",
+          "peak_actual_naqi": 305.4,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 7,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 24,
+          "start": "2025-05-03T04:00",
+          "end": "2025-05-03T11:00",
+          "positive_hours": 8,
+          "peak_time": "2025-05-03T06:00",
+          "peak_actual_naqi": 302.46666666666664,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 25,
+          "start": "2025-05-05T05:00",
+          "end": "2025-05-05T09:00",
+          "positive_hours": 5,
+          "peak_time": "2025-05-05T06:00",
+          "peak_actual_naqi": 240.6,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 26,
+          "start": "2025-05-06T05:00",
+          "end": "2025-05-06T09:00",
+          "positive_hours": 5,
+          "peak_time": "2025-05-06T06:00",
+          "peak_actual_naqi": 228.225,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 27,
+          "start": "2025-05-14T07:00",
+          "end": "2025-05-14T10:00",
+          "positive_hours": 4,
+          "peak_time": "2025-05-14T09:00",
+          "peak_actual_naqi": 215.85,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 28,
+          "start": "2025-05-15T05:00",
+          "end": "2025-05-15T11:00",
+          "positive_hours": 7,
+          "peak_time": "2025-05-15T07:00",
+          "peak_actual_naqi": 262.875,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        }
+      ],
+      "gas_errors_on_poor_plus": {
+        "v3": {
+          "pm2_5": {
+            "count": 168,
+            "mae": 5.423600685619926,
+            "bias_prediction_minus_actual": -3.1415027496702104
+          },
+          "pm10": {
+            "count": 168,
+            "mae": 8.530784728097316,
+            "bias_prediction_minus_actual": -6.150491222080357
+          },
+          "nitrogen_dioxide": {
+            "count": 168,
+            "mae": 2.3881558418112845,
+            "bias_prediction_minus_actual": 0.7712158238165502
+          },
+          "ozone": {
+            "count": 168,
+            "mae": 21.86125353722138,
+            "bias_prediction_minus_actual": -20.135073589000314
+          },
+          "sulphur_dioxide": {
+            "count": 168,
+            "mae": 1.0959885834437728,
+            "bias_prediction_minus_actual": -0.32596974730997313
+          },
+          "carbon_monoxide": {
+            "count": 168,
+            "mae": 76.90245740425146,
+            "bias_prediction_minus_actual": -59.68883659422594
+          }
+        },
+        "v5": {
+          "pm2_5": {
+            "count": 168,
+            "mae": 5.174151102913718,
+            "bias_prediction_minus_actual": -3.169998327238676
+          },
+          "pm10": {
+            "count": 168,
+            "mae": 7.978348302811756,
+            "bias_prediction_minus_actual": -5.5666297605190875
+          },
+          "nitrogen_dioxide": {
+            "count": 168,
+            "mae": 1.8373589797026815,
+            "bias_prediction_minus_actual": 0.6549867469767425
+          },
+          "ozone": {
+            "count": 168,
+            "mae": 22.883048966727433,
+            "bias_prediction_minus_actual": -21.656421259068935
+          },
+          "sulphur_dioxide": {
+            "count": 168,
+            "mae": 1.0821909735752664,
+            "bias_prediction_minus_actual": -0.3182313010022745
+          },
+          "carbon_monoxide": {
+            "count": 168,
+            "mae": 78.01006204315398,
+            "bias_prediction_minus_actual": -57.49642198542231
+          }
+        }
+      }
+    },
+    {
+      "partition": "diagnostic_pollution",
+      "rows": 2107,
+      "poor_plus_hours": 248,
+      "actual_controlling_gas_on_poor_plus": {
+        "o3": 247,
+        "pm25": 1
+      },
+      "missed_hours_by_episode_phase": {
+        "v3": {
+          "falling_hit": 72,
+          "falling_miss": 39,
+          "onset_hit": 23,
+          "onset_miss": 26,
+          "peak_hit": 31,
+          "peak_miss": 11,
+          "rising_hit": 34,
+          "rising_miss": 12
+        },
+        "v5": {
+          "falling_hit": 71,
+          "falling_miss": 40,
+          "onset_hit": 20,
+          "onset_miss": 29,
+          "peak_hit": 32,
+          "peak_miss": 10,
+          "rising_hit": 31,
+          "rising_miss": 15
+        }
+      },
+      "missed_hours_by_actual_controlling_gas": {
+        "v3": {
+          "o3": 87,
+          "pm25": 1
+        },
+        "v5": {
+          "o3": 93,
+          "pm25": 1
+        }
+      },
+      "episodes": [
+        {
+          "episode": 1,
+          "start": "2026-02-09T05:00",
+          "end": "2026-02-09T11:00",
+          "positive_hours": 7,
+          "peak_time": "2026-02-09T08:00",
+          "peak_actual_naqi": 248.025,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 2,
+          "start": "2026-02-10T06:00",
+          "end": "2026-02-10T06:00",
+          "positive_hours": 1,
+          "peak_time": "2026-02-10T06:00",
+          "peak_actual_naqi": 205.95,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 1,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 1,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 3,
+          "start": "2026-02-15T07:00",
+          "end": "2026-02-15T09:00",
+          "positive_hours": 3,
+          "peak_time": "2026-02-15T08:00",
+          "peak_actual_naqi": 210.9,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 4,
+          "start": "2026-02-16T05:00",
+          "end": "2026-02-16T09:00",
+          "positive_hours": 5,
+          "peak_time": "2026-02-16T07:00",
+          "peak_actual_naqi": 223.275,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 5,
+          "start": "2026-02-25T07:00",
+          "end": "2026-02-25T09:00",
+          "positive_hours": 3,
+          "peak_time": "2026-02-25T07:00",
+          "peak_actual_naqi": 210.9,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 1,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 6,
+          "start": "2026-02-26T06:00",
+          "end": "2026-02-26T10:00",
+          "positive_hours": 5,
+          "peak_time": "2026-02-26T07:00",
+          "peak_actual_naqi": 218.325,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 7,
+          "start": "2026-02-27T09:00",
+          "end": "2026-02-27T10:00",
+          "positive_hours": 2,
+          "peak_time": "2026-02-27T09:00",
+          "peak_actual_naqi": 205.95,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 1,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 8,
+          "start": "2026-02-28T05:00",
+          "end": "2026-02-28T11:00",
+          "positive_hours": 7,
+          "peak_time": "2026-02-28T06:00",
+          "peak_actual_naqi": 225.75,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 9,
+          "start": "2026-03-01T01:00",
+          "end": "2026-03-01T10:00",
+          "positive_hours": 7,
+          "peak_time": "2026-03-01T06:00",
+          "peak_actual_naqi": 230.7,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 10,
+          "start": "2026-03-02T05:00",
+          "end": "2026-03-02T08:00",
+          "positive_hours": 4,
+          "peak_time": "2026-03-02T06:00",
+          "peak_actual_naqi": 228.225,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 11,
+          "start": "2026-03-05T05:00",
+          "end": "2026-03-05T10:00",
+          "positive_hours": 6,
+          "peak_time": "2026-03-05T06:00",
+          "peak_actual_naqi": 225.75,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 12,
+          "start": "2026-03-06T05:00",
+          "end": "2026-03-06T11:00",
+          "positive_hours": 7,
+          "peak_time": "2026-03-06T09:00",
+          "peak_actual_naqi": 301.9166666666667,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 7,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 7,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 13,
+          "start": "2026-03-07T05:00",
+          "end": "2026-03-07T11:00",
+          "positive_hours": 7,
+          "peak_time": "2026-03-07T06:00",
+          "peak_actual_naqi": 277.725,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 14,
+          "start": "2026-03-08T05:00",
+          "end": "2026-03-08T10:00",
+          "positive_hours": 6,
+          "peak_time": "2026-03-08T06:00",
+          "peak_actual_naqi": 262.875,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 15,
+          "start": "2026-03-09T06:00",
+          "end": "2026-03-09T06:00",
+          "positive_hours": 1,
+          "peak_time": "2026-03-09T06:00",
+          "peak_actual_naqi": 210.9,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 1,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 1,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 16,
+          "start": "2026-03-13T06:00",
+          "end": "2026-03-13T06:00",
+          "positive_hours": 1,
+          "peak_time": "2026-03-13T06:00",
+          "peak_actual_naqi": 208.425,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 17,
+          "start": "2026-03-15T06:00",
+          "end": "2026-03-15T10:00",
+          "positive_hours": 5,
+          "peak_time": "2026-03-15T08:00",
+          "peak_actual_naqi": 238.125,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 18,
+          "start": "2026-03-16T05:00",
+          "end": "2026-03-16T11:00",
+          "positive_hours": 7,
+          "peak_time": "2026-03-16T07:00",
+          "peak_actual_naqi": 267.825,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 19,
+          "start": "2026-03-17T06:00",
+          "end": "2026-03-17T10:00",
+          "positive_hours": 5,
+          "peak_time": "2026-03-17T08:00",
+          "peak_actual_naqi": 228.225,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 20,
+          "start": "2026-03-19T06:00",
+          "end": "2026-03-19T11:00",
+          "positive_hours": 6,
+          "peak_time": "2026-03-19T09:00",
+          "peak_actual_naqi": 265.35,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 1,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 21,
+          "start": "2026-03-20T05:00",
+          "end": "2026-03-20T11:00",
+          "positive_hours": 7,
+          "peak_time": "2026-03-20T09:00",
+          "peak_actual_naqi": 300.0,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 22,
+          "start": "2026-03-21T05:00",
+          "end": "2026-03-21T11:00",
+          "positive_hours": 7,
+          "peak_time": "2026-03-21T07:00",
+          "peak_actual_naqi": 257.925,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 23,
+          "start": "2026-03-22T08:00",
+          "end": "2026-03-22T09:00",
+          "positive_hours": 2,
+          "peak_time": "2026-03-22T08:00",
+          "peak_actual_naqi": 205.95,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 24,
+          "start": "2026-03-28T05:00",
+          "end": "2026-03-28T11:00",
+          "positive_hours": 7,
+          "peak_time": "2026-03-28T10:00",
+          "peak_actual_naqi": 285.15,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 25,
+          "start": "2026-03-29T05:00",
+          "end": "2026-03-29T07:00",
+          "positive_hours": 3,
+          "peak_time": "2026-03-29T06:00",
+          "peak_actual_naqi": 230.7,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 26,
+          "start": "2026-03-31T05:00",
+          "end": "2026-03-31T07:00",
+          "positive_hours": 3,
+          "peak_time": "2026-03-31T06:00",
+          "peak_actual_naqi": 238.125,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 27,
+          "start": "2026-04-03T05:00",
+          "end": "2026-04-03T11:00",
+          "positive_hours": 7,
+          "peak_time": "2026-04-03T10:00",
+          "peak_actual_naqi": 290.1,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 28,
+          "start": "2026-04-04T05:00",
+          "end": "2026-04-04T10:00",
+          "positive_hours": 6,
+          "peak_time": "2026-04-04T07:00",
+          "peak_actual_naqi": 233.175,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 29,
+          "start": "2026-04-08T05:00",
+          "end": "2026-04-08T10:00",
+          "positive_hours": 6,
+          "peak_time": "2026-04-08T10:00",
+          "peak_actual_naqi": 295.05,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 30,
+          "start": "2026-04-09T05:00",
+          "end": "2026-04-09T11:00",
+          "positive_hours": 7,
+          "peak_time": "2026-04-09T09:00",
+          "peak_actual_naqi": 270.3,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 31,
+          "start": "2026-04-10T05:00",
+          "end": "2026-04-10T10:00",
+          "positive_hours": 6,
+          "peak_time": "2026-04-10T07:00",
+          "peak_actual_naqi": 301.9166666666667,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 32,
+          "start": "2026-04-12T06:00",
+          "end": "2026-04-12T07:00",
+          "positive_hours": 2,
+          "peak_time": "2026-04-12T06:00",
+          "peak_actual_naqi": 208.425,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 33,
+          "start": "2026-04-13T05:00",
+          "end": "2026-04-13T09:00",
+          "positive_hours": 5,
+          "peak_time": "2026-04-13T06:00",
+          "peak_actual_naqi": 257.925,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 1,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 34,
+          "start": "2026-04-14T05:00",
+          "end": "2026-04-14T09:00",
+          "positive_hours": 5,
+          "peak_time": "2026-04-14T06:00",
+          "peak_actual_naqi": 265.35,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 35,
+          "start": "2026-04-15T05:00",
+          "end": "2026-04-15T10:00",
+          "positive_hours": 6,
+          "peak_time": "2026-04-15T06:00",
+          "peak_actual_naqi": 248.025,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 36,
+          "start": "2026-04-16T05:00",
+          "end": "2026-04-16T09:00",
+          "positive_hours": 5,
+          "peak_time": "2026-04-16T06:00",
+          "peak_actual_naqi": 270.3,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 37,
+          "start": "2026-04-17T04:00",
+          "end": "2026-04-17T08:00",
+          "positive_hours": 5,
+          "peak_time": "2026-04-17T06:00",
+          "peak_actual_naqi": 265.35,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 38,
+          "start": "2026-04-18T05:00",
+          "end": "2026-04-18T07:00",
+          "positive_hours": 3,
+          "peak_time": "2026-04-18T06:00",
+          "peak_actual_naqi": 225.75,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 39,
+          "start": "2026-04-19T05:00",
+          "end": "2026-04-19T10:00",
+          "positive_hours": 6,
+          "peak_time": "2026-04-19T06:00",
+          "peak_actual_naqi": 248.025,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 1,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 40,
+          "start": "2026-04-20T04:00",
+          "end": "2026-04-20T11:00",
+          "positive_hours": 8,
+          "peak_time": "2026-04-20T06:00",
+          "peak_actual_naqi": 301.55,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 7,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 41,
+          "start": "2026-04-21T06:00",
+          "end": "2026-04-21T08:00",
+          "positive_hours": 3,
+          "peak_time": "2026-04-21T07:00",
+          "peak_actual_naqi": 218.325,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 42,
+          "start": "2026-04-22T05:00",
+          "end": "2026-04-22T07:00",
+          "positive_hours": 3,
+          "peak_time": "2026-04-22T06:00",
+          "peak_actual_naqi": 228.225,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 43,
+          "start": "2026-04-23T05:00",
+          "end": "2026-04-23T07:00",
+          "positive_hours": 3,
+          "peak_time": "2026-04-23T06:00",
+          "peak_actual_naqi": 233.175,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 44,
+          "start": "2026-04-24T05:00",
+          "end": "2026-04-24T08:00",
+          "positive_hours": 4,
+          "peak_time": "2026-04-24T06:00",
+          "peak_actual_naqi": 243.075,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 45,
+          "start": "2026-04-26T05:00",
+          "end": "2026-04-26T10:00",
+          "positive_hours": 6,
+          "peak_time": "2026-04-26T07:00",
+          "peak_actual_naqi": 245.55,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 4,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 46,
+          "start": "2026-04-27T04:00",
+          "end": "2026-04-27T11:00",
+          "positive_hours": 8,
+          "peak_time": "2026-04-27T08:00",
+          "peak_actual_naqi": 292.575,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 5,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 47,
+          "start": "2026-04-28T04:00",
+          "end": "2026-04-28T10:00",
+          "positive_hours": 7,
+          "peak_time": "2026-04-28T07:00",
+          "peak_actual_naqi": 287.625,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 48,
+          "start": "2026-04-29T04:00",
+          "end": "2026-04-29T10:00",
+          "positive_hours": 7,
+          "peak_time": "2026-04-29T06:00",
+          "peak_actual_naqi": 301.73333333333335,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 6,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 49,
+          "start": "2026-04-30T06:00",
+          "end": "2026-04-30T11:00",
+          "positive_hours": 6,
+          "peak_time": "2026-04-30T11:00",
+          "peak_actual_naqi": 243.075,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 2,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        }
+      ],
+      "gas_errors_on_poor_plus": {
+        "v3": {
+          "pm2_5": {
+            "count": 248,
+            "mae": 5.0212788860590205,
+            "bias_prediction_minus_actual": -3.5674968176502846
+          },
+          "pm10": {
+            "count": 248,
+            "mae": 6.610501732901242,
+            "bias_prediction_minus_actual": -5.078555011224833
+          },
+          "nitrogen_dioxide": {
+            "count": 248,
+            "mae": 2.199135030523661,
+            "bias_prediction_minus_actual": 0.3006528553895673
+          },
+          "ozone": {
+            "count": 248,
+            "mae": 14.275763559787356,
+            "bias_prediction_minus_actual": -12.607806914914049
+          },
+          "sulphur_dioxide": {
+            "count": 248,
+            "mae": 1.2846644435570058,
+            "bias_prediction_minus_actual": -0.2353761586648386
+          },
+          "carbon_monoxide": {
+            "count": 248,
+            "mae": 57.122773803989254,
+            "bias_prediction_minus_actual": -43.14024966751886
+          }
+        },
+        "v5": {
+          "pm2_5": {
+            "count": 248,
+            "mae": 5.1519595218762095,
+            "bias_prediction_minus_actual": -3.8954525152181314
+          },
+          "pm10": {
+            "count": 248,
+            "mae": 5.9858921701456245,
+            "bias_prediction_minus_actual": -4.395586866599575
+          },
+          "nitrogen_dioxide": {
+            "count": 248,
+            "mae": 1.6381570513337653,
+            "bias_prediction_minus_actual": 0.1946875661243233
+          },
+          "ozone": {
+            "count": 248,
+            "mae": 14.630645308703974,
+            "bias_prediction_minus_actual": -13.406827402876365
+          },
+          "sulphur_dioxide": {
+            "count": 248,
+            "mae": 1.2603812988749332,
+            "bias_prediction_minus_actual": 0.20349522597771547
+          },
+          "carbon_monoxide": {
+            "count": 248,
+            "mae": 53.63023677727099,
+            "bias_prediction_minus_actual": -40.66600019891924
+          }
+        }
+      }
+    },
+    {
+      "partition": "diagnostic_other_seasons",
+      "rows": 3643,
+      "poor_plus_hours": 16,
+      "actual_controlling_gas_on_poor_plus": {
+        "o3": 16
+      },
+      "missed_hours_by_episode_phase": {
+        "v3": {
+          "falling_hit": 4,
+          "falling_miss": 1,
+          "onset_hit": 2,
+          "onset_miss": 4,
+          "peak_hit": 3,
+          "peak_miss": 1,
+          "rising_hit": 1
+        },
+        "v5": {
+          "falling_hit": 2,
+          "falling_miss": 3,
+          "onset_hit": 1,
+          "onset_miss": 5,
+          "peak_hit": 2,
+          "peak_miss": 2,
+          "rising_hit": 1
+        }
+      },
+      "missed_hours_by_actual_controlling_gas": {
+        "v3": {
+          "o3": 6
+        },
+        "v5": {
+          "o3": 10
+        }
+      },
+      "episodes": [
+        {
+          "episode": 1,
+          "start": "2026-05-02T06:00",
+          "end": "2026-05-02T08:00",
+          "positive_hours": 3,
+          "peak_time": "2026-05-02T07:00",
+          "peak_actual_naqi": 208.425,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "episode": 2,
+          "start": "2026-05-05T05:00",
+          "end": "2026-05-05T09:00",
+          "positive_hours": 5,
+          "peak_time": "2026-05-05T07:00",
+          "peak_actual_naqi": 245.55,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 3,
+          "start": "2026-05-12T06:00",
+          "end": "2026-05-12T06:00",
+          "positive_hours": 1,
+          "peak_time": "2026-05-12T06:00",
+          "peak_actual_naqi": 203.475,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 1,
+            "any_hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 4,
+          "start": "2026-05-13T05:00",
+          "end": "2026-05-13T08:00",
+          "positive_hours": 4,
+          "peak_time": "2026-05-13T06:00",
+          "peak_actual_naqi": 233.175,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 3,
+            "any_hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 5,
+          "start": "2026-05-18T07:00",
+          "end": "2026-05-18T07:00",
+          "positive_hours": 1,
+          "peak_time": "2026-05-18T07:00",
+          "peak_actual_naqi": 205.95,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "episode": 6,
+          "start": "2026-06-02T06:00",
+          "end": "2026-06-02T07:00",
+          "positive_hours": 2,
+          "peak_time": "2026-06-02T07:00",
+          "peak_actual_naqi": 210.9,
+          "dominant_at_peak": "o3",
+          "v3": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v5": {
+            "hit_hours": 0,
+            "any_hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        }
+      ],
+      "gas_errors_on_poor_plus": {
+        "v3": {
+          "pm2_5": {
+            "count": 16,
+            "mae": 4.110584109852409,
+            "bias_prediction_minus_actual": 3.197714676735742
+          },
+          "pm10": {
+            "count": 16,
+            "mae": 3.3005862478894947,
+            "bias_prediction_minus_actual": -0.6186220604558728
+          },
+          "nitrogen_dioxide": {
+            "count": 16,
+            "mae": 1.3585975813788211,
+            "bias_prediction_minus_actual": -0.7290083170370674
+          },
+          "ozone": {
+            "count": 16,
+            "mae": 10.918840450940756,
+            "bias_prediction_minus_actual": -8.146345084361204
+          },
+          "sulphur_dioxide": {
+            "count": 16,
+            "mae": 1.0481048454414776,
+            "bias_prediction_minus_actual": 0.6130905576185511
+          },
+          "carbon_monoxide": {
+            "count": 16,
+            "mae": 20.862141476306306,
+            "bias_prediction_minus_actual": -6.712081402639065
+          }
+        },
+        "v5": {
+          "pm2_5": {
+            "count": 16,
+            "mae": 4.136958977734046,
+            "bias_prediction_minus_actual": 3.4504366808346374
+          },
+          "pm10": {
+            "count": 16,
+            "mae": 2.8341419893600612,
+            "bias_prediction_minus_actual": 0.19280627654938143
+          },
+          "nitrogen_dioxide": {
+            "count": 16,
+            "mae": 0.9518956568777006,
+            "bias_prediction_minus_actual": -0.11825721089380423
+          },
+          "ozone": {
+            "count": 16,
+            "mae": 13.544791897893795,
+            "bias_prediction_minus_actual": -10.971292434758645
+          },
+          "sulphur_dioxide": {
+            "count": 16,
+            "mae": 0.7482454309767024,
+            "bias_prediction_minus_actual": 0.6259568863089228
+          },
+          "carbon_monoxide": {
+            "count": 16,
+            "mae": 22.091044699768382,
+            "bias_prediction_minus_actual": -2.63157264067876
+          }
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Only saved sixth-horizon outputs; no refitting or other-horizon claims",
+    "Development and diagnostics are consumed/adaptive CAMS/ERA5 modeled archive",
+    "Controlling-gas attribution is an hourly CPCB instantaneous proxy, not station-grade cause"
+  ]
+}

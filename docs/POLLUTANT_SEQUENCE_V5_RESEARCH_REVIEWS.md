@@ -1,0 +1,9 @@
+# Next-objective research reviews after the lag probe
+
+Three read-only native reviewers completed this round using the actual lag-probe code/result/summary, V3 implementation, V4 findings and reopened roadmap. These are new completed reviews; earlier quota/auth failures are historical.
+
+- `lag_result_objective`: identified equal weighting of six horizons in both training and checkpoint selection versus sixth-hour-only reported risk. Recommended half all-horizon plus half endpoint loss and matching selection weights, preserving trajectory supervision. No claim that auxiliary horizons have been proven harmful.
+- `lag_result_data`: recommended a sixth-hour-only loss and checkpoint package, preserving existing absolute target scales and data. Highlighted development Poor+ ozone underprediction and very small extreme-event coverage. Report all-horizon and endpoint curves; do not increase context solely from feasibility.
+- `lag_result_integrity`: verified the lag probe's result/code hashes, exact origin pairing, train-only scaling and target integrity. Confirmed the failed screen is measured. Considered an endpoint objective defensible but required explicitly disclosing a combined training/checkpoint change. Also identified the cross-study macro-F1 label-set difference.
+
+Root synthesis chooses exactly one fixed endpoint-priority package: half the previous all-horizon objective and half the endpoint objective, with matching development selection. This retains supervision for intermediate outputs while increasing the evaluated horizon's priority. Two implementation changes are a coordinated package; results cannot isolate which causes an effect. No threshold/horizon-weight sweep or context/capacity change. See the frozen V5 protocol. This is exploratory evidence on consumed modeled archive, with no automatic product adoption.

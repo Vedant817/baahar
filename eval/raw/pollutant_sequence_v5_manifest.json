@@ -1,0 +1,179 @@
+{
+  "status": "COMPLETED",
+  "created_at": "2026-10-09T06:10:56.046562+00:00",
+  "run_name": "pollutant_sequence_v5",
+  "replay": {
+    "rows_sha256": "064684cdc77b2612a5e9910528eacf6340677a7cdb8f238effff9918cce55951",
+    "row_count": 32826,
+    "excluded_history_n": 30,
+    "excluded_quality_n": 0,
+    "source_fixtures": [
+      {
+        "path": "data/samples/archival_aq_2023-01-01_2023-12-31.json",
+        "sha256": "80e2095817debe677445dfc694b99dfa0f9bcc39ead3f1f5bf7ff58b70d92bf0"
+      },
+      {
+        "path": "data/samples/archival_aq_2024-01-01_2024-12-31.json",
+        "sha256": "81ab6e6b0c1027fc203772aaa0e5a92e30ce42d89dfd4f4c584c41c7bdde7fb7"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-01-01_2025-10-31.json",
+        "sha256": "a9c677e876d844c9ebe1ff25fc439e9b7755e489bd26dc03a5d4ee14af4b2d5c"
+      },
+      {
+        "path": "data/samples/archival_aq_2025-11-01_2025-12-31.json",
+        "sha256": "443d5d398a13d44a83bd613ecfd68f99497f84081877e67862c55c0d65595b30"
+      },
+      {
+        "path": "data/samples/archival_aq_2026-01-01_2026-09-30.json",
+        "sha256": "3323aeb31e3f513b23f7b759be7cc7e3ceadf3f9348f937e11e76fa7225102ff"
+      },
+      {
+        "path": "data/samples/archival_wx_2023-01-01_2023-12-31.json",
+        "sha256": "3d71fbd3972525ab52d8613357a7ce8680ef2d40882649cb5eb14357fe41ab7c"
+      },
+      {
+        "path": "data/samples/archival_wx_2024-01-01_2024-12-31.json",
+        "sha256": "e0f0c92cdc67454504372e9292ff5c895d467a7b0d55b937322837970a923c9b"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-01-01_2025-10-31.json",
+        "sha256": "8d7e98f8a9c9cefe1a54a38779e7e367bdab294f96afc25e1f2291ec4e86bf4a"
+      },
+      {
+        "path": "data/samples/archival_wx_2025-11-01_2025-12-31.json",
+        "sha256": "7779cce7765fbfc341212dc5d216e6b2cc95a4b0a4bd4dfe4eca56b99ce4810d"
+      },
+      {
+        "path": "data/samples/archival_wx_2026-01-01_2026-09-30.json",
+        "sha256": "726d32e9ff366b8a0d1e954008c35d75894538fc5078e8ee94d969eb6c9e0528"
+      }
+    ],
+    "source_kind": "CAMS/ERA5 modelled archive"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "reference": {
+    "name": "v3_fixed_mean",
+    "result_sha256": "cb79a2291e227da16960ecec7a23040769e3bff1e13b7d2d2b2dcddaa6f68b3a",
+    "call_id": "fc-01M4FH3RPFGP8WW3B4HP033708",
+    "path": "eval/raw/pollutant_sequence_v3_results.json"
+  },
+  "single_training_change": "coordinated endpoint-priority training and checkpoint objective: half all-horizon plus half sixth-hour; relative to v3",
+  "partitions": {
+    "train": [
+      "2023-01-01",
+      "2025-04-01"
+    ],
+    "development": [
+      "2025-04-01",
+      "2025-06-01"
+    ],
+    "diagnostic_pollution": [
+      "2026-02-01",
+      "2026-05-01"
+    ],
+    "diagnostic_other_seasons": [
+      "2026-05-01",
+      "2026-10-01"
+    ]
+  },
+  "tree_parameters": {
+    "n_estimators": 450,
+    "learning_rate": 0.04,
+    "num_leaves": 28,
+    "subsample": 0.85,
+    "colsample_bytree": 0.85,
+    "reg_alpha": 0.5,
+    "reg_lambda": 1.0,
+    "random_state": 0,
+    "verbosity": -1,
+    "n_jobs": 2
+  },
+  "protocol": {
+    "context_hours": 24,
+    "horizons": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "loss": "Origin-risk-weighted SmoothL1: 0.5 all-horizon mean + 0.5 sixth-hour mean",
+    "checkpoint": "development standardized MAE: identical endpoint-priority horizon weights",
+    "horizon_weights": [
+      0.08333333333333333,
+      0.08333333333333333,
+      0.08333333333333333,
+      0.08333333333333333,
+      0.08333333333333333,
+      0.5833333333333334
+    ],
+    "epochs": 60,
+    "patience": 8,
+    "channels": 32,
+    "dilations": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "dropout": 0.1,
+    "batch_size": 256,
+    "optimizer": "AdamW lr0.001 weight_decay0.0001",
+    "gpu": "T4",
+    "timeout_seconds": 7200
+  },
+  "training_origin_weighting": {
+    "poor_or_worse": 2.0,
+    "otherwise": 1.0,
+    "labels": "training final-sixth-hour canonical rounded category only",
+    "normalization": "batch weighted mean"
+  },
+  "source_sha256": {
+    "src/baahar/air.py": "017041d0bc3a6beeccdc70717c4cc01f04b5e74f80e57381f88cb8cc0d287537",
+    "src/baahar/app.py": "431a17e12b9bfff4ccd4a9a4a2d9dcaea63a5f3a0276f5aab07302cf77df9671",
+    "src/baahar/brief.py": "721169227061247421a4d76445980348326cd7d9aa2c3e0167392644cb72c52e",
+    "src/baahar/briefing_contract.py": "382d6a4f70fd49b88e3858592cb18a84f6801840a708f45a38d1ac99f39f71ed",
+    "src/baahar/cli.py": "45e169bf6b33ac2f6727e1070f1d8c0904b2a6a8564a2e0e872965655bb3428c",
+    "src/baahar/config.py": "42d1a8beafd569d37e15c8249d77af25e1e87f75934751e264484bcf3889bd7c",
+    "src/baahar/features.py": "346b84cbcb8c32a4a46b3cd41608926b380f8453986775fd8fb32f70a0d3b8d4",
+    "src/baahar/forecast.py": "dcc1362fc6a5277d50b0b170e5ab0bd3b6d4bcb3c3cf851243a8881ec8aa6a89",
+    "src/baahar/http_client.py": "1f9c6d02f1659de77aecec7476d0b00028995dfefb7e0e8a34ad1728bb43aaed",
+    "src/baahar/journal.py": "9aaa06b4b54f871a08642a52e690d69a472aa51cc55ef871dfb54eb84dc66ead",
+    "src/baahar/modal_writer.py": "d6916faad9bbf31e70e7a761f99ef22bdf5c1e3366de61b3e8d64f655c9a7b7e",
+    "src/baahar/models.py": "1dfc0e87cd54ad67c009ac4d1d6b215ee6f7ff923c9c05827e7d14334f5837ea",
+    "src/baahar/naqi.py": "f755b308baef2fec28877c81f500e95d5b7dc9e1231dff677c208ca61b5b21dc",
+    "src/baahar/parks.py": "1fcc2ce280afef20b479f092be6ac3dddd2597c3c51bcbbe7e3ba3e1887824c7",
+    "src/baahar/pocket.py": "7b7c417de24c28457a5cde97a15fe04803ecf36f0fae22237c7f956aa6e1a459",
+    "src/baahar/score.py": "dfd887bd723eaa1c9cddccacc0e0d8949382fd72b2dd0d83456c1e509f7bde4e",
+    "src/baahar/seasonal.py": "c496a16ad9a15cad0650fbe23ccc5b66a32929330e99a64650de67f09c05cf83",
+    "src/baahar/stations.py": "0a858820fba6291a016598eed604a4e0adbd0de9ad13e68ec79dc7a2fdfbc2d8",
+    "src/baahar/walk.py": "f33010de87fd28c3687c9e59473077475e98b9ff614f56bf1344d52e1c653d26",
+    "src/baahar/weather.py": "d1281213bdf13444f461d86e2949c1c134d563b4f73f2b7dc395c2b175deda0b",
+    "src/baahar/__init__.py": "5e8311583c6c5a260d36fbf0a578efdd08834872a75aabd642b57e50bee6cab4",
+    "scripts/build_dataset.py": "ce9061becdacfd6c710e48917f35e0daeffbef097803169dbd095913be58de8e",
+    "scripts/train_pollutant_sequence_v5_modal.py": "2bf1c345126c126654af863eb9a8f057d39b178a41f6d1b5587db3b46d2af6c7",
+    "eval/raw/pollutant_sequence_v3_results.json": "cb79a2291e227da16960ecec7a23040769e3bff1e13b7d2d2b2dcddaa6f68b3a",
+    "scripts/report_pollutant_sequence_v5.py": "5dbc7dd1f2918c1fc70179effdadfd55cb4b766a272ce397ad5ac4736e3d165b",
+    "docs/POLLUTANT_SEQUENCE_V5_PROTOCOL.md": "8e2a29258ce9ea67f964e78dd5318dd37e20bde4b401493f4a352ac73d2d3bd4",
+    "docs/DEEP_POLLUTANT_STUDY_PROTOCOL.md": "07abfae44b593735e657bc3e68fac1314c60e975735597d9711d630fa1ef03b0",
+    "docs/POLLUTANT_SEQUENCE_V3_PROTOCOL.md": "3bfb8e9d51a70fd69fba2d454def7309fc01f7cb1996ac387980b9856eb3a752",
+    "docs/POLLUTANT_SEQUENCE_V5_RESEARCH_REVIEWS.md": "53ec4f58d875c7f5d2805977464ae6f4f341e8bf66d3c83bbb3ca7d081535812",
+    "eval/raw/pollutant_lag_probe_v1_results.json": "656b4c8eefca8a2c7c2daf15bc8b6f03516a05ca7596d6d2aded975288a7dc06",
+    "eval/raw/pollutant_sequence_support_results.json": "0edfa4fdc91ddf1959df6bd8939b457e63ecb44aec3b646d61477582e6e620ce"
+  },
+  "expected_eligible_rows": {
+    "train": 19663,
+    "development": 1435,
+    "diagnostic_pollution": 2107,
+    "diagnostic_other_seasons": 3643
+  },
+  "call_id": "fc-01M4FMJNYMR2C9JAGEFEGAW3RR",
+  "app_id": "ap-qj0hAO0A5lbz4VspwjGJKJ",
+  "result_sha256": "11a66e6931ba7423034764929ffb9682f1570bbf9f2bc70e821754b388887236"
+}
