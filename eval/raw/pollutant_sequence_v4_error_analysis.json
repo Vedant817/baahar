@@ -1,0 +1,1961 @@
+{
+  "status": "COMPLETED_READ_ONLY_ERROR_ANALYSIS",
+  "manifests": {
+    "v3": {
+      "manifest": "eval/raw/pollutant_sequence_v3_manifest.json",
+      "result_sha256": "cb79a2291e227da16960ecec7a23040769e3bff1e13b7d2d2b2dcddaa6f68b3a"
+    },
+    "v4": {
+      "manifest": "eval/raw/pollutant_sequence_v4_manifest.json",
+      "result_sha256": "8cf3e6ec281b9a77e40122327f4ff0a9df4a269db14628a8e29d302bf2612d1f"
+    }
+  },
+  "periods": [
+    {
+      "partition": "development",
+      "n": 1435,
+      "poor_or_worse_support": 168,
+      "hour_transitions_on_actual_poor_plus": {
+        "both_hit": 98,
+        "v3_only": 8,
+        "v4_only": 2,
+        "both_miss": 60
+      },
+      "poor_false_alarms": {
+        "v3_fixed_mean": 15,
+        "v4_fixed_mean": 14
+      },
+      "episodes": [
+        {
+          "start": "2025-04-08T06:00:00",
+          "end": "2025-04-08T07:00:00",
+          "positive_hours": 2,
+          "peak_actual_naqi": 205.95,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-09T05:00:00",
+          "end": "2025-04-09T07:00:00",
+          "positive_hours": 3,
+          "peak_actual_naqi": 220.8,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-10T05:00:00",
+          "end": "2025-04-10T10:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 285.15,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-11T05:00:00",
+          "end": "2025-04-11T09:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 235.65,
+          "v3_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-12T05:00:00",
+          "end": "2025-04-12T10:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 287.625,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-13T05:00:00",
+          "end": "2025-04-13T09:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 277.725,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2025-04-14T03:00:00",
+          "end": "2025-04-14T10:00:00",
+          "positive_hours": 8,
+          "peak_actual_naqi": 290.1,
+          "v3_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-15T04:00:00",
+          "end": "2025-04-15T11:00:00",
+          "positive_hours": 8,
+          "peak_actual_naqi": 292.575,
+          "v3_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-16T05:00:00",
+          "end": "2025-04-16T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 260.4,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-17T03:00:00",
+          "end": "2025-04-17T11:00:00",
+          "positive_hours": 9,
+          "peak_actual_naqi": 304.3,
+          "v3_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-18T04:00:00",
+          "end": "2025-04-18T11:00:00",
+          "positive_hours": 8,
+          "peak_actual_naqi": 292.575,
+          "v3_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-19T05:00:00",
+          "end": "2025-04-19T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 300.0,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-20T04:00:00",
+          "end": "2025-04-20T10:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 295.05,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-21T05:00:00",
+          "end": "2025-04-21T07:00:00",
+          "positive_hours": 3,
+          "peak_actual_naqi": 238.125,
+          "v3_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2025-04-23T05:00:00",
+          "end": "2025-04-23T10:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 265.35,
+          "v3_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-24T04:00:00",
+          "end": "2025-04-24T10:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 302.1,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-25T05:00:00",
+          "end": "2025-04-25T09:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 267.825,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2025-04-26T04:00:00",
+          "end": "2025-04-26T09:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 287.625,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-28T07:00:00",
+          "end": "2025-04-28T10:00:00",
+          "positive_hours": 4,
+          "peak_actual_naqi": 215.85,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-29T07:00:00",
+          "end": "2025-04-29T09:00:00",
+          "positive_hours": 3,
+          "peak_actual_naqi": 213.375,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-04-30T05:00:00",
+          "end": "2025-04-30T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 280.2,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-05-01T04:00:00",
+          "end": "2025-05-01T12:00:00",
+          "positive_hours": 9,
+          "peak_actual_naqi": 304.48333333333335,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-05-02T04:00:00",
+          "end": "2025-05-02T11:00:00",
+          "positive_hours": 8,
+          "peak_actual_naqi": 305.4,
+          "v3_fixed_mean": {
+            "hit_hours": 7,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 7,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-05-03T04:00:00",
+          "end": "2025-05-03T11:00:00",
+          "positive_hours": 8,
+          "peak_actual_naqi": 302.46666666666664,
+          "v3_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-05-05T05:00:00",
+          "end": "2025-05-05T09:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 240.6,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-05-06T05:00:00",
+          "end": "2025-05-06T09:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 228.225,
+          "v3_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-05-14T07:00:00",
+          "end": "2025-05-14T10:00:00",
+          "positive_hours": 4,
+          "peak_actual_naqi": 215.85,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2025-05-15T05:00:00",
+          "end": "2025-05-15T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 262.875,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        }
+      ],
+      "gas_errors_on_poor_plus": {
+        "v3_fixed_mean": {
+          "pm2_5": {
+            "count": 168,
+            "mae": 5.423600685619926,
+            "bias_prediction_minus_actual": -3.1415027496702104
+          },
+          "pm10": {
+            "count": 168,
+            "mae": 8.530784728097316,
+            "bias_prediction_minus_actual": -6.150491222080357
+          },
+          "nitrogen_dioxide": {
+            "count": 168,
+            "mae": 2.3881558418112845,
+            "bias_prediction_minus_actual": 0.7712158238165502
+          },
+          "ozone": {
+            "count": 168,
+            "mae": 21.86125353722138,
+            "bias_prediction_minus_actual": -20.135073589000314
+          },
+          "sulphur_dioxide": {
+            "count": 168,
+            "mae": 1.0959885834437728,
+            "bias_prediction_minus_actual": -0.32596974730997313
+          },
+          "carbon_monoxide": {
+            "count": 168,
+            "mae": 76.90245740425146,
+            "bias_prediction_minus_actual": -59.68883659422594
+          }
+        },
+        "v4_fixed_mean": {
+          "pm2_5": {
+            "count": 168,
+            "mae": 5.099519828889693,
+            "bias_prediction_minus_actual": -1.5230540702263657
+          },
+          "pm10": {
+            "count": 168,
+            "mae": 8.703902061837018,
+            "bias_prediction_minus_actual": -6.303959441708866
+          },
+          "nitrogen_dioxide": {
+            "count": 168,
+            "mae": 2.4710985101156915,
+            "bias_prediction_minus_actual": 0.606321113825805
+          },
+          "ozone": {
+            "count": 168,
+            "mae": 21.561406383177136,
+            "bias_prediction_minus_actual": -18.909173840359955
+          },
+          "sulphur_dioxide": {
+            "count": 168,
+            "mae": 1.3061133768559816,
+            "bias_prediction_minus_actual": -0.3119091540810344
+          },
+          "carbon_monoxide": {
+            "count": 168,
+            "mae": 73.84361374837441,
+            "bias_prediction_minus_actual": -32.396934259955046
+          }
+        }
+      },
+      "gas_errors_on_below_poor": {
+        "v3_fixed_mean": {
+          "pm2_5": {
+            "count": 1267,
+            "mae": 6.629504694411761,
+            "bias_prediction_minus_actual": 0.22820634786152333
+          },
+          "pm10": {
+            "count": 1267,
+            "mae": 8.455465777972469,
+            "bias_prediction_minus_actual": 1.5460685182704452
+          },
+          "nitrogen_dioxide": {
+            "count": 1267,
+            "mae": 9.705237840546351,
+            "bias_prediction_minus_actual": -4.758793667805352
+          },
+          "ozone": {
+            "count": 1267,
+            "mae": 12.943742901588779,
+            "bias_prediction_minus_actual": 3.4237611949142037
+          },
+          "sulphur_dioxide": {
+            "count": 1267,
+            "mae": 2.7479608903077395,
+            "bias_prediction_minus_actual": -0.655899608836602
+          },
+          "carbon_monoxide": {
+            "count": 1267,
+            "mae": 112.3650695835254,
+            "bias_prediction_minus_actual": -23.101528303066242
+          }
+        },
+        "v4_fixed_mean": {
+          "pm2_5": {
+            "count": 1267,
+            "mae": 6.671913148265559,
+            "bias_prediction_minus_actual": 0.26123229237007256
+          },
+          "pm10": {
+            "count": 1267,
+            "mae": 7.900543817900362,
+            "bias_prediction_minus_actual": 0.6272907253472283
+          },
+          "nitrogen_dioxide": {
+            "count": 1267,
+            "mae": 9.584313891425152,
+            "bias_prediction_minus_actual": -4.2605056813941715
+          },
+          "ozone": {
+            "count": 1267,
+            "mae": 14.11203672624818,
+            "bias_prediction_minus_actual": 5.241663542125049
+          },
+          "sulphur_dioxide": {
+            "count": 1267,
+            "mae": 2.7528809971093398,
+            "bias_prediction_minus_actual": -0.7055043405484246
+          },
+          "carbon_monoxide": {
+            "count": 1267,
+            "mae": 122.28032655803754,
+            "bias_prediction_minus_actual": -29.596924711749683
+          }
+        }
+      }
+    },
+    {
+      "partition": "diagnostic_pollution",
+      "n": 2107,
+      "poor_or_worse_support": 248,
+      "hour_transitions_on_actual_poor_plus": {
+        "both_hit": 144,
+        "v3_only": 16,
+        "v4_only": 16,
+        "both_miss": 72
+      },
+      "poor_false_alarms": {
+        "v3_fixed_mean": 56,
+        "v4_fixed_mean": 50
+      },
+      "episodes": [
+        {
+          "start": "2026-02-09T05:00:00",
+          "end": "2026-02-09T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 248.025,
+          "v3_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-02-10T06:00:00",
+          "end": "2026-02-10T06:00:00",
+          "positive_hours": 1,
+          "peak_actual_naqi": 205.95,
+          "v3_fixed_mean": {
+            "hit_hours": 1,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 1,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2026-02-15T07:00:00",
+          "end": "2026-02-15T09:00:00",
+          "positive_hours": 3,
+          "peak_actual_naqi": 210.9,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-02-16T05:00:00",
+          "end": "2026-02-16T09:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 223.275,
+          "v3_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 1,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-02-25T07:00:00",
+          "end": "2026-02-25T09:00:00",
+          "positive_hours": 3,
+          "peak_actual_naqi": 210.9,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-02-26T06:00:00",
+          "end": "2026-02-26T10:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 218.325,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-02-27T09:00:00",
+          "end": "2026-02-27T10:00:00",
+          "positive_hours": 2,
+          "peak_actual_naqi": 205.95,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-02-28T05:00:00",
+          "end": "2026-02-28T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 225.75,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-01T01:00:00",
+          "end": "2026-03-01T10:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 230.7,
+          "v3_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-02T05:00:00",
+          "end": "2026-03-02T08:00:00",
+          "positive_hours": 4,
+          "peak_actual_naqi": 228.225,
+          "v3_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-05T05:00:00",
+          "end": "2026-03-05T10:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 225.75,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-06T05:00:00",
+          "end": "2026-03-06T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 301.9166666666667,
+          "v3_fixed_mean": {
+            "hit_hours": 7,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-07T05:00:00",
+          "end": "2026-03-07T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 277.725,
+          "v3_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-08T05:00:00",
+          "end": "2026-03-08T10:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 262.875,
+          "v3_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2026-03-09T06:00:00",
+          "end": "2026-03-09T06:00:00",
+          "positive_hours": 1,
+          "peak_actual_naqi": 210.9,
+          "v3_fixed_mean": {
+            "hit_hours": 1,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-13T06:00:00",
+          "end": "2026-03-13T06:00:00",
+          "positive_hours": 1,
+          "peak_actual_naqi": 208.425,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-15T06:00:00",
+          "end": "2026-03-15T10:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 238.125,
+          "v3_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-16T05:00:00",
+          "end": "2026-03-16T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 267.825,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-17T06:00:00",
+          "end": "2026-03-17T10:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 228.225,
+          "v3_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-19T06:00:00",
+          "end": "2026-03-19T11:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 265.35,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-20T05:00:00",
+          "end": "2026-03-20T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 300.0,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-21T05:00:00",
+          "end": "2026-03-21T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 257.925,
+          "v3_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-22T08:00:00",
+          "end": "2026-03-22T09:00:00",
+          "positive_hours": 2,
+          "peak_actual_naqi": 205.95,
+          "v3_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2026-03-28T05:00:00",
+          "end": "2026-03-28T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 285.15,
+          "v3_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-03-29T05:00:00",
+          "end": "2026-03-29T07:00:00",
+          "positive_hours": 3,
+          "peak_actual_naqi": 230.7,
+          "v3_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2026-03-31T05:00:00",
+          "end": "2026-03-31T07:00:00",
+          "positive_hours": 3,
+          "peak_actual_naqi": 238.125,
+          "v3_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-03T05:00:00",
+          "end": "2026-04-03T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 290.1,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-04T05:00:00",
+          "end": "2026-04-04T10:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 233.175,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-08T05:00:00",
+          "end": "2026-04-08T10:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 295.05,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-09T05:00:00",
+          "end": "2026-04-09T11:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 270.3,
+          "v3_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-10T05:00:00",
+          "end": "2026-04-10T10:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 301.9166666666667,
+          "v3_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-12T06:00:00",
+          "end": "2026-04-12T07:00:00",
+          "positive_hours": 2,
+          "peak_actual_naqi": 208.425,
+          "v3_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2026-04-13T05:00:00",
+          "end": "2026-04-13T09:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 257.925,
+          "v3_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-14T05:00:00",
+          "end": "2026-04-14T09:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 265.35,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2026-04-15T05:00:00",
+          "end": "2026-04-15T10:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 248.025,
+          "v3_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-16T05:00:00",
+          "end": "2026-04-16T09:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 270.3,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2026-04-17T04:00:00",
+          "end": "2026-04-17T08:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 265.35,
+          "v3_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-18T05:00:00",
+          "end": "2026-04-18T07:00:00",
+          "positive_hours": 3,
+          "peak_actual_naqi": 225.75,
+          "v3_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2026-04-19T05:00:00",
+          "end": "2026-04-19T10:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 248.025,
+          "v3_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-20T04:00:00",
+          "end": "2026-04-20T11:00:00",
+          "positive_hours": 8,
+          "peak_actual_naqi": 301.55,
+          "v3_fixed_mean": {
+            "hit_hours": 7,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-21T06:00:00",
+          "end": "2026-04-21T08:00:00",
+          "positive_hours": 3,
+          "peak_actual_naqi": 218.325,
+          "v3_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-22T05:00:00",
+          "end": "2026-04-22T07:00:00",
+          "positive_hours": 3,
+          "peak_actual_naqi": 228.225,
+          "v3_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-23T05:00:00",
+          "end": "2026-04-23T07:00:00",
+          "positive_hours": 3,
+          "peak_actual_naqi": 233.175,
+          "v3_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2026-04-24T05:00:00",
+          "end": "2026-04-24T08:00:00",
+          "positive_hours": 4,
+          "peak_actual_naqi": 243.075,
+          "v3_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2026-04-26T05:00:00",
+          "end": "2026-04-26T10:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 245.55,
+          "v3_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2026-04-27T04:00:00",
+          "end": "2026-04-27T11:00:00",
+          "positive_hours": 8,
+          "peak_actual_naqi": 292.575,
+          "v3_fixed_mean": {
+            "hit_hours": 5,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-28T04:00:00",
+          "end": "2026-04-28T10:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 287.625,
+          "v3_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-29T04:00:00",
+          "end": "2026-04-29T10:00:00",
+          "positive_hours": 7,
+          "peak_actual_naqi": 301.73333333333335,
+          "v3_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 6,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-04-30T06:00:00",
+          "end": "2026-04-30T11:00:00",
+          "positive_hours": 6,
+          "peak_actual_naqi": 243.075,
+          "v3_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 1,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        }
+      ],
+      "gas_errors_on_poor_plus": {
+        "v3_fixed_mean": {
+          "pm2_5": {
+            "count": 248,
+            "mae": 5.0212788860590205,
+            "bias_prediction_minus_actual": -3.5674968176502846
+          },
+          "pm10": {
+            "count": 248,
+            "mae": 6.610501732901242,
+            "bias_prediction_minus_actual": -5.078555011224833
+          },
+          "nitrogen_dioxide": {
+            "count": 248,
+            "mae": 2.199135030523661,
+            "bias_prediction_minus_actual": 0.3006528553895673
+          },
+          "ozone": {
+            "count": 248,
+            "mae": 14.275763559787356,
+            "bias_prediction_minus_actual": -12.607806914914049
+          },
+          "sulphur_dioxide": {
+            "count": 248,
+            "mae": 1.2846644435570058,
+            "bias_prediction_minus_actual": -0.2353761586648386
+          },
+          "carbon_monoxide": {
+            "count": 248,
+            "mae": 57.122773803989254,
+            "bias_prediction_minus_actual": -43.14024966751886
+          }
+        },
+        "v4_fixed_mean": {
+          "pm2_5": {
+            "count": 248,
+            "mae": 4.771836843387621,
+            "bias_prediction_minus_actual": -2.214299653827365
+          },
+          "pm10": {
+            "count": 248,
+            "mae": 7.778738984177194,
+            "bias_prediction_minus_actual": -6.741193689030358
+          },
+          "nitrogen_dioxide": {
+            "count": 248,
+            "mae": 2.129726999640159,
+            "bias_prediction_minus_actual": 0.2650588437510203
+          },
+          "ozone": {
+            "count": 248,
+            "mae": 13.899885166622154,
+            "bias_prediction_minus_actual": -11.741925236468408
+          },
+          "sulphur_dioxide": {
+            "count": 248,
+            "mae": 1.4825826856591342,
+            "bias_prediction_minus_actual": -0.3129662520578971
+          },
+          "carbon_monoxide": {
+            "count": 248,
+            "mae": 53.01970057320082,
+            "bias_prediction_minus_actual": -17.545903691788652
+          }
+        }
+      },
+      "gas_errors_on_below_poor": {
+        "v3_fixed_mean": {
+          "pm2_5": {
+            "count": 1859,
+            "mae": 5.99747767085881,
+            "bias_prediction_minus_actual": 1.116619535441548
+          },
+          "pm10": {
+            "count": 1859,
+            "mae": 7.510334174222743,
+            "bias_prediction_minus_actual": 3.712785489295756
+          },
+          "nitrogen_dioxide": {
+            "count": 1859,
+            "mae": 6.142279963895305,
+            "bias_prediction_minus_actual": 1.1627683667766926
+          },
+          "ozone": {
+            "count": 1859,
+            "mae": 11.395579205084205,
+            "bias_prediction_minus_actual": -1.6508945499134169
+          },
+          "sulphur_dioxide": {
+            "count": 1859,
+            "mae": 2.557607109041042,
+            "bias_prediction_minus_actual": 0.12116375929331752
+          },
+          "carbon_monoxide": {
+            "count": 1859,
+            "mae": 85.51887633245056,
+            "bias_prediction_minus_actual": 1.3764545363669454
+          }
+        },
+        "v4_fixed_mean": {
+          "pm2_5": {
+            "count": 1859,
+            "mae": 5.919945960629579,
+            "bias_prediction_minus_actual": 1.3397959617726463
+          },
+          "pm10": {
+            "count": 1859,
+            "mae": 7.220772703816273,
+            "bias_prediction_minus_actual": 2.3788375580532035
+          },
+          "nitrogen_dioxide": {
+            "count": 1859,
+            "mae": 5.786990118351248,
+            "bias_prediction_minus_actual": 0.8673248008951844
+          },
+          "ozone": {
+            "count": 1859,
+            "mae": 11.215548383766814,
+            "bias_prediction_minus_actual": -1.014439947754955
+          },
+          "sulphur_dioxide": {
+            "count": 1859,
+            "mae": 2.5501515390222167,
+            "bias_prediction_minus_actual": -0.009421873240374846
+          },
+          "carbon_monoxide": {
+            "count": 1859,
+            "mae": 90.7680000013875,
+            "bias_prediction_minus_actual": -2.197012570806483
+          }
+        }
+      }
+    },
+    {
+      "partition": "diagnostic_other_seasons",
+      "n": 3643,
+      "poor_or_worse_support": 16,
+      "hour_transitions_on_actual_poor_plus": {
+        "both_hit": 9,
+        "v3_only": 1,
+        "v4_only": 1,
+        "both_miss": 5
+      },
+      "poor_false_alarms": {
+        "v3_fixed_mean": 3,
+        "v4_fixed_mean": 2
+      },
+      "episodes": [
+        {
+          "start": "2026-05-02T06:00:00",
+          "end": "2026-05-02T08:00:00",
+          "positive_hours": 3,
+          "peak_actual_naqi": 208.425,
+          "v3_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2026-05-05T05:00:00",
+          "end": "2026-05-05T09:00:00",
+          "positive_hours": 5,
+          "peak_actual_naqi": 245.55,
+          "v3_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 4,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-05-12T06:00:00",
+          "end": "2026-05-12T06:00:00",
+          "positive_hours": 1,
+          "peak_actual_naqi": 203.475,
+          "v3_fixed_mean": {
+            "hit_hours": 1,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 1,
+            "hit": true,
+            "onset_hit": true,
+            "full_hit": true
+          }
+        },
+        {
+          "start": "2026-05-13T05:00:00",
+          "end": "2026-05-13T08:00:00",
+          "positive_hours": 4,
+          "peak_actual_naqi": 233.175,
+          "v3_fixed_mean": {
+            "hit_hours": 3,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 2,
+            "hit": true,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-05-18T07:00:00",
+          "end": "2026-05-18T07:00:00",
+          "positive_hours": 1,
+          "peak_actual_naqi": 205.95,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        },
+        {
+          "start": "2026-06-02T06:00:00",
+          "end": "2026-06-02T07:00:00",
+          "positive_hours": 2,
+          "peak_actual_naqi": 210.9,
+          "v3_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          },
+          "v4_fixed_mean": {
+            "hit_hours": 0,
+            "hit": false,
+            "onset_hit": false,
+            "full_hit": false
+          }
+        }
+      ],
+      "gas_errors_on_poor_plus": {
+        "v3_fixed_mean": {
+          "pm2_5": {
+            "count": 16,
+            "mae": 4.110584109852409,
+            "bias_prediction_minus_actual": 3.197714676735742
+          },
+          "pm10": {
+            "count": 16,
+            "mae": 3.3005862478894947,
+            "bias_prediction_minus_actual": -0.6186220604558728
+          },
+          "nitrogen_dioxide": {
+            "count": 16,
+            "mae": 1.3585975813788211,
+            "bias_prediction_minus_actual": -0.7290083170370674
+          },
+          "ozone": {
+            "count": 16,
+            "mae": 10.918840450940756,
+            "bias_prediction_minus_actual": -8.146345084361204
+          },
+          "sulphur_dioxide": {
+            "count": 16,
+            "mae": 1.0481048454414776,
+            "bias_prediction_minus_actual": 0.6130905576185511
+          },
+          "carbon_monoxide": {
+            "count": 16,
+            "mae": 20.862141476306306,
+            "bias_prediction_minus_actual": -6.712081402639065
+          }
+        },
+        "v4_fixed_mean": {
+          "pm2_5": {
+            "count": 16,
+            "mae": 2.8818015765865064,
+            "bias_prediction_minus_actual": 2.3463972467211067
+          },
+          "pm10": {
+            "count": 16,
+            "mae": 4.761159729372222,
+            "bias_prediction_minus_actual": -0.5527630786104263
+          },
+          "nitrogen_dioxide": {
+            "count": 16,
+            "mae": 1.5692033461230153,
+            "bias_prediction_minus_actual": -0.9440745882812764
+          },
+          "ozone": {
+            "count": 16,
+            "mae": 11.181537110903806,
+            "bias_prediction_minus_actual": -6.336706845582276
+          },
+          "sulphur_dioxide": {
+            "count": 16,
+            "mae": 0.9721414003159314,
+            "bias_prediction_minus_actual": 0.3695320900607945
+          },
+          "carbon_monoxide": {
+            "count": 16,
+            "mae": 44.5489527021909,
+            "bias_prediction_minus_actual": 25.65915877791707
+          }
+        }
+      },
+      "gas_errors_on_below_poor": {
+        "v3_fixed_mean": {
+          "pm2_5": {
+            "count": 3627,
+            "mae": 3.450341231207703,
+            "bias_prediction_minus_actual": 1.06014898819248
+          },
+          "pm10": {
+            "count": 3627,
+            "mae": 6.0610446417410095,
+            "bias_prediction_minus_actual": 1.8323144648318275
+          },
+          "nitrogen_dioxide": {
+            "count": 3627,
+            "mae": 4.652322478455926,
+            "bias_prediction_minus_actual": 0.8680324632741632
+          },
+          "ozone": {
+            "count": 3627,
+            "mae": 8.547052540535388,
+            "bias_prediction_minus_actual": -1.257062631227086
+          },
+          "sulphur_dioxide": {
+            "count": 3627,
+            "mae": 1.1484338327072154,
+            "bias_prediction_minus_actual": 0.32162658934444116
+          },
+          "carbon_monoxide": {
+            "count": 3627,
+            "mae": 93.27089093633762,
+            "bias_prediction_minus_actual": -36.34983304037583
+          }
+        },
+        "v4_fixed_mean": {
+          "pm2_5": {
+            "count": 3627,
+            "mae": 3.4974781123075402,
+            "bias_prediction_minus_actual": 0.9212773980372752
+          },
+          "pm10": {
+            "count": 3627,
+            "mae": 5.94151943542015,
+            "bias_prediction_minus_actual": 1.303020440392356
+          },
+          "nitrogen_dioxide": {
+            "count": 3627,
+            "mae": 4.707648048815357,
+            "bias_prediction_minus_actual": 0.20732067152759182
+          },
+          "ozone": {
+            "count": 3627,
+            "mae": 8.380358998173792,
+            "bias_prediction_minus_actual": -0.21279225930992407
+          },
+          "sulphur_dioxide": {
+            "count": 3627,
+            "mae": 1.2482743143905641,
+            "bias_prediction_minus_actual": 0.32883948691432685
+          },
+          "carbon_monoxide": {
+            "count": 3627,
+            "mae": 100.48466098637915,
+            "bias_prediction_minus_actual": -19.780640633665428
+          }
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Uses only already-saved sixth-horizon endpoint predictions; no other horizon claims",
+    "Development and 2026 diagnostics have been adaptively consumed",
+    "CAMS/ERA5 modeled archive, not independent station or prospective evidence"
+  ]
+}
