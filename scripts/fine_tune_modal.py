@@ -5,51 +5,51 @@ Why this exists
 ---------------
 The first attempt at this experiment ran locally on CPU: over 40 minutes of wall
 clock, and the laptop was visibly struggling. Modal runs the same training loop
-on a rented GPU in a few minutes. The measurement is identical to
+on a remote GPU. The measurement uses the same definition as
 `fine_tune_local.py` -- mean token-level cross-entropy over assistant tokens,
-base vs fine-tuned, same held-out split -- so the two are directly comparable.
+base vs fine-tuned, same held-out split. Different base models across runs
+are not directly comparable.
 
 This is not a Tinker run and does not claim the Tinker prize category; see
 `docs/adr/001-tinker-outcome.md`.
 
 What it costs
 -------------
-Modal bills GPU seconds against your credit balance. The dataset is 220 short
-examples and the model is 1.5B, so a full run is a few minutes on one GPU. Set
-`BAAHAR_MODAL_GPU` to change the card (`T4` is the cheap default, `A10G` and
-`L4` are faster). Nothing else bills.
+Modal bills compute and persistent storage against your credit balance. Set
+`BAAHAR_MODAL_GPU` to change the card (`L4` is the default after a T4 memory
+failure). Runtime and cost must be measured on a real run.
 
 Auth
 ----
 Needs a Modal token, which is per-account:
 
-    uv run modal token new
+    uv run --group modal modal token new
 
-then export it:
+or configure private environment variables:
 
     MODAL_TOKEN_ID=ak-...   MODAL_TOKEN_SECRET=sk-...
 
 Usage
 -----
-    uv run python scripts/fine_tune_modal.py --dry-run   # prints the plan, costs nothing
-    uv run python scripts/fine_tune_modal.py             # trains, needs auth
+    uv run --group modal python scripts/fine_tune_modal.py --dry-run
+    uv run --group modal python scripts/fine_tune_modal.py --detach
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
 import time
+import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-GPU = os.getenv("BAAHAR_MODAL_GPU", "T4")
-BASE_MODEL = os.getenv("BAAHAR_BASE_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
 TRAIN_REMOTE = "/data/train.jsonl"
 VAL_REMOTE = "/data/val.jsonl"
 COMMON_REMOTE = "/opt/tokenise_common.py"
@@ -60,15 +60,33 @@ COMMON_REMOTE = "/opt/tokenise_common.py"
 # importing this module, and `--dry-run`, stay free.
 import modal  # noqa: E402
 
+if modal.is_local():
+    from dotenv import load_dotenv
+
+    load_dotenv(ROOT / ".env")
+GPU = os.getenv("BAAHAR_MODAL_GPU") or "L4"
+BASE_MODEL = os.getenv("BAAHAR_BASE_MODEL") or "Qwen/Qwen2.5-1.5B-Instruct"
+VOLUME_NAME = "baahar-training"
+volume = modal.Volume.from_name(VOLUME_NAME, create_if_missing=True)
+
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .pip_install(
         "torch==2.9.*",
-        "transformers>=4.44",
-        "peft>=0.13",
+        "transformers>=4.57,<5",
+        "peft>=0.17,<0.19",
         "accelerate>=0.34",
         "safetensors",
         "sentencepiece",
+    )
+    .env(
+        {
+            "BAAHAR_BASE_MODEL": BASE_MODEL,
+            "BAAHAR_MODAL_GPU": GPU,
+            "HF_HOME": "/artifacts/hf-cache",
+            "HF_HUB_DOWNLOAD_TIMEOUT": "120",
+            "HF_HUB_ETAG_TIMEOUT": "30",
+        }
     )
     .add_local_file(str(ROOT / "data" / "ft" / "train.jsonl"), TRAIN_REMOTE)
     .add_local_file(str(ROOT / "data" / "ft" / "val.jsonl"), VAL_REMOTE)
@@ -80,13 +98,22 @@ image = (
 app = modal.App("baahar-finetune", image=image)
 
 
-@app.function(gpu=GPU, timeout=60 * 60, retries=0)
-def train(lora_rank: int, epochs: int, learning_rate: float, batch_size: int, max_len: int):
-    """Fine-tune, and return the measurement. Nothing is written to disk here.
+@app.function(gpu=GPU, timeout=60 * 60, retries=0, volumes={"/artifacts": volume})
+def train(
+    lora_rank: int, epochs: int, learning_rate: float, batch_size: int, max_len: int, run_id: str
+):
+    # Vendor exceptions such as torch.OutOfMemoryError cannot be unpickled by
+    # the lightweight laptop client. Return a built-in exception with the cause.
+    try:
+        return _train(lora_rank, epochs, learning_rate, batch_size, max_len, run_id)
+    except Exception as exc:
+        raise RuntimeError(f"Remote training failed: {type(exc).__name__}: {exc}") from None
 
-    The artifact is written on the caller's machine from the returned dict, so
-    eval/raw/ stays under local version control and the remote run cannot quietly
-    replace a committed result.
+
+def _train(lora_rank, epochs, learning_rate, batch_size, max_len, run_id):
+    """Fine-tune, persist the adapter and results remotely, and return metrics.
+
+    Only a small metrics JSON is copied back to the caller; weights stay on Modal.
     """
     sys.path.insert(0, "/opt")
 
@@ -129,17 +156,22 @@ def train(lora_rank: int, epochs: int, learning_rate: float, batch_size: int, ma
                 )
                 total += float((vec * w.reshape(-1)).sum())
                 ntok += int(w.sum())
+                del logits, vec
         model.train()
         return total / max(1, ntok)
 
     t_setup = time.perf_counter()
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if not torch.cuda.is_available():
+        raise RuntimeError("Modal did not provide a CUDA GPU; refusing CPU training")
+    device = "cuda"
+    print(f"GPU: {torch.cuda.get_device_name(0)}; loading {BASE_MODEL}", flush=True)
     torch.manual_seed(0)
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
     model = AutoModelForCausalLM.from_pretrained(
-        BASE_MODEL, dtype=torch.bfloat16 if device == "cuda" else torch.float32
+        BASE_MODEL, dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float32
     ).to(device)
     setup_seconds = time.perf_counter() - t_setup
+    print(f"Model loaded in {setup_seconds:.1f}s", flush=True)
 
     train_ex, val_ex = load(TRAIN_REMOTE), load(VAL_REMOTE)
     enc_train = [e for e in (encode(tokenizer, x["messages"]) for x in train_ex) if e]
@@ -150,8 +182,10 @@ def train(lora_rank: int, epochs: int, learning_rate: float, batch_size: int, ma
             "Training on zero examples and reporting a loss would be fabricated."
         )
 
+    print(f"Usable examples: train={len(enc_train)}, validation={len(enc_val)}", flush=True)
     base_train = mean_loss(model, enc_train)
     base_val = mean_loss(model, enc_val)
+    print(f"Baseline: train={base_train:.6f}, val={base_val:.6f}", flush=True)
 
     model = get_peft_model(
         model,
@@ -210,6 +244,7 @@ def train(lora_rank: int, epochs: int, learning_rate: float, batch_size: int, ma
             optim.zero_grad(set_to_none=True)
             running += float(loss.detach()) * int(w.sum())
             ntok += int(w.sum())
+            del logits, vec, loss
         mean_step = running / max(1, ntok)
         val_after = mean_loss(model, enc_val)
         curve.append(
@@ -219,6 +254,7 @@ def train(lora_rank: int, epochs: int, learning_rate: float, batch_size: int, ma
                 "val_loss": round(val_after, 6),
             }
         )
+        print(f"Epoch {epoch + 1}/{epochs}: train={mean_step:.6f}, val={val_after:.6f}", flush=True)
     train_seconds = time.perf_counter() - t_train
 
     generated = []
@@ -250,12 +286,20 @@ def train(lora_rank: int, epochs: int, learning_rate: float, batch_size: int, ma
     final_train = mean_loss(model, enc_train)
     final_val = mean_loss(model, enc_val)
 
-    return {
+    run_dir = Path("/artifacts/runs") / run_id
+    run_dir.mkdir(parents=True, exist_ok=False)
+    model.save_pretrained(run_dir / "adapter")
+    tokenizer.save_pretrained(run_dir / "adapter")
+
+    payload = {
+        "run_id": run_id,
+        "volume": VOLUME_NAME,
+        "adapter_path": f"runs/{run_id}/adapter",
         "run_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "task": "LoRA fine-tune of an open model on Baahar briefings, on a Modal GPU",
         "why_modal": (
             "The CPU run took over 40 minutes of wall clock and was making the laptop "
-            "unusable. Modal runs the identical loop on a rented GPU in a few minutes. "
+            "unusable. Modal runs the training loop on a remote GPU. "
             "Same measurement as fine_tune_local.py."
         ),
         "not_a_tinker_run": (
@@ -276,6 +320,12 @@ def train(lora_rank: int, epochs: int, learning_rate: float, batch_size: int, ma
         "batch_size": batch_size,
         "n_train": len(enc_train),
         "n_val": len(enc_val),
+        "discarded_train": len(train_ex) - len(enc_train),
+        "discarded_val": len(val_ex) - len(enc_val),
+        "dataset_sha256": {
+            "train": hashlib.sha256(Path(TRAIN_REMOTE).read_bytes()).hexdigest(),
+            "val": hashlib.sha256(Path(VAL_REMOTE).read_bytes()).hexdigest(),
+        },
         "loss": "mean token-level cross-entropy, assistant tokens only",
         "baseline": {"train": round(base_train, 6), "val": round(base_val, 6)},
         "fine_tuned": {"train": round(final_train, 6), "val": round(final_val, 6)},
@@ -294,57 +344,112 @@ def train(lora_rank: int, epochs: int, learning_rate: float, batch_size: int, ma
             f"{epochs=}). One point on a hyper-parameter surface, not a tuned result.",
             f"{len(enc_val)} validation examples is a small held-out set; a "
             "few-hundredths move should not be read as decisive.",
-            "This held-out set is 22 briefing examples, not the 1,626-row tabular "
+            f"This held-out set is {len(enc_val)} briefing examples, not the tabular "
             "holdout. The two are not comparable.",
         ],
     }
+    (run_dir / "results.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    volume.commit()
+    print(f"Adapter and results committed: {run_dir}", flush=True)
+    return payload
 
 
 def main(argv: list[str] | None = None) -> int:
+    # Modal's progress output contains Unicode checkmarks; Windows pipes may
+    # otherwise use cp1252 and fail before submitting a function.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--lora-rank", type=int, default=16)
     ap.add_argument("--epochs", type=int, default=3)
     ap.add_argument("--learning-rate", type=float, default=2e-4)
-    ap.add_argument("--batch-size", type=int, default=4)
+    ap.add_argument("--batch-size", type=int, default=2)
     ap.add_argument("--max-len", type=int, default=768)
     ap.add_argument("--dry-run", action="store_true", help="print the plan and exit")
+    ap.add_argument("--detach", action="store_true", help="submit and exit; training stays remote")
+    ap.add_argument("--fetch-call", help="retrieve a completed detached call's results")
     ap.add_argument("--out", default=None)
     args = ap.parse_args(argv)
+    if min(args.lora_rank, args.epochs, args.batch_size, args.max_len) <= 0:
+        ap.error("rank, epochs, batch size and max length must be positive")
+    if not 0 < args.learning_rate < 1:
+        ap.error("learning rate must be between 0 and 1")
 
     print(f"Modal fine-tune plan  gpu={GPU}  base={BASE_MODEL}")
     print(
         f"  epochs={args.epochs} rank={args.lora_rank} lr={args.learning_rate} "
         f"batch={args.batch_size}"
     )
-    print("  dataset: 198 train / 22 val (from data/ft, uploaded into the image)")
-    print("  billed:  GPU seconds on your Modal credit balance")
+    counts = [
+        sum(
+            bool(line.strip())
+            for line in (ROOT / "data" / "ft" / name).read_text(encoding="utf-8").splitlines()
+        )
+        for name in ("train.jsonl", "val.jsonl")
+    ]
+    print(f"  dataset: {counts[0]} train / {counts[1]} val (uploaded into the image)")
+    print("  billed: remote compute and storage; no local model download")
     if args.dry_run:
         return 0
 
-    if not (os.getenv("MODAL_TOKEN_ID") and os.getenv("MODAL_TOKEN_SECRET")):
+    from modal.config import config
+
+    if not (config.get("token_id") and config.get("token_secret")):
         print(
             "\nNo Modal credentials. Authenticate once with:\n"
-            "    uv run modal token new\n"
-            "then export MODAL_TOKEN_ID and MODAL_TOKEN_SECRET.",
+            "    uv run --group modal modal token new\n"
+            "or set MODAL_TOKEN_ID and MODAL_TOKEN_SECRET privately in .env.",
             file=sys.stderr,
         )
         return 2
 
-    payload = train.remote(
-        lora_rank=args.lora_rank,
-        epochs=args.epochs,
-        learning_rate=args.learning_rate,
-        batch_size=args.batch_size,
-        max_len=args.max_len,
-    )
+    if args.fetch_call:
+        try:
+            payload = modal.FunctionCall.from_id(args.fetch_call).get(timeout=5)
+        except TimeoutError:
+            print("Training is still running; check the Modal dashboard and fetch later.")
+            return 3
+    else:
+        run_id = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime()) + "-" + uuid.uuid4().hex[:8]
+        kwargs = {
+            "lora_rank": args.lora_rank,
+            "epochs": args.epochs,
+            "learning_rate": args.learning_rate,
+            "batch_size": args.batch_size,
+            "max_len": args.max_len,
+            "run_id": run_id,
+        }
+        with modal.enable_output(), app.run(detach=args.detach):
+            if args.detach:
+                call = train.spawn(**kwargs)
+                manifest = ROOT / "eval" / "raw" / f"modal_submission_{run_id}.json"
+                manifest.parent.mkdir(parents=True, exist_ok=True)
+                manifest.write_text(
+                    json.dumps(
+                        {
+                            "status": "SUBMITTED",
+                            "run_id": run_id,
+                            "call_id": call.object_id,
+                            "parameters": kwargs,
+                            "volume": VOLUME_NAME,
+                            "gpu": GPU,
+                            "base_model": BASE_MODEL,
+                        },
+                        indent=2,
+                    ),
+                    encoding="utf-8",
+                )
+                print(f"Submitted; training continues on Modal. Manifest: {manifest}")
+                print(
+                    f"Fetch: uv run --group modal python scripts/fine_tune_modal.py --fetch-call {call.object_id}"
+                )
+                return 0
+            payload = train.remote(**kwargs)
 
     raw = ROOT / "eval" / "raw"
     raw.mkdir(parents=True, exist_ok=True)
-    out = (
-        Path(args.out)
-        if args.out
-        else raw / f"tinker_modal_{time.strftime('%Y%m%dT%H%M%S%z')}.json"
-    )
+    out = Path(args.out) if args.out else raw / f"modal_{payload['run_id']}.json"
     if not out.is_absolute():
         out = ROOT / out
     out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
