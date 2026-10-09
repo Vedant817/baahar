@@ -57,16 +57,34 @@ data/journal.jsonl
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.hypothesis/
+.pyre/
+.ipynb_checkpoints/
+.cache/
 .coverage
 coverage.xml
 htmlcov/
 uv.lock.bak
+*.tmp
+*.temp
+*.bak
+*.orig
 
 # local `baahar serve` logs
 .server.log
 .server.err
+.server*.err
+loop_*.err
+loop_*.out
+nohup.out
 *.log
 !docs/**/*.log
+
+# Local Modal credentials/state and optional model download caches.
+.modal/
+hf-cache/
+.hf-cache/
+*.joblib
 
 # --- editors / os ------------------------------------------------------------
 .vscode/
