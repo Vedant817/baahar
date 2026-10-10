@@ -266,8 +266,7 @@ def render_markdown(entries: list[Entry], *, include_all: bool = False) -> str:
     )
     if not entries:
         return (
-            honesty
-            + "_No walks recorded yet._\n\n"
+            honesty + "_No walks recorded yet._\n\n"
             "Record one with:\n\n"
             '```bash\nuv run baahar journal --outcome went --note "looked up more than usual"\n```'
         )

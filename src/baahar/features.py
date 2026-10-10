@@ -525,9 +525,7 @@ def heuristic_decision(slot: HourSlot) -> tuple[Decision, list[str]]:
     if not weather.is_day:
         band = air.naqi_effective_band or air.naqi_band
         band_name = getattr(band, "value", band) or "unrated"
-        return Decision.WAIT, [
-            f"Night-time. Air is {band_name}, but park gates may be shut."
-        ]
+        return Decision.WAIT, [f"Night-time. Air is {band_name}, but park gates may be shut."]
 
     if not reasons:
         reasons.append(

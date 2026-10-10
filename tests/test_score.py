@@ -79,9 +79,7 @@ class TestPolicy:
         assert not any("good air" in r.lower() for r in reasons)
 
     def test_night_does_not_call_moderate_air_good(self, slot) -> None:
-        hour = slot(
-            0, temp_c=26.0, apparent_c=26.0, pm25=40.0, pm10=70.0, naqi=106.0, is_day=0
-        )
+        hour = slot(0, temp_c=26.0, apparent_c=26.0, pm25=40.0, pm10=70.0, naqi=106.0, is_day=0)
         decision, reasons = heuristic_decision(hour)
         assert decision is Decision.WAIT
         joined = " ".join(reasons).lower()
