@@ -64,24 +64,27 @@ uv run baahar brief
 ```
 
 ```
-  GO  Go at 06:00.
+  WAIT  Next GO hour is 06:00.
 
   time   call  comfort  NAQI   feels  why
+  19:00  WAIT       75   118  26/26°  Night-time. Air is moderate, but park gates may be
+                                    shut.
+  20:00  WAIT       76   116  26/26°  Night-time. Air is moderate, but park gates may be
+                                    shut.
   06:00  GO         88    63  20/23°  NAQI 63, feels like 23 C.
-  07:00  GO         86    70  22/25°  NAQI 70, feels like 25 C.
-  08:00  GO         79    86  24/27°  NAQI 86, feels like 27 C.
-  09:00  GO         70   120  25/28°  NAQI 120, feels like 28 C.
-  10:00  WAIT       57   166  26/31°  Feels like 31 C.
-  ...
-  14:00  SKIP       54   148  24/29°  2.9 mm rain in the hour.
 ```
 
 Then the briefing:
 
-> Go at 06:00-07:00. Air is clean enough (NAQI 74). It is 20C but feels like
-> 23C. Head to Cubbon Park. Canopy first. Once you are out: Listen for the first
-> two birds, then ignore the traffic. Pocket the phone and let it be boring for
-> twenty minutes.
+> WAIT. Hold off on the walk. Indian NAQI is 118, in the moderate band. The
+> chance of rain is 1%. It is night; park gates may be closed. A later forecast
+> must be checked before making another plan. The next hour to recheck is 06:00.
+> Refresh conditions before walking. Breathing discomfort for people with lung,
+> asthma or heart conditions.
+
+That is the live Bengaluru hour recorded on 2026-10-10. Pocket Mode stays off
+until the **current** hour is GO. The Pocket stills in this post are a GO hour
+so you can see the near-black screen; the recorded demo is this WAIT hour.
 
 Then tap **Pocket the phone**, and the screen above is the entire interface.
 
@@ -480,10 +483,16 @@ The ones worth showing:
      paste the markdown from `uv run baahar journal --markdown` here,
      delete this comment and keep the paragraph. Do not imply it did. -->
 
-The walk has not happened yet, and I would rather say that here than imply
-otherwise with a photograph I did not take. `docs/FIELD_TEST.md` is a blank form
-with the method written out, and `uv run baahar journal --markdown` turns the
-answers into this section for me when there are answers to put in.
+Two environments, same binary. **Live Bengaluru** from this laptop against
+Open-Meteo: 2026-10-10 IST was WAIT, next GO hour 06:00, Pocket stayed off.
+Recorded screen demo: [`docs/media/demo-brief-wait.mp4`](docs/media/demo-brief-wait.mp4).
+**Recorded fixtures** are what CI runs (`BAAHAR_OFFLINE=1`). The outdoor walk
+has not happened yet, and I would rather say that here than imply otherwise with
+a photograph I did not take. `docs/FIELD_TEST.md` is a blank form with the method
+written out, and `uv run baahar journal --markdown` turns the answers into this
+section for me when there are answers to put in. Four scripted personas against
+the real CLI/UI found WAIT/GO copy bugs; those are fixed on `main`. That is
+product testing, not a Cubbon Park walk.
 
 What it will be able to measure that nothing in this post can: whether I actually
 pocket the phone, and whether "Go at 07:00, NAQI 74" felt like the clean morning
@@ -578,8 +587,8 @@ A lot, and none of it is "add a feed".
   from a fallback.
 - **Not a wellness score.** It will refuse to give you a green light in
   conditions that do not warrant one.
-- **Not deployed, not benchmarked against a proprietary model, and not
-  field-tested yet.** All three are stated above rather than implied away.
+- **Not deployed, not benchmarked against a proprietary model.** Outdoor walk
+  not recorded yet. Live Bengaluru scoring and Pocket refusal are.
 
 ---
 
