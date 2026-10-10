@@ -532,7 +532,7 @@ read a briefing should not pay for a model they did not ask for. The heuristic
 scorer is a real fallback with a real test suite, not a stub.
 
 - **MIT licensed.** [`LICENSE`](https://github.com/Vedant817/baahar/blob/main/LICENSE)
-- **759 tests pass offline.** `uv run pytest`
+- **760 tests pass offline.** `uv run pytest`
 - **CI** runs lint, format, tests, an offline CLI smoke test, a secret scan, and a
   headless-Chrome layout audit of all three screens.
 - **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)

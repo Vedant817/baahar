@@ -26,11 +26,20 @@ from .weather import fetch_weather
 log = logging.getLogger(__name__)
 
 
-def join_slots(weather: Sequence, air: Sequence) -> tuple[list[HourSlot], list[str]]:
+def join_slots(
+    weather: Sequence,
+    air: Sequence,
+    *,
+    weather_source: DataSource = DataSource.LIVE,
+    air_source: DataSource = DataSource.LIVE,
+) -> tuple[list[HourSlot], list[str]]:
     """Join weather and air hours on timestamp.
 
     Returns the joined slots plus a list of human-readable notes about anything
-    imperfect, which the caller surfaces as ``degraded``.
+    imperfect, which the caller surfaces as ``degraded``. The two sources are
+    stamped onto every slot, because `HourSlot` defaults them to LIVE and a slot
+    that says "live" inside a fixture plan is a lie a consumer can act on --
+    `walk.eligibility` reads them.
     """
     notes: list[str] = []
     air_by_time = {slot.time: slot for slot in air}
@@ -51,7 +60,9 @@ def join_slots(weather: Sequence, air: Sequence) -> tuple[list[HourSlot], list[s
             from .models import HourlyAir
 
             a = HourlyAir(time=w.time)
-        slots.append(HourSlot(weather=w, air=a))
+        slots.append(
+            HourSlot(weather=w, air=a, weather_source=weather_source, air_source=air_source)
+        )
 
     if missing_air:
         shown = ", ".join(missing_air[:4])
@@ -70,7 +81,7 @@ def fetch_joined(
     """Fetch both sources and join them. Returns ``(slots, weather_src, air_src)``."""
     weather, wsrc = fetch_weather(lat=lat, lon=lon, hours=hours, offline=offline)
     air, asrc = fetch_air(lat=lat, lon=lon, hours=hours, offline=offline)
-    slots, notes = join_slots(weather, air)
+    slots, notes = join_slots(weather, air, weather_source=wsrc, air_source=asrc)
     if notes:
         log.info("join notes: %s", "; ".join(notes))
     return slots, wsrc, asrc

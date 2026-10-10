@@ -259,7 +259,11 @@ function renderPlan(data) {
       [park.crowding_hint, park.gate_note].filter(Boolean).join(' — ');
   }
 
+  // Credited honestly: a recorded fixture still credits Open-Meteo, because the
+  // recording came from them, but it must not read as if a live call was made.
+  const replayed = notes.length > 0 || (plan.degraded || []).some((d) => /fixture|recorded/i.test(d));
   $('attrib').textContent =
+    (replayed ? 'Recorded fixture, not a live call. ' : '') +
     `Weather and air quality: Open-Meteo (CC BY 4.0), Indian NAQI computed with ` +
     `CPCB 2014 sub-index breakpoints applied to hourly concentrations. ` +
     `Park data curated by hand from OpenStreetMap (ODbL). ` +

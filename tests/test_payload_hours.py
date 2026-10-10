@@ -97,6 +97,25 @@ def test_slice_from_now_keeps_the_hour_that_contains_now():
         assert window[0] == datetime(2026, 10, 10, 14, 0, tzinfo=IST)
 
 
+def test_recorded_payload_slots_are_stamped_fixture_not_live():
+    """A slot inside a recorded plan must not advertise a live source.
+
+    `HourSlot` defaults both sources to LIVE, so a joined slot said "live" inside
+    a plan the eligibility gate was about to refuse for being recorded. Any
+    consumer reading the slot rather than the plan was told the opposite of the
+    truth, in the unsafe direction.
+    """
+    from baahar import forecast
+
+    slots, wsrc, asrc = forecast.fetch_joined(hours=6, offline=True)
+    assert wsrc is DataSource.FIXTURE
+    assert asrc is DataSource.FIXTURE
+    assert slots, "the recorded fixture must still produce hours"
+    for slot in slots:
+        assert slot.weather_source is DataSource.FIXTURE
+        assert slot.air_source is DataSource.FIXTURE
+
+
 def test_a_plan_built_from_a_real_payload_has_a_current_hour():
     weather_hours = parse_weather(_payload())
     air_hours = {h.time: h for h in parse_air(_air_payload())}
