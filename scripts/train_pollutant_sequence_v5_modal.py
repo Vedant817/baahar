@@ -49,9 +49,12 @@ def training_origin_weight(ordinal):
 
 def validate_pair(frozen, times, truth, labels, actual_pollutants):
     """Refuse comparisons with different origins or any changed actual targets."""
-    if (frozen["times"] != times or frozen["actual_naqi"] != truth
-            or frozen["actual_legacy_bands"] != labels
-            or frozen["actual_pollutants"] != actual_pollutants):
+    if (
+        frozen["times"] != times
+        or frozen["actual_naqi"] != truth
+        or frozen["actual_legacy_bands"] != labels
+        or frozen["actual_pollutants"] != actual_pollutants
+    ):
         raise ValueError("Paired reference origins/targets differ")
 
 
@@ -231,10 +234,21 @@ def remote_train(manifest):
         }
     write(Path("/artifacts/pollutant_sequence_v5_support.json"), support)
 
-    training_ordinals = [BANDS.index(band_for_index(float(bd.compute_naqi(
-        {bd.AQ_VAR_TO_KEY[g]: float(v) for g, v in zip(GASES, row, strict=True)}
-    ).index))) for row in train["y"][:, -1]]
-    training_weights = np.asarray([training_origin_weight(v) for v in training_ordinals], dtype=np.float32)
+    training_ordinals = [
+        BANDS.index(
+            band_for_index(
+                float(
+                    bd.compute_naqi(
+                        {bd.AQ_VAR_TO_KEY[g]: float(v) for g, v in zip(GASES, row, strict=True)}
+                    ).index
+                )
+            )
+        )
+        for row in train["y"][:, -1]
+    ]
+    training_weights = np.asarray(
+        [training_origin_weight(v) for v in training_ordinals], dtype=np.float32
+    )
     if int((training_weights > 1).sum()) != support["train"]["poor_or_worse_hours"]:
         raise ValueError("Training weight support mismatch")
     if int((training_weights > 1).sum()) != 296:
@@ -277,7 +291,11 @@ def remote_train(manifest):
         model = TCN().to(device)
         optimizer = torch.optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.0001)
         loader = DataLoader(
-            TensorDataset(torch.from_numpy(train["inputs"]), torch.from_numpy(train["targets"]), torch.from_numpy(training_weights)),
+            TensorDataset(
+                torch.from_numpy(train["inputs"]),
+                torch.from_numpy(train["targets"]),
+                torch.from_numpy(training_weights),
+            ),
             batch_size=256,
             shuffle=True,
             generator=torch.Generator().manual_seed(seed),
@@ -290,7 +308,9 @@ def remote_train(manifest):
             model.train()
             for x, y, weights in loader:
                 optimizer.zero_grad()
-                element_loss = nn.functional.smooth_l1_loss(model(x.to(device)), y.to(device), reduction="none")
+                element_loss = nn.functional.smooth_l1_loss(
+                    model(x.to(device)), y.to(device), reduction="none"
+                )
                 origin_loss = horizon_priority(element_loss).mean(dim=1)
                 weights = weights.to(device)
                 loss = (origin_loss * weights).sum() / weights.sum()
@@ -309,10 +329,15 @@ def remote_train(manifest):
                 score = float(horizon_priority(absolute_errors).mean())
                 all_horizon_score = float(absolute_errors.mean())
                 endpoint_score = float(absolute_errors[:, -1, :].mean())
-            history.append({"epoch": epoch + 1, "development_standardized_mae": score,
-                            "selection_weighted_mae": score,
-                            "all_horizon_standardized_mae": all_horizon_score,
-                            "sixth_hour_standardized_mae": endpoint_score})
+            history.append(
+                {
+                    "epoch": epoch + 1,
+                    "development_standardized_mae": score,
+                    "selection_weighted_mae": score,
+                    "all_horizon_standardized_mae": all_horizon_score,
+                    "sixth_hour_standardized_mae": endpoint_score,
+                }
+            )
             write(
                 output_dir / "progress.json",
                 {
@@ -387,7 +412,10 @@ def remote_train(manifest):
     if digest(reference_path) != manifest["reference"]["result_sha256"]:
         raise ValueError("V3 reference SHA mismatch")
     reference = json.loads(reference_path.read_text())
-    if reference["manifest"]["replay"] != manifest["replay"] or reference["manifest"]["partitions"] != manifest["partitions"]:
+    if (
+        reference["manifest"]["replay"] != manifest["replay"]
+        or reference["manifest"]["partitions"] != manifest["partitions"]
+    ):
         raise ValueError("Reference dataset or partitions differ")
     reference_periods = {p["partition"]: p for p in reference["results"]}
     results = []
@@ -480,8 +508,10 @@ def remote_train(manifest):
         frozen = reference_periods[name]
         validate_pair(frozen, part["times"], truth, labels, part["y"][:, -1].tolist())
         for baseline in ("paired_lightgbm", "persistence"):
-            if not np.array_equal(np.asarray(frozen["models"][baseline]["predicted_pollutants"]),
-                                  np.asarray(models[baseline]["predicted_pollutants"])):
+            if not np.array_equal(
+                np.asarray(frozen["models"][baseline]["predicted_pollutants"]),
+                np.asarray(models[baseline]["predicted_pollutants"]),
+            ):
                 raise ValueError("Unchanged baseline failed reproduction: " + baseline)
         models["v3_fixed_mean"] = frozen["models"]["tcn_fixed_mean"]
         results.append(
@@ -502,7 +532,10 @@ def remote_train(manifest):
         "support": support,
         "exact_future_target_checks": len(rows),
         "training": histories,
-        "training_weight_support": {"weighted_origins": int((training_weights > 1).sum()), "eligible_origins": len(training_weights)},
+        "training_weight_support": {
+            "weighted_origins": int((training_weights > 1).sum()),
+            "eligible_origins": len(training_weights),
+        },
         "elapsed_seconds": time.monotonic() - started,
         "target_contract": "Hourly canonical breakpoint proxy, not CPCB averaging-compliant station NAQI. Official 301+ Very Poor and 401+ Severe; historical code labels these severe/hazardous respectively.",
         "limitations": "Consumed modeled CAMS/ERA5 archive; no station/prospective evidence, no future weather input, no probabilities, no automatic promotion.",
@@ -544,15 +577,29 @@ def main():
     if MANIFEST.exists():
         raise SystemExit("Manifest already exists; refusing duplicate submission")
     reference_path = ROOT / "eval/raw/pollutant_sequence_v3_results.json"
-    reference_manifest = json.loads((ROOT / "eval/raw/pollutant_sequence_v3_manifest.json").read_text())
-    if reference_manifest["status"] != "COMPLETED" or digest(reference_path) != reference_manifest["result_sha256"]:
+    reference_manifest = json.loads(
+        (ROOT / "eval/raw/pollutant_sequence_v3_manifest.json").read_text()
+    )
+    if (
+        reference_manifest["status"] != "COMPLETED"
+        or digest(reference_path) != reference_manifest["result_sha256"]
+    ):
         raise ValueError("Frozen v3 reference is incomplete or changed")
     for relative, expected in reference_manifest["source_sha256"].items():
-        if (relative.startswith("src/baahar/") or relative in (
-                "scripts/build_dataset.py", "eval/raw/pollutant_sequence_support_results.json",
-                "docs/DEEP_POLLUTANT_STUDY_PROTOCOL.md", "docs/POLLUTANT_SEQUENCE_V3_PROTOCOL.md",
-                "scripts/train_pollutant_sequence_v3_modal.py")) and digest(ROOT / relative) != expected:
-            raise ValueError("Endpoint-objective experiment encountered changed v3 source: " + relative)
+        if (
+            relative.startswith("src/baahar/")
+            or relative
+            in (
+                "scripts/build_dataset.py",
+                "eval/raw/pollutant_sequence_support_results.json",
+                "docs/DEEP_POLLUTANT_STUDY_PROTOCOL.md",
+                "docs/POLLUTANT_SEQUENCE_V3_PROTOCOL.md",
+                "scripts/train_pollutant_sequence_v3_modal.py",
+            )
+        ) and digest(ROOT / relative) != expected:
+            raise ValueError(
+                "Endpoint-objective experiment encountered changed v3 source: " + relative
+            )
     old = json.loads((ROOT / "eval/raw/forecast_risk_v3_results.json").read_text())
     files = list((ROOT / "src/baahar").glob("*.py")) + [
         ROOT / "scripts/build_dataset.py",
@@ -572,9 +619,12 @@ def main():
         "run_name": "pollutant_sequence_v5",
         "replay": old["dataset"],
         "seeds": [0, 1, 2],
-        "reference": {"name": "v3_fixed_mean", "result_sha256": digest(reference_path),
-                      "call_id": reference_manifest["call_id"],
-                      "path": "eval/raw/pollutant_sequence_v3_results.json"},
+        "reference": {
+            "name": "v3_fixed_mean",
+            "result_sha256": digest(reference_path),
+            "call_id": reference_manifest["call_id"],
+            "path": "eval/raw/pollutant_sequence_v3_results.json",
+        },
         "single_training_change": "coordinated endpoint-priority training and checkpoint objective: half all-horizon plus half sixth-hour; relative to v3",
         "partitions": {
             "train": ["2023-01-01", "2025-04-01"],
@@ -599,7 +649,12 @@ def main():
             "gpu": "T4",
             "timeout_seconds": 7200,
         },
-        "training_origin_weighting": {"poor_or_worse": 2.0, "otherwise": 1.0, "labels": "training final-sixth-hour canonical rounded category only", "normalization": "batch weighted mean"},
+        "training_origin_weighting": {
+            "poor_or_worse": 2.0,
+            "otherwise": 1.0,
+            "labels": "training final-sixth-hour canonical rounded category only",
+            "normalization": "batch weighted mean",
+        },
         "source_sha256": {p.relative_to(ROOT).as_posix(): digest(p) for p in files},
     }
     audit = json.loads((ROOT / "eval/raw/pollutant_sequence_support_results.json").read_text())

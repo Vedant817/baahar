@@ -13,8 +13,12 @@ SPEC.loader.exec_module(report)
 
 def test_new_severe_hits_excludes_episodes_already_detected():
     start = datetime(2026, 1, 1)
-    times = [start, start + timedelta(hours=1), start + timedelta(hours=12),
-             start + timedelta(hours=13)]
+    times = [
+        start,
+        start + timedelta(hours=1),
+        start + timedelta(hours=12),
+        start + timedelta(hours=13),
+    ]
     measured = report.new_severe_hits(times, [4] * 4, [4, 0, 0, 0], [0, 4, 4, 4])
     assert measured["newly_captured_previously_missed_episodes"] == 1
     assert measured["new_severe_hours_in_previously_missed_episodes"] == 2
@@ -26,13 +30,20 @@ def result(positives, hits):
     labels = [1] * 200 + [3] * positives
     reference = [1] * len(labels)
     challenger = [1] * 200 + [3] * hits + [1] * (positives - hits)
-    return {"results": [
-        {"partition": name, "labels": labels,
-         "times": [(start + timedelta(hours=i)).isoformat() for i in range(len(labels))],
-         "models": {"incumbent": {"predictions": reference},
-                    "challenger": {"predictions": challenger}}}
-        for name in report.PERIODS
-    ]}
+    return {
+        "results": [
+            {
+                "partition": name,
+                "labels": labels,
+                "times": [(start + timedelta(hours=i)).isoformat() for i in range(len(labels))],
+                "models": {
+                    "incumbent": {"predictions": reference},
+                    "challenger": {"predictions": challenger},
+                },
+            }
+            for name in report.PERIODS
+        ]
+    }
 
 
 def test_one_hour_gain_among_23_positives_does_not_reach_frozen_minimum():

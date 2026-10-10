@@ -20,8 +20,14 @@ WINDOWS = {
     "diagnostic_pollution": ["2026-02-01", "2026-05-01"],
     "diagnostic_other_seasons": ["2026-05-01", "2026-10-01"],
 }
-GASES = {"pm2_5": "pm25", "pm10": "pm10", "nitrogen_dioxide": "no2",
-         "ozone": "o3", "sulphur_dioxide": "so2", "carbon_monoxide": "co"}
+GASES = {
+    "pm2_5": "pm25",
+    "pm10": "pm10",
+    "nitrogen_dioxide": "no2",
+    "ozone": "o3",
+    "sulphur_dioxide": "so2",
+    "carbon_monoxide": "co",
+}
 
 
 def digest(path: Path) -> str:
@@ -39,27 +45,36 @@ def episode_counts(stamps: list[datetime]) -> dict:
         if not groups or stamp - groups[-1][-1] > timedelta(hours=6):
             groups.append([])
         groups[-1].append(stamp)
-    return {"hours": len(stamps), "episodes": len(groups),
-            "episode_hours": [len(group) for group in groups]}
+    return {
+        "hours": len(stamps),
+        "episodes": len(groups),
+        "episode_hours": [len(group) for group in groups],
+    }
 
 
 def audit_remote(protocol: dict) -> dict:
     import sys
+
     sys.path.insert(0, "/opt/src")
     from baahar.naqi import compute_naqi
 
     base = Path("/artifacts/forecast_risk_v3")
-    code_paths = {"scripts/audit_pollutant_sequence_context_modal.py": Path(
-        "/opt/scripts/audit_pollutant_sequence_context_modal.py"
-    ), "src/baahar/naqi.py": Path("/opt/src/baahar/naqi.py"),
+    code_paths = {
+        "scripts/audit_pollutant_sequence_context_modal.py": Path(
+            "/opt/scripts/audit_pollutant_sequence_context_modal.py"
+        ),
+        "src/baahar/naqi.py": Path("/opt/src/baahar/naqi.py"),
         "src/baahar/__init__.py": Path("/opt/src/baahar/__init__.py"),
         "eval/raw/pollutant_sequence_support_results.json": Path(
             "/opt/eval/raw/pollutant_sequence_support_results.json"
-        ), "eval/raw/pollutant_sequence_v3_results.json": Path(
+        ),
+        "eval/raw/pollutant_sequence_v3_results.json": Path(
             "/opt/eval/raw/pollutant_sequence_v3_results.json"
-        ), "eval/raw/pollutant_sequence_v4_results.json": Path(
+        ),
+        "eval/raw/pollutant_sequence_v4_results.json": Path(
             "/opt/eval/raw/pollutant_sequence_v4_results.json"
-        )}
+        ),
+    }
     for name, path in code_paths.items():
         if digest(path) != protocol["code_sha256"][name]:
             raise ValueError("Pinned code or reference hash mismatch: " + name)
@@ -70,10 +85,16 @@ def audit_remote(protocol: dict) -> dict:
         if digest(path) != source["sha256"]:
             raise ValueError("Source fixture hash mismatch: " + source["path"])
         payload = json.loads(path.read_text())
-        metadata.append({**source, "timezone": payload.get("timezone"),
-                         "utc_offset_seconds": payload.get("utc_offset_seconds"),
-                         "hourly_units": payload.get("hourly_units"),
-                         "latitude": payload.get("latitude"), "longitude": payload.get("longitude")})
+        metadata.append(
+            {
+                **source,
+                "timezone": payload.get("timezone"),
+                "utc_offset_seconds": payload.get("utc_offset_seconds"),
+                "hourly_units": payload.get("hourly_units"),
+                "latitude": payload.get("latitude"),
+                "longitude": payload.get("longitude"),
+            }
+        )
         if not path.name.startswith("archival_aq"):
             continue
         hourly = payload["hourly"]
@@ -124,8 +145,11 @@ def audit_remote(protocol: dict) -> dict:
                 if any(stamp not in air for stamp in stamps):
                     absent += 1
                     continue
-                bad = [gas for gas in GASES.values()
-                       if any(not finite(air[stamp].get(gas)) for stamp in stamps)]
+                bad = [
+                    gas
+                    for gas in GASES.values()
+                    if any(not finite(air[stamp].get(gas)) for stamp in stamps)
+                ]
                 missing.update(bad)
                 if not bad:
                     eligible.append(row)
@@ -133,18 +157,26 @@ def audit_remote(protocol: dict) -> dict:
             origin_hashes[str(context)] = hashlib.sha256(
                 "\n".join(sorted(support_sets[context])).encode("utf-8")
             ).hexdigest()
-            poor = [row for row in eligible if row["target_band"] in ("poor", "severe", "hazardous")]
+            poor = [
+                row for row in eligible if row["target_band"] in ("poor", "severe", "hazardous")
+            ]
             very = [row for row in eligible if row["target_band"] in ("severe", "hazardous")]
             severe = [row for row in eligible if row["target_band"] == "hazardous"]
             lengths[str(context)] = {
-                "candidate_rows": len(candidates), "boundary_exclusions": boundary,
-                "absent_timestamp_exclusions": absent, "missing_sequence_by_gas": dict(missing),
-                "eligible_rows": len(eligible), "poor_or_worse": episode_counts(
-                    [datetime.fromisoformat(row["time"]) + timedelta(hours=6) for row in poor]),
+                "candidate_rows": len(candidates),
+                "boundary_exclusions": boundary,
+                "absent_timestamp_exclusions": absent,
+                "missing_sequence_by_gas": dict(missing),
+                "eligible_rows": len(eligible),
+                "poor_or_worse": episode_counts(
+                    [datetime.fromisoformat(row["time"]) + timedelta(hours=6) for row in poor]
+                ),
                 "very_poor_or_worse": episode_counts(
-                    [datetime.fromisoformat(row["time"]) + timedelta(hours=6) for row in very]),
+                    [datetime.fromisoformat(row["time"]) + timedelta(hours=6) for row in very]
+                ),
                 "official_severe": episode_counts(
-                    [datetime.fromisoformat(row["time"]) + timedelta(hours=6) for row in severe]),
+                    [datetime.fromisoformat(row["time"]) + timedelta(hours=6) for row in severe]
+                ),
             }
         for context in (48, 72):
             lost = support_sets[24] - support_sets[context]
@@ -158,16 +190,24 @@ def audit_remote(protocol: dict) -> dict:
         if name == "train" and lengths["24"]["eligible_rows"] != protocol["expected_24h_train"]:
             raise ValueError("24h training support differs from frozen study")
         report[name] = lengths
-    return {"status": "COMPLETED", "manifest": protocol["manifest_name"],
-            "canonical_target_checks": verified, "row_count": len(rows),
-            "source_metadata": metadata, "support": report,
-            "limitations": ["Support audit only; no model training or forecast claims",
-                            "All categories come from consumed CAMS/ERA5 modeled archive",
-                            "Episode counts are correlated hourly intervals, not independent trials"]}
+    return {
+        "status": "COMPLETED",
+        "manifest": protocol["manifest_name"],
+        "canonical_target_checks": verified,
+        "row_count": len(rows),
+        "source_metadata": metadata,
+        "support": report,
+        "limitations": [
+            "Support audit only; no model training or forecast claims",
+            "All categories come from consumed CAMS/ERA5 modeled archive",
+            "Episode counts are correlated hourly intervals, not independent trials",
+        ],
+    }
 
 
 def main() -> None:
     import modal
+
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--submit", action="store_true")
@@ -190,37 +230,78 @@ def main() -> None:
         return
     if MANIFEST.exists():
         raise SystemExit("Existing support manifest; refusing duplicate submission")
-    v3m = json.loads((ROOT / "eval/raw/pollutant_sequence_v3_manifest.json").read_text(encoding="utf-8"))
-    v4m = json.loads((ROOT / "eval/raw/pollutant_sequence_v4_manifest.json").read_text(encoding="utf-8"))
+    v3m = json.loads(
+        (ROOT / "eval/raw/pollutant_sequence_v3_manifest.json").read_text(encoding="utf-8")
+    )
+    v4m = json.loads(
+        (ROOT / "eval/raw/pollutant_sequence_v4_manifest.json").read_text(encoding="utf-8")
+    )
     v4raw = ROOT / "eval/raw/pollutant_sequence_v4_results.json"
-    if v3m["status"] != "COMPLETED" or v4m["status"] != "COMPLETED" or digest(v4raw) != v4m["result_sha256"]:
+    if (
+        v3m["status"] != "COMPLETED"
+        or v4m["status"] != "COMPLETED"
+        or digest(v4raw) != v4m["result_sha256"]
+    ):
         raise ValueError("Frozen v3/v4 results are not complete and hash-valid")
-    dataset = json.loads((ROOT / "eval/raw/forecast_risk_v3_results.json").read_text(encoding="utf-8"))["dataset"]
-    files = [Path(__file__), ROOT / "src/baahar/naqi.py", ROOT / "src/baahar/__init__.py",
-             ROOT / "eval/raw/pollutant_sequence_support_results.json",
-             ROOT / "eval/raw/pollutant_sequence_v3_results.json", v4raw]
-    protocol = {"manifest_name": "eval/raw/pollutant_context_support_v1_manifest.json",
-                "source_fixtures": dataset["source_fixtures"], "rows_sha256": dataset["rows_sha256"],
-                "row_count": dataset["row_count"], "windows": WINDOWS,
-                "expected_24h_train": 19663, "contexts_hours": [24, 48, 72],
-                "v3_manifest_sha256": digest(ROOT / "eval/raw/pollutant_sequence_v3_manifest.json"),
-                "v4_result_sha256": digest(v4raw),
-                "code_sha256": {p.relative_to(ROOT).as_posix(): digest(p) for p in files}}
+    dataset = json.loads(
+        (ROOT / "eval/raw/forecast_risk_v3_results.json").read_text(encoding="utf-8")
+    )["dataset"]
+    files = [
+        Path(__file__),
+        ROOT / "src/baahar/naqi.py",
+        ROOT / "src/baahar/__init__.py",
+        ROOT / "eval/raw/pollutant_sequence_support_results.json",
+        ROOT / "eval/raw/pollutant_sequence_v3_results.json",
+        v4raw,
+    ]
+    protocol = {
+        "manifest_name": "eval/raw/pollutant_context_support_v1_manifest.json",
+        "source_fixtures": dataset["source_fixtures"],
+        "rows_sha256": dataset["rows_sha256"],
+        "row_count": dataset["row_count"],
+        "windows": WINDOWS,
+        "expected_24h_train": 19663,
+        "contexts_hours": [24, 48, 72],
+        "v3_manifest_sha256": digest(ROOT / "eval/raw/pollutant_sequence_v3_manifest.json"),
+        "v4_result_sha256": digest(v4raw),
+        "code_sha256": {p.relative_to(ROOT).as_posix(): digest(p) for p in files},
+    }
     image = modal.Image.debian_slim(python_version="3.12")
     for path in files:
         image = image.add_local_file(str(path), "/opt/" + path.relative_to(ROOT).as_posix())
-    write(MANIFEST, {"status": "PREREGISTERED", "created_at": datetime.now(UTC).isoformat(),
-                     "protocol": protocol, "source_sha256": protocol["code_sha256"], "timeout_seconds": 600})
+    write(
+        MANIFEST,
+        {
+            "status": "PREREGISTERED",
+            "created_at": datetime.now(UTC).isoformat(),
+            "protocol": protocol,
+            "source_sha256": protocol["code_sha256"],
+            "timeout_seconds": 600,
+        },
+    )
     app = modal.App("baahar-pollutant-context-support-v1", image=image)
-    function = app.function(cpu=2, memory=4096, timeout=600, retries=0, max_containers=1,
-                            volumes={"/artifacts": modal.Volume.from_name("baahar-training")})(audit_remote)
+    function = app.function(
+        cpu=2,
+        memory=4096,
+        timeout=600,
+        retries=0,
+        max_containers=1,
+        volumes={"/artifacts": modal.Volume.from_name("baahar-training")},
+    )(audit_remote)
     with app.run(detach=True):
         call = function.spawn(protocol)
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         manifest.update(status="SUBMITTED", call_id=call.object_id, app_id=app.app_id)
         write(MANIFEST, manifest)
-        print(json.dumps({"call_id": call.object_id, "app_id": app.app_id,
-                          "url": "https://modal.com/apps/vedantmahajan271/main/" + app.app_id}))
+        print(
+            json.dumps(
+                {
+                    "call_id": call.object_id,
+                    "app_id": app.app_id,
+                    "url": "https://modal.com/apps/vedantmahajan271/main/" + app.app_id,
+                }
+            )
+        )
 
 
 if __name__ == "__main__":

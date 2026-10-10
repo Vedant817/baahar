@@ -110,14 +110,24 @@ def test_adaptive_splits_exclude_locked_labels_and_embargo_targets():
     times = [datetime(2024, 1, 1) + timedelta(hours=i) for i in range(24 * 8)]
     labels = [3 if t.hour < 9 else 0 for t in times]
     phases = risk.support_aware_partitions(
-        times, labels, [True] * len(times), "2024-01-01", "2024-01-07",
-        min_positive=8, min_negative=8,
+        times,
+        labels,
+        [True] * len(times),
+        "2024-01-01",
+        "2024-01-07",
+        min_positive=8,
+        min_negative=8,
     )
     # Jan 7-8 is locked; changing its labels must never change phase boundaries.
     changed = [y if t < datetime(2024, 1, 7) else 5 for t, y in zip(times, labels, strict=True)]
     assert phases == risk.support_aware_partitions(
-        times, changed, [True] * len(times), "2024-01-01", "2024-01-07",
-        min_positive=8, min_negative=8,
+        times,
+        changed,
+        [True] * len(times),
+        "2024-01-01",
+        "2024-01-07",
+        min_positive=8,
+        min_negative=8,
     )
     seen = set()
     for start, end in phases.values():
@@ -132,6 +142,11 @@ def test_adaptive_splits_refuse_insufficient_selection_support():
     labels = [3 if t.day < 3 and t.hour < 9 else 0 for t in times]
     with pytest.raises(ValueError, match="threshold_selection"):
         risk.support_aware_partitions(
-            times, labels, [True] * len(times), "2024-01-01", "2024-01-05",
-            min_positive=8, min_negative=8,
+            times,
+            labels,
+            [True] * len(times),
+            "2024-01-01",
+            "2024-01-05",
+            min_positive=8,
+            min_negative=8,
         )

@@ -210,6 +210,23 @@ function bootApp(briefPayload, location = { search: '', hash: '' }) {
   return { app, clock, get, requests };
 }
 
+/* The pocket gate in `enterPocket` only lowers the screen inside the fresh
+ * current hour, exactly as it does for a real `/api/brief` payload. So the
+ * fixture below has to carry the two timestamps the real endpoint returns.
+ * Without them every GO case was quietly testing a stale plan the gate refuses
+ * -- the entry assertions were green for the wrong reason until the gate landed.
+ *
+ * The clock is the harness's fake, so the hour is built from `Date.now()` at
+ * payload time, which is within milliseconds of the fake clock's base. */
+function freshHour(active) {
+  const now = new Date().toISOString();
+  return {
+    generated_at: now,
+    current_decision: active ? 'GO' : 'SKIP',
+    current_slot: { time: now, decision: active ? 'GO' : 'SKIP' },
+  };
+}
+
 /* Minimal payload shaped like `/api/brief`. Only the fields the code under test
  * reads are present, so a failure here means a real coupling broke. */
 function payload({ active }) {
@@ -224,6 +241,7 @@ function payload({ active }) {
       degraded: [],
       scorer: 'heuristic',
       park: null,
+      ...freshHour(active),
     },
     briefing: { text: 'A brief.', writer: 'template', note: '' },
     pocket: {

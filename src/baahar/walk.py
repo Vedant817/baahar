@@ -1,4 +1,5 @@
 """Current-hour walking permission, shared by prose and Pocket Mode."""
+
 from datetime import UTC, datetime, timedelta
 
 from .models import DataSource, Decision, OutdoorPlan
@@ -23,8 +24,10 @@ def eligibility(plan: OutdoorPlan, now: datetime | None = None) -> tuple[bool, s
     if slot is None:
         # Support older serialized plans only when their selected hour is current.
         slot = plan.best_slot
-    if slot is None or slot.time.tzinfo is None or not (
-        slot.time <= now < slot.time + timedelta(hours=1)
+    if (
+        slot is None
+        or slot.time.tzinfo is None
+        or not (slot.time <= now < slot.time + timedelta(hours=1))
     ):
         return False, "No current-hour assessment; refresh conditions before walking."
     if slot.air.time != slot.weather.time:

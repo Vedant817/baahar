@@ -1,4 +1,5 @@
 """Keep the recorded historical checker counterexample rejected."""
+
 import json
 
 from baahar.briefing_contract import evaluate

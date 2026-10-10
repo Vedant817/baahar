@@ -1,4 +1,5 @@
 """Freeze the consumed v15 diagnostic unchanged for a v16 regression comparison."""
+
 import hashlib
 import json
 from pathlib import Path
@@ -15,11 +16,14 @@ def main():
         return
     previous = json.loads((RAW / "qualification_v15_manifest.json").read_text())
     runner = (RAW / "qualification_v15_preregistered_runner.py").read_text(encoding="utf-8")
-    runner = runner.replace('PREFIX = RAW / "qualification_v15"',
-                            'PREFIX = RAW / "qualification_v16_regression"')
+    runner = runner.replace(
+        'PREFIX = RAW / "qualification_v15"', 'PREFIX = RAW / "qualification_v16_regression"'
+    )
     runner = runner.replace("20261008T112810Z-6067171e", training["run_id"])
-    runner = runner.replace("except modal.exception.TimeoutError:",
-                            "except (TimeoutError, modal.exception.TimeoutError):")
+    runner = runner.replace(
+        "except modal.exception.TimeoutError:",
+        "except (TimeoutError, modal.exception.TimeoutError):",
+    )
     script = ROOT / "scripts/qualify_briefing_v16_regression_modal.py"
     script.write_text(runner, encoding="utf-8")
     suite = RAW / "qualification_v16_regression_suite.json"
@@ -29,7 +33,8 @@ def main():
     for key in ("call_id", "app_id", "results"):
         previous.pop(key, None)
     previous.update(
-        status="PREREGISTERED", suite=str(suite.relative_to(ROOT)),
+        status="PREREGISTERED",
+        suite=str(suite.relative_to(ROOT)),
         rubric_script_sha256=hashlib.sha256(script.read_bytes()).hexdigest(),
         adapter_path=f"/artifacts/candidates/{training['run_id']}/qwen3_4b/adapter",
         comparison="Consumed diagnostic regression only; identical suite and checker snapshot to v15, including known rubric defects.",

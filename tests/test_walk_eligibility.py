@@ -43,7 +43,9 @@ def test_current_hazardous_air_cannot_be_hidden_by_future_go(monkeypatch, slot):
     assert "350" in build_pocket(plan).safety_note
 
 
-@pytest.mark.parametrize("kind", ["expired", "future_assessment", "missing_current", "fixture", "unknown_air"])
+@pytest.mark.parametrize(
+    "kind", ["expired", "future_assessment", "missing_current", "fixture", "unknown_air"]
+)
 def test_ineligible_plan_bypasses_models_and_cache(monkeypatch, slot, kind):
     hour = slot(0, naqi=50)
     if kind == "unknown_air":

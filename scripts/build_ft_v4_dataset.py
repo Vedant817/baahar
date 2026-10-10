@@ -109,9 +109,13 @@ def synthetic_case(family, index, split):
 
 
 def write_rows(path, rows):
+    # Pinned to LF for the same reason as build_ft_v2_dataset.py: a CRLF build
+    # on Windows would hash differently from the identical build on Linux, and
+    # every manifest downstream of these bytes would be platform-specific.
     path.write_text(
         "".join(json.dumps(row, ensure_ascii=False, allow_nan=False) + "\n" for row in rows),
         encoding="utf-8",
+        newline="\n",
     )
 
 
@@ -183,7 +187,9 @@ def main():
         ],
         "dataset": dataset,
     }
-    (DEST / "manifest.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+    (DEST / "manifest.json").write_text(
+        json.dumps(metadata, indent=2), encoding="utf-8", newline="\n"
+    )
     baseline = json.loads(
         (ROOT / "eval/raw/candidate_submission_v15.json").read_text(encoding="utf-8")
     )
@@ -209,7 +215,7 @@ def main():
         "development_sha256": metadata["development_sha256"],
         "limitations": metadata["limitations"],
     }
-    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8", newline="\n")
     print(json.dumps(metadata, indent=2))
 
 

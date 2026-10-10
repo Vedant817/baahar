@@ -12,14 +12,30 @@ runner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runner)
 
 
-@pytest.mark.parametrize("key", ["times", "actual_naqi", "actual_legacy_bands", "actual_pollutants"])
+@pytest.mark.parametrize(
+    "key", ["times", "actual_naqi", "actual_legacy_bands", "actual_pollutants"]
+)
 def test_changed_paired_origin_or_target_is_rejected(key):
-    actual = {"times": ["2026-02-02T00:00"], "actual_naqi": [210.0],
-              "actual_legacy_bands": ["poor"], "actual_pollutants": [[1.0] * 6]}
-    runner.validate_pair(actual, actual["times"], actual["actual_naqi"],
-                         actual["actual_legacy_bands"], actual["actual_pollutants"])
+    actual = {
+        "times": ["2026-02-02T00:00"],
+        "actual_naqi": [210.0],
+        "actual_legacy_bands": ["poor"],
+        "actual_pollutants": [[1.0] * 6],
+    }
+    runner.validate_pair(
+        actual,
+        actual["times"],
+        actual["actual_naqi"],
+        actual["actual_legacy_bands"],
+        actual["actual_pollutants"],
+    )
     changed = dict(actual)
     changed[key] = []
     with pytest.raises(ValueError, match="Paired reference"):
-        runner.validate_pair(changed, actual["times"], actual["actual_naqi"],
-                             actual["actual_legacy_bands"], actual["actual_pollutants"])
+        runner.validate_pair(
+            changed,
+            actual["times"],
+            actual["actual_naqi"],
+            actual["actual_legacy_bands"],
+            actual["actual_pollutants"],
+        )

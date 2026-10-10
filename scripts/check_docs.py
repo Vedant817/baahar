@@ -128,6 +128,13 @@ def collect_test_counts() -> tuple[int | None, dict[str, int]]:
     for line in proc.stdout.splitlines():
         match = re.match(r"^(\S+\.py):\s*(\d+)\s*$", line.strip())
         if match:
+            # Only the suite's own files. The warnings summary at the end of a
+            # collect prints bare ``.venv\...\something.py:43`` location lines,
+            # which match the same shape as ``tests/test_x.py: 12`` and used to
+            # be added to the total -- so the count moved with whatever warning
+            # the machine happened to emit, and a correct claim failed at random.
+            if not match.group(1).replace("\\", "/").startswith("tests/"):
+                continue
             per_file[Path(match.group(1)).name] = int(match.group(2))
     if not per_file:
         return None, {}
@@ -335,9 +342,15 @@ def check_tabpfn_not_claimed_running(out: Problem, tabular: Path | None) -> None
             continue
         text = path.read_text(encoding="utf-8")
         for match in _TABPFN_RUNNING_RE.finditer(text):
-            line = text[: match.start()].count("\n") + 1
+            # A disclosure sitting on the same line is the fix this check asks
+            # for, not a failure: "ran for real on 2026-10-07 ... (earlier
+            # provisional run ... 0.8512)" is a past run written down as one.
+            line = text[text.rfind("\n", 0, match.start()) + 1 : text.find("\n", match.start())]
+            if _CAVEAT_RE.search(line):
+                continue
+            line_no = text[: match.start()].count("\n") + 1
             out.add(
-                f"{name}:{line} presents TabPFN as currently running, but "
+                f"{name}:{line_no} presents TabPFN as currently running, but "
                 f"{tabular.name} records it SKIPPED. Write it as a past run."
             )
 

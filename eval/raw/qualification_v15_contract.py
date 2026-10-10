@@ -98,9 +98,7 @@ def build_contract_case(plan: Any, park: Any = None) -> dict[str, Any]:
         facts["reasons"].append(permission_reason)
         facts["permission_reason"] = permission_reason
         facts["walk_allowed"] = False
-        facts["scheduled_time"] = (
-            plan.best_time.isoformat() if plan.best_time else None
-        )
+        facts["scheduled_time"] = plan.best_time.isoformat() if plan.best_time else None
     return {"facts": facts, "messages": render_messages(facts)}
 
 

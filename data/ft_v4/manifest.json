@@ -1,10 +1,10 @@
 {
   "intervention": "missing-weather and normalized temporal coverage only",
   "historical_source_sha256": {
-    "train": "24d60362236f38fcb698be081bc8fe2f2d7952a947d3910bb2a166a15735f50d",
-    "val": "87ea4595cd90acda56804d41da7673b478046c707495d29f515cce7dc5844ba8",
-    "test": "70c8f7c5895229dff57dd799eccab7a1887294d283e66b2adca0998cb3549a9c",
-    "stress": "6a66b0bc1ac762aa7f32af174cbbad8e504f651cb448d7d2db668b3dee711313"
+    "train": "f692f395a97b927a9cfe1f111651aa2fbc14a90716e1fba8e612e67caf250c98",
+    "val": "e9194dcaac6137b2f9f96d1ac664d275abee9f7000e42347ad744c9f565ef20b",
+    "test": "26d449a872791832256b1cb6b3d61eea0d960a9cfda5b883afb9afd1ce300807",
+    "stress": "1052fbd0fd940fc119ae9d9abdd6dc001588ba8c2b86e1a4b6a2c1f5f9707680"
   },
   "training_added": 96,
   "training_families": {
@@ -14,7 +14,7 @@
     "temporal_missing": 24
   },
   "development_count": 32,
-  "development_sha256": "140daa68873c46d42474ab2654697f994a92f014feaa9085a6626502834bed21",
+  "development_sha256": "b1135f34e3d6e2063e563a710978e0086cc48df1036129b6fc3ba3b339eec101",
   "unique_augmented_prompts": 96,
   "consumed_diagnostic_prompt_overlap": 0,
   "train_development_prompt_overlap": 0,
@@ -33,12 +33,12 @@
       "stress": 64
     },
     "sha256": {
-      "train": "219008802b869c76962411a548bded4db0be1d4015a9bd9206f5c37a9e52386e",
-      "val": "a90cf7abc48f10f9219942b2fb078001f93b49654f62b3954387e9cff7b9311d",
-      "test": "6a084c26259046ee01f626d24a0c210ec2ef5eba784e8c7966c34bccbd22d442",
-      "stress": "953fb3362fb1fcd0a628b0305d919bc78aedeca90a93cbbdcd6546f6bce08b62"
+      "train": "f18f59d8d5eb07c3c00e34c5daedf8df7dd9aefc44a1ef8eda88bef201a27114",
+      "val": "235c37f62a51dd6c423f953b331275bb32c9dbb599c97c4acbb469ac2e1c476e",
+      "test": "255626438d7f1301894159614c559fda8e77431b5d2f3b6ffe662f2ed7475c2b",
+      "stress": "f79677899b56eff282b9990c17db80a9f84cafaf4cbcf9679a3f33e6d881a063"
     },
-    "contract_sha256": "8c88e40b098cf42483c9a5ded82828aca58e86f3f4f089cddea311690a38d2be",
+    "contract_sha256": "84db52fe24c02a36944836c7c9fb5fa1ccc24da10beabc30dcf5894904c0f026",
     "recorded_day_ranges": {
       "train": [
         "2025-11-01",

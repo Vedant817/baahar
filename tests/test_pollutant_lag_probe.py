@@ -15,8 +15,10 @@ spec.loader.exec_module(runner)
 
 def test_extended_features_have_identical_recent_suffix_and_never_read_future():
     t = datetime(2025, 4, 3)
-    air = {(t + timedelta(hours=h)).isoformat(timespec="minutes"):
-           dict.fromkeys(runner.GASES, h) for h in range(-47, 1)}
+    air = {
+        (t + timedelta(hours=h)).isoformat(timespec="minutes"): dict.fromkeys(runner.GASES, h)
+        for h in range(-47, 1)
+    }
     recent = runner.features(t.isoformat(), air, {}, 24)
     extended = runner.features(t.isoformat(), air, {}, 48)
     assert len(recent) == 360
@@ -32,8 +34,10 @@ def test_extended_features_have_identical_recent_suffix_and_never_read_future():
 def test_phase_local_eligibility_requires_all_exact_future_hours():
     start, end = "2025-04-01", "2025-05-01"
     t = datetime(2025, 4, 3)
-    air = {(t + timedelta(hours=h)).isoformat(timespec="minutes"):
-           dict.fromkeys(runner.GASES, 1.0) for h in range(-47, 7)}
+    air = {
+        (t + timedelta(hours=h)).isoformat(timespec="minutes"): dict.fromkeys(runner.GASES, 1.0)
+        for h in range(-47, 7)
+    }
     assert runner.eligible(t.isoformat(), start, end, air)
     assert not runner.eligible("2025-04-01T23:00", start, end, air)
     del air[(t + timedelta(hours=3)).isoformat(timespec="minutes")]

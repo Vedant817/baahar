@@ -253,7 +253,7 @@ def build(
     out.mkdir(parents=True, exist_ok=True)
     manifest = {
         "schema_version": 2,
-        "source": str(rows_path.relative_to(REPO_ROOT))
+        "source": rows_path.relative_to(REPO_ROOT).as_posix()
         if rows_path.is_relative_to(REPO_ROOT)
         else rows_path.name,
         "source_sha256": digest,
@@ -268,9 +268,14 @@ def build(
     for split, cases in datasets.items():
         cases.sort(key=lambda c: c["meta"]["source_time"] or c["id"])
         path = out / f"{split}.jsonl"
+        # `newline="\n"` is load-bearing, not decoration: text mode on Windows
+        # would translate every LF into CRLF, so the same source would hash to a
+        # different value on every platform and the recorded sha256 below would
+        # only ever match the machine that produced it.
         path.write_text(
             "".join(json.dumps(c, ensure_ascii=False, allow_nan=False) + "\n" for c in cases),
             encoding="utf-8",
+            newline="\n",
         )
         manifest["cohorts"][split] = {
             "count": len(cases),
@@ -284,7 +289,9 @@ def build(
                 (c["meta"]["source_time"] for c in cases if c["meta"]["source_time"]), default=None
             ),
         }
-    (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    (out / "manifest.json").write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
     return manifest
 
 

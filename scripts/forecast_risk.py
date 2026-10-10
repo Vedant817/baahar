@@ -15,8 +15,13 @@ FORECAST_TARGET_CONTRACT = {
 }
 BAND_NAMES = ("good", "satisfactory", "moderate", "poor", "severe", "hazardous")
 INSTANT_HISTORY_COLUMNS = (
-    "instant_naqi", "instant_naqi_lag1", "instant_naqi_lag3", "instant_naqi_lag6",
-    "instant_naqi_diff1", "instant_naqi_diff3", "instant_naqi_diff6",
+    "instant_naqi",
+    "instant_naqi_lag1",
+    "instant_naqi_lag3",
+    "instant_naqi_lag6",
+    "instant_naqi_diff1",
+    "instant_naqi_diff3",
+    "instant_naqi_diff6",
 )
 
 
@@ -28,7 +33,9 @@ def instantaneous_history_features(rows):
 
     def number(row):
         value = row.get("naqi_instant")
-        return float(value) if isinstance(value, (int, float)) and math.isfinite(value) else math.nan
+        return (
+            float(value) if isinstance(value, (int, float)) and math.isfinite(value) else math.nan
+        )
 
     lookup = {stamp: number(row) for stamp, row in zip(stamps, rows, strict=True)}
     values = []
@@ -54,7 +61,8 @@ def numeric_forecast_metrics(actual, predicted, alpha):
 def event_detection_metrics(times, labels, predictions, minimum_band):
     """Descriptive any-hit/full-hit rates among target episodes, not field evidence."""
     positives = sorted(
-        (t, p >= minimum_band) for t, y, p in zip(times, labels, predictions, strict=True)
+        (t, p >= minimum_band)
+        for t, y, p in zip(times, labels, predictions, strict=True)
         if y >= minimum_band
     )
     episodes = []
@@ -84,7 +92,8 @@ def instantaneous_persistence(index):
 def unsupported_classes(training_support, target_support):
     """Explicitly identify evaluated classes absent from model training."""
     return {
-        name: count for name, count in target_support.items()
+        name: count
+        for name, count in target_support.items()
         if count > 0 and training_support.get(name, 0) == 0
     }
 
@@ -100,7 +109,8 @@ def episode_support(times, labels, minimum_band=3, separation_hours=6):
         sizes[-1] += 1
         previous = stamp
     return {
-        "positive_hours": len(positive), "episode_count": len(sizes),
+        "positive_hours": len(positive),
+        "episode_count": len(sizes),
         "episode_sizes": sizes,
         "largest_episode_fraction": max(sizes) / len(positive) if positive else None,
         "separation_hours": separation_hours,
@@ -130,7 +140,8 @@ def support_aware_partitions(
 
     def supported(begin, stop):
         ids = [
-            i for i in window_indices(times, begin.isoformat(), stop.isoformat(), gap_hours)
+            i
+            for i in window_indices(times, begin.isoformat(), stop.isoformat(), gap_hours)
             if usable[i]
         ]
         positive = sum(labels[i] >= 3 for i in ids)

@@ -17,7 +17,9 @@ def test_gas_history_uses_exact_causal_timestamps():
     now = datetime(2025, 1, 1, 12)
     archive = {}
     for hours, value in ((0, 10), (1, 7), (3, 4), (6, 2), (-1, 999)):
-        archive[(now - timedelta(hours=hours)).isoformat(timespec="minutes")] = dict.fromkeys(runner.GASES, value)
+        archive[(now - timedelta(hours=hours)).isoformat(timespec="minutes")] = dict.fromkeys(
+            runner.GASES, value
+        )
     vector = runner.gas_history_features([now], archive)[0]
     assert len(vector) == len(runner.GAS_COLUMNS) == 28
     assert vector[:7] == [10, 7, 4, 2, 3, 6, 8]
@@ -26,8 +28,10 @@ def test_gas_history_uses_exact_causal_timestamps():
 
 def test_missing_gas_lag_is_not_replaced_by_adjacent_hour():
     now = datetime(2025, 1, 1, 12)
-    archive = {now.isoformat(timespec="minutes"): dict.fromkeys(runner.GASES, 5),
-               (now - timedelta(hours=2)).isoformat(timespec="minutes"): dict.fromkeys(runner.GASES, 4)}
+    archive = {
+        now.isoformat(timespec="minutes"): dict.fromkeys(runner.GASES, 5),
+        (now - timedelta(hours=2)).isoformat(timespec="minutes"): dict.fromkeys(runner.GASES, 4),
+    }
     vector = runner.gas_history_features([now], archive)[0]
     assert vector[0] == 5
     assert all(math.isnan(value) for value in vector[1:7])

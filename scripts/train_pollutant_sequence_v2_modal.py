@@ -34,9 +34,12 @@ def write(path, value):
 
 def validate_pair(frozen, times, truth, labels, actual_pollutants):
     """Refuse comparisons with different origins or any changed actual targets."""
-    if (frozen["times"] != times or frozen["actual_naqi"] != truth
-            or frozen["actual_legacy_bands"] != labels
-            or frozen["actual_pollutants"] != actual_pollutants):
+    if (
+        frozen["times"] != times
+        or frozen["actual_naqi"] != truth
+        or frozen["actual_legacy_bands"] != labels
+        or frozen["actual_pollutants"] != actual_pollutants
+    ):
         raise ValueError("Paired reference origins/targets differ")
 
 
@@ -351,7 +354,10 @@ def remote_train(manifest):
     if digest(reference_path) != manifest["reference"]["result_sha256"]:
         raise ValueError("V1 reference SHA mismatch")
     reference = json.loads(reference_path.read_text())
-    if reference["manifest"]["replay"] != manifest["replay"] or reference["manifest"]["partitions"] != manifest["partitions"]:
+    if (
+        reference["manifest"]["replay"] != manifest["replay"]
+        or reference["manifest"]["partitions"] != manifest["partitions"]
+    ):
         raise ValueError("Reference dataset or partitions differ")
     reference_periods = {p["partition"]: p for p in reference["results"]}
     results = []
@@ -444,8 +450,10 @@ def remote_train(manifest):
         frozen = reference_periods[name]
         validate_pair(frozen, part["times"], truth, labels, part["y"][:, -1].tolist())
         for baseline in ("paired_lightgbm", "persistence"):
-            if not np.array_equal(np.asarray(frozen["models"][baseline]["predicted_pollutants"]),
-                                  np.asarray(models[baseline]["predicted_pollutants"])):
+            if not np.array_equal(
+                np.asarray(frozen["models"][baseline]["predicted_pollutants"]),
+                np.asarray(models[baseline]["predicted_pollutants"]),
+            ):
                 raise ValueError("Unchanged baseline failed reproduction: " + baseline)
         models["v1_fixed_mean"] = frozen["models"]["tcn_fixed_mean"]
         results.append(
@@ -507,13 +515,24 @@ def main():
     if MANIFEST.exists():
         raise SystemExit("Manifest already exists; refusing duplicate submission")
     reference_path = ROOT / "eval/raw/pollutant_sequence_v1_results.json"
-    reference_manifest = json.loads((ROOT / "eval/raw/pollutant_sequence_v1_manifest.json").read_text())
-    if reference_manifest["status"] != "COMPLETED" or digest(reference_path) != reference_manifest["result_sha256"]:
+    reference_manifest = json.loads(
+        (ROOT / "eval/raw/pollutant_sequence_v1_manifest.json").read_text()
+    )
+    if (
+        reference_manifest["status"] != "COMPLETED"
+        or digest(reference_path) != reference_manifest["result_sha256"]
+    ):
         raise ValueError("Frozen v1 reference is incomplete or changed")
     for relative, expected in reference_manifest["source_sha256"].items():
-        if (relative.startswith("src/baahar/") or relative in (
-                "scripts/build_dataset.py", "eval/raw/pollutant_sequence_support_results.json",
-                "docs/DEEP_POLLUTANT_STUDY_PROTOCOL.md")) and digest(ROOT / relative) != expected:
+        if (
+            relative.startswith("src/baahar/")
+            or relative
+            in (
+                "scripts/build_dataset.py",
+                "eval/raw/pollutant_sequence_support_results.json",
+                "docs/DEEP_POLLUTANT_STUDY_PROTOCOL.md",
+            )
+        ) and digest(ROOT / relative) != expected:
             raise ValueError("Loss-only experiment encountered changed v1 source: " + relative)
     old = json.loads((ROOT / "eval/raw/forecast_risk_v3_results.json").read_text())
     files = list((ROOT / "src/baahar").glob("*.py")) + [
@@ -531,9 +550,12 @@ def main():
         "run_name": "pollutant_sequence_v2",
         "replay": old["dataset"],
         "seeds": [0, 1, 2],
-        "reference": {"name": "v1_fixed_mean", "result_sha256": digest(reference_path),
-                      "call_id": reference_manifest["call_id"],
-                      "path": "eval/raw/pollutant_sequence_v1_results.json"},
+        "reference": {
+            "name": "v1_fixed_mean",
+            "result_sha256": digest(reference_path),
+            "call_id": reference_manifest["call_id"],
+            "path": "eval/raw/pollutant_sequence_v1_results.json",
+        },
         "single_training_change": "standardized SmoothL1 loss replaced by MSE",
         "partitions": {
             "train": ["2023-01-01", "2025-04-01"],

@@ -24,8 +24,14 @@ def remote_inspect(protocol):
     from baahar.naqi import compute_naqi
 
     directory = Path("/artifacts/forecast_risk_v3")
-    mapping = {"pm2_5": "pm25", "pm10": "pm10", "nitrogen_dioxide": "no2",
-               "ozone": "o3", "sulphur_dioxide": "so2", "carbon_monoxide": "co"}
+    mapping = {
+        "pm2_5": "pm25",
+        "pm10": "pm10",
+        "nitrogen_dioxide": "no2",
+        "ozone": "o3",
+        "sulphur_dioxide": "so2",
+        "carbon_monoxide": "co",
+    }
     raw = {}
     for source in protocol["source_fixtures"]:
         path = directory / source["path"]
@@ -45,7 +51,11 @@ def remote_inspect(protocol):
     train_n = 0
     for row in rows:
         stamp = datetime.fromisoformat(row["time"])
-        if start <= stamp and stamp + timedelta(hours=6) < end and row["target_band"] in ("severe", "hazardous"):
+        if (
+            start <= stamp
+            and stamp + timedelta(hours=6) < end
+            and row["target_band"] in ("severe", "hazardous")
+        ):
             future = (stamp + timedelta(hours=6)).isoformat(timespec="minutes")
             result = compute_naqi(raw[future])
             if result.band.value != row["target_band"]:
@@ -61,14 +71,26 @@ def remote_inspect(protocol):
             raise ValueError("Evaluation target reconstruction mismatch")
         target_counts[target.dominant_pollutant] += 1
         current_counts[current.dominant_pollutant] += 1
-        cases.append({**case, "target_time": future,
-                      "current": current.to_dict(), "target": target.to_dict(),
-                      "current_pollutants": raw[case["time"]]})
-    return {"protocol": protocol, "verified_source_count": len(protocol["source_fixtures"]),
-            "training_severe_n": train_n, "training_severe_dominant_counts": dict(train_counts),
-            "evaluation_severe_n": len(cases), "evaluation_target_dominant_counts": dict(target_counts),
-            "evaluation_current_dominant_counts": dict(current_counts), "cases": cases,
-            "limitation": "Read-only explanatory audit of consumed modeled archive; no fitting or independent validation."}
+        cases.append(
+            {
+                **case,
+                "target_time": future,
+                "current": current.to_dict(),
+                "target": target.to_dict(),
+                "current_pollutants": raw[case["time"]],
+            }
+        )
+    return {
+        "protocol": protocol,
+        "verified_source_count": len(protocol["source_fixtures"]),
+        "training_severe_n": train_n,
+        "training_severe_dominant_counts": dict(train_counts),
+        "evaluation_severe_n": len(cases),
+        "evaluation_target_dominant_counts": dict(target_counts),
+        "evaluation_current_dominant_counts": dict(current_counts),
+        "cases": cases,
+        "limitation": "Read-only explanatory audit of consumed modeled archive; no fitting or independent validation.",
+    }
 
 
 def main():
@@ -97,25 +119,43 @@ def main():
     if manifest_path.exists():
         raise SystemExit("Existing diagnostic manifest; refusing duplicate launch")
     reference = json.loads((ROOT / "eval/raw/forecast_risk_v3_results.json").read_text())
-    cases = [{"partition": period["partition"], "time": stamp,
-              "target_band": ("severe" if label == 4 else "hazardous")}
-             for period in reference["results"]
-             for stamp, label in zip(period["times"], period["labels"], strict=True) if label >= 4]
-    protocol = {"source_fixtures": reference["dataset"]["source_fixtures"],
-                "rows_sha256": reference["dataset"]["rows_sha256"],
-                "training_partition": reference["resolved_partitions"]["expanded_train"],
-                "evaluation_cases": cases}
+    cases = [
+        {
+            "partition": period["partition"],
+            "time": stamp,
+            "target_band": ("severe" if label == 4 else "hazardous"),
+        }
+        for period in reference["results"]
+        for stamp, label in zip(period["times"], period["labels"], strict=True)
+        if label >= 4
+    ]
+    protocol = {
+        "source_fixtures": reference["dataset"]["source_fixtures"],
+        "rows_sha256": reference["dataset"]["rows_sha256"],
+        "training_partition": reference["resolved_partitions"]["expanded_train"],
+        "evaluation_cases": cases,
+    }
     image = modal.Image.debian_slim(python_version="3.12")
     for name in ("__init__.py", "naqi.py"):
         image = image.add_local_file(str(ROOT / "src/baahar" / name), "/opt/src/baahar/" + name)
     app = modal.App("baahar-read-only-pollutant-drivers", image=image)
-    function = app.function(cpu=1, memory=1024, timeout=180, retries=0,
-                            volumes={"/artifacts": modal.Volume.from_name("baahar-training")})(remote_inspect)
+    function = app.function(
+        cpu=1,
+        memory=1024,
+        timeout=180,
+        retries=0,
+        volumes={"/artifacts": modal.Volume.from_name("baahar-training")},
+    )(remote_inspect)
     with app.run(detach=True):
         call = function.spawn(protocol)
-        manifest = {"status": "SUBMITTED", "call_id": call.object_id, "app_id": app.app_id,
-                    "protocol": protocol, "inspector_sha256": digest(Path(__file__)),
-                    "naqi_sha256": digest(ROOT / "src/baahar/naqi.py")}
+        manifest = {
+            "status": "SUBMITTED",
+            "call_id": call.object_id,
+            "app_id": app.app_id,
+            "protocol": protocol,
+            "inspector_sha256": digest(Path(__file__)),
+            "naqi_sha256": digest(ROOT / "src/baahar/naqi.py"),
+        }
         manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
         print(json.dumps({"call_id": call.object_id, "app_id": app.app_id}))
 

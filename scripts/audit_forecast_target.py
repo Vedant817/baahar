@@ -32,21 +32,28 @@ def classification(labels, predictions):
 def audit(result, rows, air):
     by_time = {row["time"]: row for row in rows}
     keymap = {
-        "pm2_5": "pm25", "pm10": "pm10", "nitrogen_dioxide": "no2",
-        "ozone": "o3", "sulphur_dioxide": "so2", "carbon_monoxide": "co",
+        "pm2_5": "pm25",
+        "pm10": "pm10",
+        "nitrogen_dioxide": "no2",
+        "ozone": "o3",
+        "sulphur_dioxide": "so2",
+        "carbon_monoxide": "co",
     }
+
     # Keep the same pollutant-unit/NAQI computation used by the dataset builder.
     def instant(stamp):
-        return risk.instantaneous_persistence(compute_naqi({
-            keymap[k]: air[stamp].get(k) for k in keymap
-        }).index)
+        return risk.instantaneous_persistence(
+            compute_naqi({keymap[k]: air[stamp].get(k) for k in keymap}).index
+        )
 
     periods = []
     train = result["partition_support"]["train"]["bands"]
     for period in result["results"]:
         labels, times = period["labels"], period["times"]
         for stamp, label in zip(times, labels, strict=True):
-            future = (datetime.fromisoformat(stamp) + timedelta(hours=6)).isoformat(timespec="minutes")
+            future = (datetime.fromisoformat(stamp) + timedelta(hours=6)).isoformat(
+                timespec="minutes"
+            )
             if instant(future) != label:
                 raise ValueError("Archived source does not reproduce target label at " + stamp)
         matching = [instant(t) for t in times]
@@ -64,30 +71,39 @@ def audit(result, rows, air):
                 "probability_note": "Binary decisions; not calibrated probabilities",
                 "predictions": pred,
             }
-        periods.append({
-            "partition": period["partition"], "n": len(labels),
-            "baseline_disagreements": sum(a != b for a, b in zip(matching, effective, strict=True)),
-            "rounded_current_index_band_disagreements": sum(
-                risk.instantaneous_persistence(by_time[t]["naqi_instant"]) != p
-                for t, p in zip(times, matching, strict=True)
-            ),
-            "training_unsupported_classes": risk.unsupported_classes(
-                train, result["partition_support"][period["partition"]]["bands"]
-            ),
-            "learned_model_severe_diagnostics": {
-                name: {
-                    "severe_support": sum(t == 4 for t in labels),
-                    "severe_predicted_below_severe": sum(
-                        t == 4 and p < 4 for t, p in zip(labels, model["predictions"], strict=True)
-                    ),
-                    "predicted_severe_or_hazardous": sum(p >= 4 for p in model["predictions"]),
-                } for name, model in period["models"].items() if name != "persistence"
-            },
-            "baselines": baselines,
-        })
+        periods.append(
+            {
+                "partition": period["partition"],
+                "n": len(labels),
+                "baseline_disagreements": sum(
+                    a != b for a, b in zip(matching, effective, strict=True)
+                ),
+                "rounded_current_index_band_disagreements": sum(
+                    risk.instantaneous_persistence(by_time[t]["naqi_instant"]) != p
+                    for t, p in zip(times, matching, strict=True)
+                ),
+                "training_unsupported_classes": risk.unsupported_classes(
+                    train, result["partition_support"][period["partition"]]["bands"]
+                ),
+                "learned_model_severe_diagnostics": {
+                    name: {
+                        "severe_support": sum(t == 4 for t in labels),
+                        "severe_predicted_below_severe": sum(
+                            t == 4 and p < 4
+                            for t, p in zip(labels, model["predictions"], strict=True)
+                        ),
+                        "predicted_severe_or_hazardous": sum(p >= 4 for p in model["predictions"]),
+                    }
+                    for name, model in period["models"].items()
+                    if name != "persistence"
+                },
+                "baselines": baselines,
+            }
+        )
     return {
         "forecast_target_contract": risk.FORECAST_TARGET_CONTRACT,
-        "status": "COMPLETED_NO_FITTING", "periods": periods,
+        "status": "COMPLETED_NO_FITTING",
+        "periods": periods,
         "training_class_support": train,
         "limitation": "Consumed historical diagnostics, not a new holdout. Matching source definition does not establish live safety. Model outputs are unchanged.",
     }
@@ -122,19 +138,32 @@ def main():
     report = audit(result, rows, air)
     report.update(
         original_result_sha256=hashlib.sha256(raw_path.read_bytes()).hexdigest(),
-        rows_sha256=result["dataset"]["rows_sha256"], source_sha256=source_hashes,
+        rows_sha256=result["dataset"]["rows_sha256"],
+        source_sha256=source_hashes,
         audit_code_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-        contract_code_sha256=hashlib.sha256((ROOT / "scripts/forecast_risk.py").read_bytes()).hexdigest(),
+        contract_code_sha256=hashlib.sha256(
+            (ROOT / "scripts/forecast_risk.py").read_bytes()
+        ).hexdigest(),
     )
     OUTPUT.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
-    print(json.dumps({
-        "output": str(OUTPUT), "periods": [
-            {k: v for k, v in p.items() if k != "baselines"} | {
-                "baselines": {name: {k: v for k, v in b.items() if k != "predictions"}
-                              for name, b in p["baselines"].items()}
-            } for p in report["periods"]
-        ],
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "output": str(OUTPUT),
+                "periods": [
+                    {k: v for k, v in p.items() if k != "baselines"}
+                    | {
+                        "baselines": {
+                            name: {k: v for k, v in b.items() if k != "predictions"}
+                            for name, b in p["baselines"].items()
+                        }
+                    }
+                    for p in report["periods"]
+                ],
+            },
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

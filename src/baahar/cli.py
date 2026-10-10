@@ -139,9 +139,14 @@ def render_brief(resp: BriefResponse) -> None:
     from .walk import eligibility
 
     allowed, permission_reason = eligibility(plan)
-    action = plan.overall if allowed else (
-        plan.current_decision if plan.current_decision not in (None, Decision.GO)
-        else (Decision.SKIP if plan.overall is Decision.SKIP else Decision.WAIT)
+    action = (
+        plan.overall
+        if allowed
+        else (
+            plan.current_decision
+            if plan.current_decision not in (None, Decision.GO)
+            else (Decision.SKIP if plan.overall is Decision.SKIP else Decision.WAIT)
+        )
     )
     console.print(f"  {action.value}", style=DECISION_STYLE[action], end="")
     console.print(f"  {plan.headline}", style="bold")

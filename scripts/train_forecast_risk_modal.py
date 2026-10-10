@@ -52,7 +52,11 @@ def remote_train(manifest):
         import shutil
 
         bd.CACHE_DIR.mkdir(parents=True, exist_ok=True)
-        cached = {"forecast_risk_v2": "forecast_risk_v1", "forecast_risk_v3": "forecast_risk_v2", "forecast_risk_v4": "forecast_risk_v3"}[manifest["run_name"]]
+        cached = {
+            "forecast_risk_v2": "forecast_risk_v1",
+            "forecast_risk_v3": "forecast_risk_v2",
+            "forecast_risk_v4": "forecast_risk_v3",
+        }[manifest["run_name"]]
         for recorded in (Path("/artifacts") / cached / "data/samples").glob("*.json"):
             target = bd.CACHE_DIR / recorded.name
             if not target.exists():
@@ -119,20 +123,36 @@ def remote_train(manifest):
     )
     if manifest.get("experiment") == "coverage_ablation":
         return remote_coverage(
-            manifest, rows, x, y, times, history_ok, quality_ok,
-            raw_air, directory, sources,
+            manifest,
+            rows,
+            x,
+            y,
+            times,
+            history_ok,
+            quality_ok,
+            raw_air,
+            directory,
+            sources,
         )
     if manifest.get("experiment") == "target_feature_ablation":
-        return remote_target_features(manifest, rows, x, y, times, history_ok, quality_ok, raw_air, directory, sources)
+        return remote_target_features(
+            manifest, rows, x, y, times, history_ok, quality_ok, raw_air, directory, sources
+        )
     resolved_partitions = dict(manifest["partitions"])
     if "support_protocol" in manifest:
         protocol = manifest["support_protocol"]
-        resolved_partitions.update(risk.support_aware_partitions(
-            times, y.tolist(), [h and q for h, q in zip(history_ok, quality_ok, strict=True)],
-            protocol["start"], protocol["end"],
-            min_positive=protocol["min_positive"], min_negative=protocol["min_negative"],
-            gap_hours=manifest["label_gap_hours"],
-        ))
+        resolved_partitions.update(
+            risk.support_aware_partitions(
+                times,
+                y.tolist(),
+                [h and q for h, q in zip(history_ok, quality_ok, strict=True)],
+                protocol["start"],
+                protocol["end"],
+                min_positive=protocol["min_positive"],
+                min_negative=protocol["min_negative"],
+                gap_hours=manifest["label_gap_hours"],
+            )
+        )
 
     def partition(name):
         start, end = resolved_partitions[name]
@@ -165,7 +185,10 @@ def remote_train(manifest):
     if "support_protocol" in manifest:
         for name in ("train", "development", "calibration", "threshold_selection"):
             positive = int(sum(y[parts[name]] >= 3))
-            if positive < protocol["min_positive"] or len(parts[name]) - positive < protocol["min_negative"]:
+            if (
+                positive < protocol["min_positive"]
+                or len(parts[name]) - positive < protocol["min_negative"]
+            ):
                 raise ValueError("Insufficient pre-evaluation support for " + name)
     xt, medians = ev.impute(x[train])
     matrices = {name: ev.impute(x[indices], medians=medians)[0] for name, indices in parts.items()}
@@ -304,11 +327,11 @@ def remote_train(manifest):
         predictions = {
             "instantaneous_persistence": [
                 risk.instantaneous_persistence(
-                    bd.compute_naqi({
-                        bd.AQ_VAR_TO_KEY[k]: raw_air[rows[i]["time"]].get(k)
-                        for k in bd.AQ_VARS
-                    }).index
-                ) for i in indices
+                    bd.compute_naqi(
+                        {bd.AQ_VAR_TO_KEY[k]: raw_air[rows[i]["time"]].get(k) for k in bd.AQ_VARS}
+                    ).index
+                )
+                for i in indices
             ],
             "conservative_persistence_diagnostic": [
                 ev.BAND_ORDINALS[rows[i]["band"]] for i in indices
@@ -422,7 +445,9 @@ def remote_train(manifest):
     }
 
 
-def remote_coverage(manifest, rows, x, y, times, history_ok, quality_ok, raw_air, directory, sources):
+def remote_coverage(
+    manifest, rows, x, y, times, history_ok, quality_ok, raw_air, directory, sources
+):
     """Frozen coverage ablation: no test-based model or threshold selection."""
     from collections import Counter
     from importlib.metadata import version
@@ -444,8 +469,10 @@ def remote_coverage(manifest, rows, x, y, times, history_ok, quality_ok, raw_air
 
     def support(ids):
         return {
-            "n": len(ids), "bands": dict(Counter(ev.BANDS[int(y[i])] for i in ids)),
-            "first_time": rows[ids[0]]["time"], "last_time": rows[ids[-1]]["time"],
+            "n": len(ids),
+            "bands": dict(Counter(ev.BANDS[int(y[i])] for i in ids)),
+            "first_time": rows[ids[0]]["time"],
+            "last_time": rows[ids[-1]]["time"],
             "poor_or_worse_episodes": risk.episode_support([times[i] for i in ids], y[ids]),
             "severe_or_worse_episodes": risk.episode_support([times[i] for i in ids], y[ids], 4),
         }
@@ -463,7 +490,11 @@ def remote_coverage(manifest, rows, x, y, times, history_ok, quality_ok, raw_air
         xt, medians = ev.impute(x[ids])
         for weighting in ("ordinary", "risk_weighted"):
             model = lgb.LGBMClassifier(**manifest["model_parameters"])
-            weights = np.array(manifest["class_weights"])[y[ids]] if weighting == "risk_weighted" else None
+            weights = (
+                np.array(manifest["class_weights"])[y[ids]]
+                if weighting == "risk_weighted"
+                else None
+            )
             model.fit(xt, y[ids], sample_weight=weights)
             fitted[train_name + "_" + weighting] = (model, medians, train_name)
     periods = []
@@ -482,59 +513,103 @@ def remote_coverage(manifest, rows, x, y, times, history_ok, quality_ok, raw_air
             training_names[model_name] = train_name
         train_ids = parts["expanded_train"]
         xt, medians = ev.impute(x[train_ids])
-        pred, _, _ = ev.fit_predict("ensemble", xt, y[train_ids], ev.impute(x[ids], medians)[0], medians, seed=0)
+        pred, _, _ = ev.fit_predict(
+            "ensemble", xt, y[train_ids], ev.impute(x[ids], medians)[0], medians, seed=0
+        )
         predictions["expanded_ensemble"] = pred
         training_names["expanded_ensemble"] = "expanded_train"
         predictions["instantaneous_persistence"] = [
-            risk.instantaneous_persistence(bd.compute_naqi({
-                bd.AQ_VAR_TO_KEY[k]: raw_air[rows[i]["time"]].get(k) for k in bd.AQ_VARS
-            }).index) for i in ids
+            risk.instantaneous_persistence(
+                bd.compute_naqi(
+                    {bd.AQ_VAR_TO_KEY[k]: raw_air[rows[i]["time"]].get(k) for k in bd.AQ_VARS}
+                ).index
+            )
+            for i in ids
         ]
-        predictions["conservative_persistence_diagnostic"] = [ev.BAND_ORDINALS[rows[i]["band"]] for i in ids]
+        predictions["conservative_persistence_diagnostic"] = [
+            ev.BAND_ORDINALS[rows[i]["band"]] for i in ids
+        ]
         models = {}
         for model_name, pred in predictions.items():
             p = probabilities.get(model_name)
-            poor_p = p[:, 3:].sum(axis=1).tolist() if p is not None else [float(v >= 3) for v in pred]
-            severe_p = p[:, 4:].sum(axis=1).tolist() if p is not None else [float(v >= 4) for v in pred]
+            poor_p = (
+                p[:, 3:].sum(axis=1).tolist() if p is not None else [float(v >= 3) for v in pred]
+            )
+            severe_p = (
+                p[:, 4:].sum(axis=1).tolist() if p is not None else [float(v >= 4) for v in pred]
+            )
             severe_metrics = risk.risk_metrics(
-                [3 if v >= 4 else 0 for v in labels], severe_p,
+                [3 if v >= 4 else 0 for v in labels],
+                severe_p,
                 [3 if v >= 4 else 0 for v in pred],
             )
             models[model_name] = {
                 "classification": ev.prf(ev.confusion(labels, pred)),
                 "risk": risk.risk_metrics(labels, poor_p, pred),
                 "severe_or_worse": severe_metrics,
-                "predictions": pred, "risk_probabilities": poor_p,
+                "predictions": pred,
+                "risk_probabilities": poor_p,
                 "severe_probabilities": severe_p,
                 "training_partition": training_names.get(model_name),
                 "training_unsupported_classes": risk.unsupported_classes(
                     supports[training_names[model_name]]["bands"], supports[name]["bands"]
-                ) if model_name in training_names else {},
-                "probability_note": "uncalibrated class probabilities" if p is not None else "binary band decisions, not calibrated probabilities",
+                )
+                if model_name in training_names
+                else {},
+                "probability_note": "uncalibrated class probabilities"
+                if p is not None
+                else "binary band decisions, not calibrated probabilities",
             }
-        periods.append({"partition": name, "n": len(ids), "times": [rows[i]["time"] for i in ids], "labels": labels, "models": models})
-    joblib.dump({
-        "models": fitted, "manifest": manifest,
-        "forecast_target_contract": risk.FORECAST_TARGET_CONTRACT,
-        "feature_order": ev.FEATURE_COLUMNS, "training_support": supports,
-        "disposition": "RESEARCH_ONLY_NO_PROMOTION",
-    }, directory / "coverage_candidates.joblib")
+        periods.append(
+            {
+                "partition": name,
+                "n": len(ids),
+                "times": [rows[i]["time"] for i in ids],
+                "labels": labels,
+                "models": models,
+            }
+        )
+    joblib.dump(
+        {
+            "models": fitted,
+            "manifest": manifest,
+            "forecast_target_contract": risk.FORECAST_TARGET_CONTRACT,
+            "feature_order": ev.FEATURE_COLUMNS,
+            "training_support": supports,
+            "disposition": "RESEARCH_ONLY_NO_PROMOTION",
+        },
+        directory / "coverage_candidates.joblib",
+    )
     modal.Volume.from_name("baahar-training").commit()
     return {
-        "manifest": manifest, "forecast_target_contract": risk.FORECAST_TARGET_CONTRACT,
-        "dataset": {"rows_sha256": digest(directory / "rows.jsonl"), "row_count": len(rows),
-                    "excluded_history_n": sum(not v for v in history_ok),
-                    "excluded_quality_n": sum(not v for v in quality_ok),
-                    "source_fixtures": sources, "source_kind": "CAMS/ERA5 modelled archive"},
-        "partition_support": supports, "resolved_partitions": manifest["partitions"],
-        "selection": {"band_weight": "fixed [1,1,1,4,16,16]", "binary_weight": None,
-                      "threshold": None, "risk_floor_enabled": False, "method": "none; fixed configurations"},
+        "manifest": manifest,
+        "forecast_target_contract": risk.FORECAST_TARGET_CONTRACT,
+        "dataset": {
+            "rows_sha256": digest(directory / "rows.jsonl"),
+            "row_count": len(rows),
+            "excluded_history_n": sum(not v for v in history_ok),
+            "excluded_quality_n": sum(not v for v in quality_ok),
+            "source_fixtures": sources,
+            "source_kind": "CAMS/ERA5 modelled archive",
+        },
+        "partition_support": supports,
+        "resolved_partitions": manifest["partitions"],
+        "selection": {
+            "band_weight": "fixed [1,1,1,4,16,16]",
+            "binary_weight": None,
+            "threshold": None,
+            "risk_floor_enabled": False,
+            "method": "none; fixed configurations",
+        },
         "versions": {n: version(n) for n in ("numpy", "lightgbm", "scikit-learn")},
-        "results": periods, "disposition": "RESEARCH_ONLY_NO_PROMOTION",
+        "results": periods,
+        "disposition": "RESEARCH_ONLY_NO_PROMOTION",
     }
 
 
-def remote_target_features(manifest, rows, x, y, times, history_ok, quality_ok, raw_air, directory, sources):
+def remote_target_features(
+    manifest, rows, x, y, times, history_ok, quality_ok, raw_air, directory, sources
+):
     """Fixed 2 x 3 feature/target experiment on exactly replayed v3 data."""
     from collections import Counter
     from datetime import timedelta
@@ -566,19 +641,30 @@ def remote_target_features(manifest, rows, x, y, times, history_ok, quality_ok, 
         "base": x,
         "instant_history": np.column_stack((x, risk.instantaneous_history_features(rows))),
     }
-    orders = {"base": ev.FEATURE_COLUMNS,
-              "instant_history": ev.FEATURE_COLUMNS + list(risk.INSTANT_HISTORY_COLUMNS)}
-    parts = {name: [i for i in risk.window_indices(times, *window) if history_ok[i] and quality_ok[i]]
-             for name, window in manifest["partitions"].items()}
+    orders = {
+        "base": ev.FEATURE_COLUMNS,
+        "instant_history": ev.FEATURE_COLUMNS + list(risk.INSTANT_HISTORY_COLUMNS),
+    }
+    parts = {
+        name: [i for i in risk.window_indices(times, *window) if history_ok[i] and quality_ok[i]]
+        for name, window in manifest["partitions"].items()
+    }
     if any(not ids for ids in parts.values()):
         raise ValueError("An archive partition is empty")
-    supports = {name: {
-        "n": len(ids), "bands": dict(Counter(ev.BANDS[int(y[i])] for i in ids)),
-        "poor_or_worse_episodes": risk.episode_support([times[i] for i in ids], y[ids]),
-        "severe_or_worse_episodes": risk.episode_support([times[i] for i in ids], y[ids], 4),
-    } for name, ids in parts.items()}
+    supports = {
+        name: {
+            "n": len(ids),
+            "bands": dict(Counter(ev.BANDS[int(y[i])] for i in ids)),
+            "poor_or_worse_episodes": risk.episode_support([times[i] for i in ids], y[ids]),
+            "severe_or_worse_episodes": risk.episode_support([times[i] for i in ids], y[ids], 4),
+        }
+        for name, ids in parts.items()
+    }
     train = parts["expanded_train"]
-    if supports["expanded_train"]["bands"].get("severe", 0) < manifest["minimum_severe_train_hours"]:
+    if (
+        supports["expanded_train"]["bands"].get("severe", 0)
+        < manifest["minimum_severe_train_hours"]
+    ):
         raise ValueError("Insufficient pre-evaluation support for severe training")
     write(directory / "pre_fit_support.json", supports)
     modal.Volume.from_name("baahar-training").commit()
@@ -589,7 +675,9 @@ def remote_target_features(manifest, rows, x, y, times, history_ok, quality_ok, 
         classifier.fit(xt, y[train], sample_weight=np.array(manifest["class_weights"])[y[train]])
         fitted[feature_name + "_classifier"] = (classifier, medians, feature_name, None)
         for alpha in manifest["quantiles"]:
-            model = lgb.LGBMRegressor(objective="quantile", alpha=alpha, **manifest["model_parameters"])
+            model = lgb.LGBMRegressor(
+                objective="quantile", alpha=alpha, **manifest["model_parameters"]
+            )
             model.fit(xt, target[train])
             fitted[feature_name + "_quantile_" + str(alpha)] = (model, medians, feature_name, alpha)
     periods = []
@@ -616,43 +704,81 @@ def remote_target_features(manifest, rows, x, y, times, history_ok, quality_ok, 
                 numeric_metrics = risk.numeric_forecast_metrics(actual, numeric, alpha)
                 poor_p, severe_p = [float(v >= 3) for v in pred], [float(v >= 4) for v in pred]
             poor = risk.risk_metrics(labels, poor_p, pred)
-            severe = risk.risk_metrics([3 if v >= 4 else 0 for v in labels], severe_p, [3 if v >= 4 else 0 for v in pred])
+            severe = risk.risk_metrics(
+                [3 if v >= 4 else 0 for v in labels], severe_p, [3 if v >= 4 else 0 for v in pred]
+            )
             if alpha is not None:
                 for scores in (poor, severe):
                     for key in ("brier", "ece_10_bins", "reliability_bins"):
                         scores[key] = None
-            onset_ids = [j for j, (t, c) in enumerate(zip(labels, current, strict=True)) if t >= 4 and c < 4]
+            onset_ids = [
+                j for j, (t, c) in enumerate(zip(labels, current, strict=True)) if t >= 4 and c < 4
+            ]
             models[model_name] = {
                 "classification": ev.prf(ev.confusion(labels, pred)),
-                "risk": poor, "severe_or_worse": severe,
-                "numeric": numeric_metrics, "numeric_predictions": numeric,
+                "risk": poor,
+                "severe_or_worse": severe,
+                "numeric": numeric_metrics,
+                "numeric_predictions": numeric,
                 "predictions": pred,
                 "poor_probabilities": poor_p if alpha is None else None,
                 "severe_probabilities": severe_p if alpha is None else None,
                 "poor_episodes": risk.event_detection_metrics(period_times, labels, pred, 3),
                 "severe_episodes": risk.event_detection_metrics(period_times, labels, pred, 4),
-                "severe_onset": {"n": len(onset_ids), "misses": sum(pred[j] < 4 for j in onset_ids)},
-                "feature_set": feature_name, "feature_order": orders[feature_name],
-                "probability_note": "uncalibrated class probabilities" if alpha is None else "quantile forecast; no risk probability or Brier/ECE",
+                "severe_onset": {
+                    "n": len(onset_ids),
+                    "misses": sum(pred[j] < 4 for j in onset_ids),
+                },
+                "feature_set": feature_name,
+                "feature_order": orders[feature_name],
+                "probability_note": "uncalibrated class probabilities"
+                if alpha is None
+                else "quantile forecast; no risk probability or Brier/ECE",
             }
-        baseline_sha = hashlib.sha256(json.dumps(models["base_classifier"]["predictions"]).encode()).hexdigest()
-        periods.append({
-            "partition": name, "n": len(ids), "times": [rows[i]["time"] for i in ids],
-            "labels": labels, "numeric_targets": actual, "current_instantaneous_bands": current,
-            "rounded_numeric_label_disagreements": sum(risk.instantaneous_persistence(t) != y for t, y in zip(actual, labels, strict=True)),
-            "v3_reference_prediction_match": baseline_sha == manifest["reference_prediction_sha256"].get(name) if name in manifest["reference_prediction_sha256"] else None,
-            "models": models,
-        })
-    joblib.dump({"models": fitted, "feature_orders": orders, "manifest": manifest,
-                 "target_contract": risk.FORECAST_TARGET_CONTRACT, "disposition": "RESEARCH_ONLY"}, directory / "target_feature_candidates.joblib")
+        baseline_sha = hashlib.sha256(
+            json.dumps(models["base_classifier"]["predictions"]).encode()
+        ).hexdigest()
+        periods.append(
+            {
+                "partition": name,
+                "n": len(ids),
+                "times": [rows[i]["time"] for i in ids],
+                "labels": labels,
+                "numeric_targets": actual,
+                "current_instantaneous_bands": current,
+                "rounded_numeric_label_disagreements": sum(
+                    risk.instantaneous_persistence(t) != y
+                    for t, y in zip(actual, labels, strict=True)
+                ),
+                "v3_reference_prediction_match": baseline_sha
+                == manifest["reference_prediction_sha256"].get(name)
+                if name in manifest["reference_prediction_sha256"]
+                else None,
+                "models": models,
+            }
+        )
+    joblib.dump(
+        {
+            "models": fitted,
+            "feature_orders": orders,
+            "manifest": manifest,
+            "target_contract": risk.FORECAST_TARGET_CONTRACT,
+            "disposition": "RESEARCH_ONLY",
+        },
+        directory / "target_feature_candidates.joblib",
+    )
     modal.Volume.from_name("baahar-training").commit()
     return {
-        "manifest": manifest, "dataset": {"rows_sha256": digest(directory / "rows.jsonl"), "source_fixtures": sources},
-        "source_target_timestamp_checks": timing_checked, "feature_orders": orders,
-        "partition_support": supports, "resolved_partitions": manifest["partitions"],
+        "manifest": manifest,
+        "dataset": {"rows_sha256": digest(directory / "rows.jsonl"), "source_fixtures": sources},
+        "source_target_timestamp_checks": timing_checked,
+        "feature_orders": orders,
+        "partition_support": supports,
+        "resolved_partitions": manifest["partitions"],
         "forecast_target_contract": risk.FORECAST_TARGET_CONTRACT,
         "versions": {n: version(n) for n in ("numpy", "lightgbm", "scikit-learn")},
-        "results": periods, "disposition": "RESEARCH_ONLY_NO_PROMOTION",
+        "results": periods,
+        "disposition": "RESEARCH_ONLY_NO_PROMOTION",
     }
 
 
@@ -663,9 +789,11 @@ def report(results):
     lines = [
         "# Rare-air forecast experiment",
         "",
-        ("Research-only coverage ablation on consumed archive diagnostics; no station, prospective or medical-safety claim."
-         if results["manifest"].get("experiment") == "coverage_ablation" else
-         "Research-only, no automatic promotion. New modelled archive periods; not station-accuracy or medical-safety evidence."),
+        (
+            "Research-only coverage ablation on consumed archive diagnostics; no station, prospective or medical-safety claim."
+            if results["manifest"].get("experiment") == "coverage_ablation"
+            else "Research-only, no automatic promotion. New modelled archive periods; not station-accuracy or medical-safety evidence."
+        ),
         "",
         "| Period | Model | N | Accuracy | Macro-F1 | Poor+ misses/support | Recall | False-alarm rate | Precision | Brier | ECE |",
         "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
@@ -677,18 +805,26 @@ def report(results):
                 f"| {period['partition']} | {name} | {period['n']} | {c['accuracy']} | {c['macro_f1']} | {r['misses']}/{r['positive_support']} | {r['recall']} | {r['false_alarm_rate']} | {r['precision']} | {r['brier']:.5f} | {r['ece_10_bins']:.5f} |"
             )
     if results["manifest"].get("experiment") == "coverage_ablation":
-        lines += ["", "## Severe-or-worse diagnostics", "",
-                  "| Period | Model | Misses/support | Recall | False-alarm rate | Precision | Brier | ECE |",
-                  "|---|---|---:|---:|---:|---:|---:|---:|"]
+        lines += [
+            "",
+            "## Severe-or-worse diagnostics",
+            "",
+            "| Period | Model | Misses/support | Recall | False-alarm rate | Precision | Brier | ECE |",
+            "|---|---|---:|---:|---:|---:|---:|---:|",
+        ]
         for period in results["results"]:
             for name, model in period["models"].items():
                 r = model["severe_or_worse"]
-                lines.append(f"| {period['partition']} | {name} | {r['misses']}/{r['positive_support']} | {r['recall']} | {r['false_alarm_rate']} | {r['precision']} | {r['brier']:.5f} | {r['ece_10_bins']:.5f} |")
+                lines.append(
+                    f"| {period['partition']} | {name} | {r['misses']}/{r['positive_support']} | {r['recall']} | {r['false_alarm_rate']} | {r['precision']} | {r['brier']:.5f} | {r['ece_10_bins']:.5f} |"
+                )
     lines += [
         "",
-        ("Coverage ablation uses fixed configurations without calibration or threshold selection. Persistence/ensemble Brier and ECE use binary decisions; LightGBM uses uncalibrated class probabilities. Periods are consumed diagnostics; no policy or deployment weather accuracy is assessed."
-         if results["manifest"].get("experiment") == "coverage_ablation" else
-         "Brier/ECE for persistence and ensemble use binary band decisions, not calibrated probabilities. Instantaneous persistence matches the target basis; conservative persistence is a differently defined diagnostic. Target-hour policy weather is oracle recorded data. Calibration and threshold selection precede both locked periods."),
+        (
+            "Coverage ablation uses fixed configurations without calibration or threshold selection. Persistence/ensemble Brier and ECE use binary decisions; LightGBM uses uncalibrated class probabilities. Periods are consumed diagnostics; no policy or deployment weather accuracy is assessed."
+            if results["manifest"].get("experiment") == "coverage_ablation"
+            else "Brier/ECE for persistence and ensemble use binary band decisions, not calibrated probabilities. Instantaneous persistence matches the target basis; conservative persistence is a differently defined diagnostic. Target-hour policy weather is oracle recorded data. Calibration and threshold selection precede both locked periods."
+        ),
         "",
         "## Selection and support",
         "",
@@ -700,7 +836,10 @@ def report(results):
                     for k in ("band_weight", "binary_weight", "threshold", "risk_floor_enabled")
                 },
                 "partition_support": results["partition_support"],
-                "forecast_target_contract": results.get("forecast_target_contract", "Historical artifact predates explicit contract; persistence used current effective band"),
+                "forecast_target_contract": results.get(
+                    "forecast_target_contract",
+                    "Historical artifact predates explicit contract; persistence used current effective band",
+                ),
                 "training_unsupported_classes": {
                     p["partition"]: p.get("training_unsupported_classes", {})
                     for p in results["results"]
@@ -716,16 +855,27 @@ def report(results):
 
 
 def report_target_features(results):
-    lines = ["# V4 fixed target and feature experiment", "",
-             "Consumed modeled archive diagnostics; no calibration, threshold tuning or automatic model adoption.", "",
-             "| Period | Candidate | Accuracy | Macro-F1 | Poor+ misses/support | Poor+ FAR | Severe+ misses/support | Severe+ FAR | MAE | Quantile coverage |",
-             "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
+    lines = [
+        "# V4 fixed target and feature experiment",
+        "",
+        "Consumed modeled archive diagnostics; no calibration, threshold tuning or automatic model adoption.",
+        "",
+        "| Period | Candidate | Accuracy | Macro-F1 | Poor+ misses/support | Poor+ FAR | Severe+ misses/support | Severe+ FAR | MAE | Quantile coverage |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+    ]
     for p in results["results"]:
         for name, m in p["models"].items():
             c, r, s, n = m["classification"], m["risk"], m["severe_or_worse"], m["numeric"]
-            lines.append(f"| {p['partition']} | {name} | {c['accuracy']} | {c['macro_f1']} | {r['misses']}/{r['positive_support']} | {r['false_alarm_rate']} | {s['misses']}/{s['positive_support']} | {s['false_alarm_rate']} | {n['mae'] if n else 'N/A'} | {n['empirical_quantile_coverage'] if n else 'N/A'} |")
-    lines += ["", "Classifier Brier/ECE use uncalibrated probabilities. Quantile heads do not supply risk probabilities; their Brier/ECE are null. Empirical quantile coverage does not establish calibrated safety. Numeric target labels are preserved, including any rounding discrepancies. Raw output includes feature orders, source checks, episodes, onset misses, numeric predictions, RMSE/pinball loss and all risk metrics. Development reporting does not select candidates."]
-    PREFIX.with_name(PREFIX.name + "_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+            lines.append(
+                f"| {p['partition']} | {name} | {c['accuracy']} | {c['macro_f1']} | {r['misses']}/{r['positive_support']} | {r['false_alarm_rate']} | {s['misses']}/{s['positive_support']} | {s['false_alarm_rate']} | {n['mae'] if n else 'N/A'} | {n['empirical_quantile_coverage'] if n else 'N/A'} |"
+            )
+    lines += [
+        "",
+        "Classifier Brier/ECE use uncalibrated probabilities. Quantile heads do not supply risk probabilities; their Brier/ECE are null. Empirical quantile coverage does not establish calibrated safety. Numeric target labels are preserved, including any rounding discrepancies. Raw output includes feature orders, source checks, episodes, onset misses, numeric predictions, RMSE/pinball loss and all risk metrics. Development reporting does not select candidates.",
+    ]
+    PREFIX.with_name(PREFIX.name + "_report.md").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8"
+    )
 
 
 def main():
@@ -757,11 +907,13 @@ def main():
         except ValueError as exc:
             # A known terminal data gate is different from a transient fetch error.
             reason = "Risk training/calibration lacks both classes; refusing fake calibration"
-            if str(exc) != reason and not str(exc).startswith((
-                "Insufficient pre-evaluation support for ",
-                "No binary risk candidate meets development false-alarm constraint",
-                "An archive partition is empty",
-            )):
+            if str(exc) != reason and not str(exc).startswith(
+                (
+                    "Insufficient pre-evaluation support for ",
+                    "No binary risk candidate meets development false-alarm constraint",
+                    "An archive partition is empty",
+                )
+            ):
                 raise
             reason = str(exc)
             from datetime import datetime
@@ -769,14 +921,17 @@ def main():
             observed = datetime.now(UTC).isoformat()
             error = PREFIX.with_name(PREFIX.name + "_monitor_error.json")
             if not error.exists():
-                write(error, {
-                    "step": "remote_class_support_gate",
-                    "consecutive_count": 1,
-                    "terminal": True,
-                    "call_id": manifest["call_id"],
-                    "observed_at": observed,
-                    "reason": reason,
-                })
+                write(
+                    error,
+                    {
+                        "step": "remote_class_support_gate",
+                        "consecutive_count": 1,
+                        "terminal": True,
+                        "call_id": manifest["call_id"],
+                        "observed_at": observed,
+                        "reason": reason,
+                    },
+                )
             manifest.update(status="FAILED", failure_reason=reason, failure_observed_at=observed)
             write(MANIFEST, manifest)
             print("Hosted run FAILED at class-support gate; no model metrics or resubmission.")
@@ -828,19 +983,24 @@ def main():
                 "locked_other_seasons": ["2025-05-01", "2025-11-01"],
             },
             support_protocol={
-                "start": "2024-01-01", "end": "2025-02-01",
-                "min_positive": 20, "min_negative": 200,
+                "start": "2024-01-01",
+                "end": "2025-02-01",
+                "min_positive": 20,
+                "min_negative": 200,
                 "cut_rule": "earliest daily end with minimum usable support, development then calibration; remainder threshold selection; abort if any phase lacks support",
                 "limitation": "Label-adaptive development windows; hourly supports are correlated, not independent pollution episodes. No locked-label access for boundary selection.",
             },
         )
     if args.version == "v3":
         manifest.update(
-            run_name="forecast_risk_v3", experiment="coverage_ablation",
+            run_name="forecast_risk_v3",
+            experiment="coverage_ablation",
             supersedes="eval/raw/forecast_risk_v2_manifest.json",
             archive_ranges=[
-                ["2023-01-01", "2023-12-31"], ["2024-01-01", "2024-12-31"],
-                ["2025-01-01", "2025-10-31"], ["2025-11-01", "2025-12-31"],
+                ["2023-01-01", "2023-12-31"],
+                ["2024-01-01", "2024-12-31"],
+                ["2025-01-01", "2025-10-31"],
+                ["2025-11-01", "2025-12-31"],
                 ["2026-01-01", "2026-09-30"],
             ],
             partitions={
@@ -849,22 +1009,34 @@ def main():
                 "diagnostic_pollution": ["2026-02-01", "2026-05-01"],
                 "diagnostic_other_seasons": ["2026-05-01", "2026-10-01"],
             },
-            class_weights=[1, 1, 1, 4, 16, 16], minimum_severe_train_hours=20,
-            model_parameters={"n_estimators": 450, "learning_rate": 0.04, "num_leaves": 28,
-                              "subsample": 0.85, "colsample_bytree": 0.85,
-                              "reg_alpha": 0.5, "reg_lambda": 1.0,
-                              "random_state": 0, "verbosity": -1, "n_jobs": 2},
+            class_weights=[1, 1, 1, 4, 16, 16],
+            minimum_severe_train_hours=20,
+            model_parameters={
+                "n_estimators": 450,
+                "learning_rate": 0.04,
+                "num_leaves": 28,
+                "subsample": 0.85,
+                "colsample_bytree": 0.85,
+                "reg_alpha": 0.5,
+                "reg_lambda": 1.0,
+                "random_state": 0,
+                "verbosity": -1,
+                "n_jobs": 2,
+            },
             limitations="Consumed archive diagnostics. V2 evaluated 2025 periods now included in training; 2026 archive and windows have informed prior research. No pristine holdout, calibration or automatic promotion. Fixed configurations; hourly severe support is correlated, episode counts must be reported.",
         )
     if args.version == "v4":
         old = json.loads((ROOT / "eval/raw/forecast_risk_v3_results.json").read_text())
         manifest.update(
-            run_name="forecast_risk_v4", experiment="target_feature_ablation",
+            run_name="forecast_risk_v4",
+            experiment="target_feature_ablation",
             archive_ranges=old["manifest"]["archive_ranges"],
             supersedes="eval/raw/forecast_risk_v3_manifest.json",
-            replay_dataset={"rows_path": "/artifacts/forecast_risk_v3/rows.jsonl",
-                            "rows_sha256": old["dataset"]["rows_sha256"],
-                            "source_fixtures": old["dataset"]["source_fixtures"]},
+            replay_dataset={
+                "rows_path": "/artifacts/forecast_risk_v3/rows.jsonl",
+                "rows_sha256": old["dataset"]["rows_sha256"],
+                "source_fixtures": old["dataset"]["source_fixtures"],
+            },
             partitions={
                 "expanded_train": ["2023-01-01", "2025-06-01"],
                 "development": ["2025-06-01", "2026-02-01"],
@@ -872,9 +1044,16 @@ def main():
                 "diagnostic_other_seasons": ["2026-05-01", "2026-10-01"],
             },
             model_parameters=old["manifest"]["model_parameters"],
-            class_weights=old["manifest"]["class_weights"], minimum_severe_train_hours=20,
-            quantiles=[0.5, 0.9], feature_ablation="28 original vs 28+7 timestamp-aligned instantaneous history columns",
-            reference_prediction_sha256={p["partition"]: hashlib.sha256(json.dumps(p["models"]["expanded_train_risk_weighted"]["predictions"]).encode()).hexdigest() for p in old["results"]},
+            class_weights=old["manifest"]["class_weights"],
+            minimum_severe_train_hours=20,
+            quantiles=[0.5, 0.9],
+            feature_ablation="28 original vs 28+7 timestamp-aligned instantaneous history columns",
+            reference_prediction_sha256={
+                p["partition"]: hashlib.sha256(
+                    json.dumps(p["models"]["expanded_train_risk_weighted"]["predictions"]).encode()
+                ).hexdigest()
+                for p in old["results"]
+            },
             limitations="Research-informed fixed 2x3 factorial ablation on exact consumed v3 archive. All settings fixed; development and diagnostics do not select candidates. Six severe training episodes only. No probability calibration for regressors, no pristine holdout, deployment or medical safety claim.",
         )
         for unused in ("positive_weights", "thresholds", "max_false_alarm", "max_accuracy_loss"):

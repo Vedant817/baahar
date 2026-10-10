@@ -42,9 +42,12 @@ def metrics(times, labels, predictions, minimum):
     fp = sum(not t and p >= minimum for t, p in zip(truth, predictions, strict=True))
     groups = episodes(times, labels, minimum)
     return {
-        "positive_support": positives, "negative_support": negatives,
-        "misses": positives - tp, "recall": tp / positives if positives else None,
-        "false_alarms": fp, "false_alarm_rate": fp / negatives if negatives else None,
+        "positive_support": positives,
+        "negative_support": negatives,
+        "misses": positives - tp,
+        "recall": tp / positives if positives else None,
+        "false_alarms": fp,
+        "false_alarm_rate": fp / negatives if negatives else None,
         "precision": tp / (tp + fp) if tp + fp else None,
         "episode_count": len(groups),
         "any_hit_count": sum(any(predictions[i] >= minimum for i in g) for g in groups),
@@ -60,8 +63,9 @@ def new_severe_hits(times, labels, reference, challenger):
         "new_severe_hours_in_previously_missed_episodes": sum(
             challenger[i] >= 4 for g in captured for i in g
         ),
-        "newly_detected_times": [times[i].isoformat() for g in captured for i in g
-                                 if challenger[i] >= 4],
+        "newly_detected_times": [
+            times[i].isoformat() for g in captured for i in g if challenger[i] >= 4
+        ],
     }
 
 
@@ -76,36 +80,50 @@ def paired_period(period, reference_name, challenger_name):
         raise ValueError("Paired timestamps must be unique and chronological")
     if any(not isinstance(v, int) or not 0 <= v <= 5 for v in labels + reference + challenger):
         raise ValueError("Invalid ordinal target or prediction")
+
     def accuracy(pred):
         return sum(a == b for a, b in zip(labels, pred, strict=True)) / len(labels)
-    ref = {"accuracy": accuracy(reference), "poor": metrics(times, labels, reference, 3),
-           "severe": metrics(times, labels, reference, 4)}
-    cand = {"accuracy": accuracy(challenger), "poor": metrics(times, labels, challenger, 3),
-            "severe": metrics(times, labels, challenger, 4)}
+
+    ref = {
+        "accuracy": accuracy(reference),
+        "poor": metrics(times, labels, reference, 3),
+        "severe": metrics(times, labels, reference, 4),
+    }
+    cand = {
+        "accuracy": accuracy(challenger),
+        "poor": metrics(times, labels, challenger, 3),
+        "severe": metrics(times, labels, challenger, 4),
+    }
     for measured, key in ((ref, reference_name), (cand, challenger_name)):
         raw = period["models"][key]
         measured["reported_metrics"] = {
-            field: raw.get(field) for field in (
-                "classification", "risk", "severe_or_worse", "severe_onset", "numeric"
-            )
+            field: raw.get(field)
+            for field in ("classification", "risk", "severe_or_worse", "severe_onset", "numeric")
         }
     gates = {"accuracy_loss": cand["accuracy"] + EPSILON >= ref["accuracy"] - 0.01}
     for family, increase, maximum in (("poor", 0.01, 0.05), ("severe", 0.0025, 0.01)):
         a, b = ref[family], cand[family]
         gates[family + "_false_alarms"] = (
-            b["false_alarm_rate"] is not None and a["false_alarm_rate"] is not None
+            b["false_alarm_rate"] is not None
+            and a["false_alarm_rate"] is not None
             and b["false_alarm_rate"] <= min(maximum, a["false_alarm_rate"] + increase) + EPSILON
         )
         gates[family + "_episode_any_hits"] = b["any_hit_count"] >= a["any_hit_count"]
     gates["severe_misses"] = cand["severe"]["misses"] <= ref["severe"]["misses"]
-    delta = (cand["poor"]["recall"] - ref["poor"]["recall"]
-             if ref["poor"]["recall"] is not None else None)
+    delta = (
+        cand["poor"]["recall"] - ref["poor"]["recall"]
+        if ref["poor"]["recall"] is not None
+        else None
+    )
     return {
-        "partition": period["partition"], "n": len(labels), "reference": ref,
-        "challenger": cand, "gates": gates, "utility_gates_passed": all(gates.values()),
-        "poor_recall_delta": delta, "severe_counterfactual": new_severe_hits(
-            times, labels, reference, challenger
-        ),
+        "partition": period["partition"],
+        "n": len(labels),
+        "reference": ref,
+        "challenger": cand,
+        "gates": gates,
+        "utility_gates_passed": all(gates.values()),
+        "poor_recall_delta": delta,
+        "severe_counterfactual": new_severe_hits(times, labels, reference, challenger),
     }
 
 
@@ -115,28 +133,41 @@ def evaluate(result, reference_name, challenger_name):
     deltas = [p["poor_recall_delta"] for p in compared]
     no_recall_loss = all(d is not None and d >= -EPSILON for d in deltas)
     recall_gain = no_recall_loss and any(d >= 0.05 - EPSILON for d in deltas)
-    new_hours = sum(p["severe_counterfactual"]["new_severe_hours_in_previously_missed_episodes"]
-                    for p in compared)
-    new_episodes = sum(p["severe_counterfactual"]["newly_captured_previously_missed_episodes"]
-                       for p in compared)
+    new_hours = sum(
+        p["severe_counterfactual"]["new_severe_hours_in_previously_missed_episodes"]
+        for p in compared
+    )
+    new_episodes = sum(
+        p["severe_counterfactual"]["newly_captured_previously_missed_episodes"] for p in compared
+    )
     severe_gain = no_recall_loss and new_hours >= 2 and new_episodes >= 1
     utility = all(p["utility_gates_passed"] for p in compared)
     return {
-        "reference_model": reference_name, "challenger_model": challenger_name,
-        "periods": compared, "utility_gates_passed": utility,
-        "poor_recall_gain_criterion": recall_gain, "severe_gain_criterion": severe_gain,
+        "reference_model": reference_name,
+        "challenger_model": challenger_name,
+        "periods": compared,
+        "utility_gates_passed": utility,
+        "poor_recall_gain_criterion": recall_gain,
+        "severe_gain_criterion": severe_gain,
         "meaningful_gain": utility and (recall_gain or severe_gain),
         "disposition": "RETROSPECTIVE_RESEARCH_ONLY_NO_PROMOTION",
         "limitations": "Consumed modeled archive; adaptive repeated comparisons; correlated hours; "
-                       "finite plateau does not establish maximum performance or live safety.",
+        "finite plateau does not establish maximum performance or live safety.",
     }
 
 
 def record_round(summary, source, run_id):
     ledger_path = RAW / "forecast_next_loop_ledger.jsonl"
     state_path = RAW / "forecast_next_loop_state.json"
-    rows = [json.loads(line) for line in ledger_path.read_text(encoding="utf-8").splitlines()
-            if line.strip()] if ledger_path.exists() else []
+    rows = (
+        [
+            json.loads(line)
+            for line in ledger_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        if ledger_path.exists()
+        else []
+    )
     digest = hashlib.sha256(source.read_bytes()).hexdigest()
     existing = next((r for r in rows if r["run_id"] == run_id), None)
     if existing:
@@ -146,9 +177,12 @@ def record_round(summary, source, run_id):
         if len(rows) >= 7 or trailing_no_gain(rows) >= 2:
             raise ValueError("Finite research loop already stopped")
         row = {
-            "iteration": len(rows) + 1, "run_id": run_id,
-            "timestamp": datetime.now(UTC).isoformat(), "result": str(source.relative_to(ROOT)),
-            "raw_result_sha256": digest, "meaningful_gain": summary["meaningful_gain"],
+            "iteration": len(rows) + 1,
+            "run_id": run_id,
+            "timestamp": datetime.now(UTC).isoformat(),
+            "result": str(source.relative_to(ROOT)),
+            "raw_result_sha256": digest,
+            "meaningful_gain": summary["meaningful_gain"],
             "reference_model": summary["reference_model"],
             "challenger_model": summary["challenger_model"],
         }
@@ -157,11 +191,16 @@ def record_round(summary, source, run_id):
         rows.append(row)
     stopped = len(rows) >= 7 or trailing_no_gain(rows) >= 2
     state = {
-        "max_iterations": 7, "plateau_patience": 2, "completed_iterations": len(rows),
+        "max_iterations": 7,
+        "plateau_patience": 2,
+        "completed_iterations": len(rows),
         "consecutive_no_gain": trailing_no_gain(rows),
         "stopped": stopped,
-        "stop_reason": "two_consecutive_no_gain" if trailing_no_gain(rows) >= 2 else
-                       "seven_round_limit" if len(rows) >= 7 else None,
+        "stop_reason": "two_consecutive_no_gain"
+        if trailing_no_gain(rows) >= 2
+        else "seven_round_limit"
+        if len(rows) >= 7
+        else None,
         "last_run_id": rows[-1]["run_id"],
         "disposition": "FINITE_RETROSPECTIVE_RESEARCH_NO_AUTOMATIC_ADOPTION",
     }

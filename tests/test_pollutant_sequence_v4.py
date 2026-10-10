@@ -39,5 +39,6 @@ def test_origin_shift_preserves_encoded_change_and_shifts_forecast():
     baseline = runner.encode_residual(future, current, scale)
     shifted = runner.encode_residual(future + shift[:, None, :], current + shift, scale)
     np.testing.assert_allclose(baseline, shifted)
-    np.testing.assert_allclose(runner.decode_residual(baseline, current + shift, scale),
-                               future + shift[:, None, :])
+    np.testing.assert_allclose(
+        runner.decode_residual(baseline, current + shift, scale), future + shift[:, None, :]
+    )

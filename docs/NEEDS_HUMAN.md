@@ -365,6 +365,69 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 
 ---
 
+## 9. CI: two checks that cannot pass from the repository alone (2026-10-10)
+
+Everything else in the `ci` workflow is green again after the fix described in
+the commit that added this section. These two are not fixed by that work, and
+neither can be fixed by an agent editing code — both are missing **data**, and
+AGENTS.md rule 3 says a number that was not produced is written as SKIPPED with
+a reason rather than invented.
+
+### 9a. "Verify frozen briefing candidate evidence" — the dataset it pins is gone
+
+```
+uv run python scripts/report_briefing_candidates.py \
+    eval/raw/candidate_submission_v2_frozen.json --out /tmp/x.json
+-> ValueError: Dataset bytes changed since submission: train
+```
+
+`eval/raw/candidate_submission_v2_frozen.json` pins four sha256 values for the
+cohort it graded (`train` 961 rows / 120 synthetic, `val` 80, `test` 88,
+`stress` 64) plus a contract hash. The repository's `data/ft_v2` holds a **later
+build** (969 rows / 128 synthetic). The pinned bytes are not in any commit — a
+search of every `.jsonl` blob in `git rev-list --objects --all` finds no match
+for any of the four digests — so they cannot be restored from history, and they
+cannot be rebuilt either, because the augmentation that produced 120 synthetic
+training cases is not what the current builder emits.
+
+The script is correct to refuse. Regrading a submission against a different
+dataset is exactly the silent regrade it exists to prevent, so this was left
+strict rather than loosened to turn CI green.
+
+Ways forward, cheapest first:
+
+1. If the Modal volume `baahar-training` still holds the submitted corpus, copy
+   those four files into a directory (for example `data/ft_v2_run_20261007T184549Z-fb0d6990/`)
+   and point the CI step at it with `--data-dir`. The byte pins then hold and the
+   check becomes meaningful again.
+2. Otherwise, re-freeze a submission from the dataset that is actually committed
+   (that costs a Modal run) and change the workflow step to that manifest.
+3. Last resort: delete the step and record here that the frozen candidate
+   evidence is no longer reproducible from this repository.
+
+### 9b. "Pocket Mode layout audit" — the screenshot audit needs a fixture that covers *now*
+
+`scripts/ui_check.mjs` waits for the Pocket Mode screen to render. It only
+renders when the brief says GO for the **current hour**, and `pocket.active` is
+false whenever the recorded forecast does not cover the current hour. The
+committed fixtures in `data/samples/` cover 2026-10-05 00:00–12:00 IST, so the
+audit passed on 5–6 October and has failed since: the brief now says WAIT and
+`03-pocket`, `03b-pocket-seasonal`, `04-journal`, `05-journal-species` never
+render.
+
+This is not a product regression; it is the audit being pinned to a fixed
+recording. Options:
+
+1. Re-record the fixtures — `uv run python scripts/record_samples.py` — which is
+   a data change and makes the audit pass again only until the recording goes
+   stale again tomorrow.
+2. Better: give the audit a fixed clock. Either an offline-only, clearly-marked
+   query parameter the API accepts to evaluate a plan *as of* a given ISO hour,
+   or a screenshot pass that serves a recorded payload. That makes the layout
+   check deterministic forever instead of once per fixture refresh.
+
+---
+
 ## Summary
 
 | # | Item | Unblocks | Effort | Agent blocked? | Status |
@@ -379,6 +442,8 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 | 8 | Publish | everything | 30 min | yes | ready, one optional marker |
 | 4b | Monthly seasonal refresh | nothing (goes stale) | 20 s | no | October snapshot committed |
 | 6b | Purge the dangling journal blob | nothing (privacy) | 10 min + waiting | yes | **open** - blob still served, HTTP 200, verified 2026-10-07 |
+| 9a | Recover or re-freeze the frozen candidate dataset | green CI | copy from Modal volume, or one Modal run | yes (needs the bytes) | **open** - pinned cohort is in no commit and cannot be rebuilt |
+| 9b | Make the layout audit clock-independent | green CI | a test hook, or re-record fixtures | no | **open** - fixtures only cover 2026-10-05, so the Pocket screens never render |
 
 ---
 
@@ -386,7 +451,7 @@ notes into `post.md`. Until then both documents say the walk has not happened.
 
 - Everything that needs no key: the whole product, the web UI, Pocket Mode, the
   journal (including the species sighting question), the CLI, the seasonal species
-  cues, and 554 offline tests.
+  cues, and 754 offline tests.
 - **TabPFN ran for real across 5 seeds.** With `TABPFN_TOKEN` configured, TabPFN 9.1.0
   was evaluated on the 1,626-row chronological holdout on 28 features (13 base + 15 past-hour lags):
   **0.8708 +/- 0.0023 acc / 0.6193 +/- 0.0020 macro-F1** (4 supported bands).

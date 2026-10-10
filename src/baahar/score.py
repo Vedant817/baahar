@@ -859,10 +859,13 @@ def build_plan(
     assessment_time = generated_at or datetime.now(tz=UTC)
     current_slot = next(
         (
-            s for s in slots
-            if s.time.tzinfo is not None and assessment_time.tzinfo is not None
+            s
+            for s in slots
+            if s.time.tzinfo is not None
+            and assessment_time.tzinfo is not None
             and s.time <= assessment_time < s.time + timedelta(hours=1)
-        ), None
+        ),
+        None,
     )
     return OutdoorPlan(
         city=city,

@@ -9,12 +9,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = ROOT / "eval/raw/pollutant_sequence_support"
-GASES = {"pm2_5": "pm25", "pm10": "pm10", "nitrogen_dioxide": "no2",
-         "ozone": "o3", "sulphur_dioxide": "so2", "carbon_monoxide": "co"}
-WINDOWS = {"train": ["2023-01-01", "2025-04-01"],
-           "development": ["2025-04-01", "2025-06-01"],
-           "diagnostic_pollution": ["2026-02-01", "2026-05-01"],
-           "diagnostic_other_seasons": ["2026-05-01", "2026-10-01"]}
+GASES = {
+    "pm2_5": "pm25",
+    "pm10": "pm10",
+    "nitrogen_dioxide": "no2",
+    "ozone": "o3",
+    "sulphur_dioxide": "so2",
+    "carbon_monoxide": "co",
+}
+WINDOWS = {
+    "train": ["2023-01-01", "2025-04-01"],
+    "development": ["2025-04-01", "2025-06-01"],
+    "diagnostic_pollution": ["2026-02-01", "2026-05-01"],
+    "diagnostic_other_seasons": ["2026-05-01", "2026-10-01"],
+}
 
 
 def digest(path):
@@ -41,11 +49,17 @@ def audit(protocol):
         if digest(path) != source["sha256"]:
             raise ValueError("Source SHA mismatch: " + source["path"])
         payload = json.loads(path.read_text())
-        metadata.append({**source, "timezone": payload.get("timezone"),
-                         "timezone_abbreviation": payload.get("timezone_abbreviation"),
-                         "utc_offset_seconds": payload.get("utc_offset_seconds"),
-                         "hourly_units": payload.get("hourly_units"),
-                         "latitude": payload.get("latitude"), "longitude": payload.get("longitude")})
+        metadata.append(
+            {
+                **source,
+                "timezone": payload.get("timezone"),
+                "timezone_abbreviation": payload.get("timezone_abbreviation"),
+                "utc_offset_seconds": payload.get("utc_offset_seconds"),
+                "hourly_units": payload.get("hourly_units"),
+                "latitude": payload.get("latitude"),
+                "longitude": payload.get("longitude"),
+            }
+        )
         if not path.name.startswith("archival_aq"):
             continue
         hourly = payload["hourly"]
@@ -77,8 +91,14 @@ def audit(protocol):
             if not groups or dt - groups[-1][-1] > timedelta(hours=6):
                 groups.append([])
             groups[-1].append(dt)
-        return [{"first_target_time": g[0].isoformat(), "last_target_time": g[-1].isoformat(),
-                 "positive_hours": len(g)} for g in groups]
+        return [
+            {
+                "first_target_time": g[0].isoformat(),
+                "last_target_time": g[-1].isoformat(),
+                "positive_hours": len(g),
+            }
+            for g in groups
+        ]
 
     support = {}
     for name, bounds in protocol["windows"].items():
@@ -103,18 +123,29 @@ def audit(protocol):
         # Legacy raw category ordinal 4 means CPCB Very Poor (301-400).
         very_poor = [t for t, r in future if r["target_band"] in ("severe", "hazardous")]
         severe = [t for t, r in future if r["target_band"] == "hazardous"]
-        support[name] = {"candidate_rows": len(candidates), "boundary_exclusions": boundary,
-                         "absent_timestamp_exclusions": absent, "missing_sequence_by_gas": dict(missing),
-                         "eligible_rows": len(eligible),
-                         "legacy_band_support": dict(Counter(r["target_band"] for r in eligible)),
-                         "cpcb_very_poor_or_worse_hours": len(very_poor), "cpcb_severe_hours": len(severe),
-                         "very_poor_or_worse_episodes": episodes(very_poor),
-                         "severe_episodes": episodes(severe)}
-    return {"protocol": protocol, "source_metadata": metadata, "canonical_target_checks": verified,
-            "support": support,
-            "limitations": ["Modeled archive proxy, not official station AQI",
-                            "Diagnostic windows previously consumed; development support counts inspected adaptively",
-                            "Episodes group positive target hours separated by at most six hours"]}
+        support[name] = {
+            "candidate_rows": len(candidates),
+            "boundary_exclusions": boundary,
+            "absent_timestamp_exclusions": absent,
+            "missing_sequence_by_gas": dict(missing),
+            "eligible_rows": len(eligible),
+            "legacy_band_support": dict(Counter(r["target_band"] for r in eligible)),
+            "cpcb_very_poor_or_worse_hours": len(very_poor),
+            "cpcb_severe_hours": len(severe),
+            "very_poor_or_worse_episodes": episodes(very_poor),
+            "severe_episodes": episodes(severe),
+        }
+    return {
+        "protocol": protocol,
+        "source_metadata": metadata,
+        "canonical_target_checks": verified,
+        "support": support,
+        "limitations": [
+            "Modeled archive proxy, not official station AQI",
+            "Diagnostic windows previously consumed; development support counts inspected adaptively",
+            "Episodes group positive target hours separated by at most six hours",
+        ],
+    }
 
 
 def main():
@@ -143,17 +174,29 @@ def main():
     if manifest_path.exists():
         raise SystemExit("Existing manifest; refusing duplicate submission")
     reference = json.loads((ROOT / "eval/raw/forecast_risk_v3_results.json").read_text())
-    protocol = {"source_fixtures": reference["dataset"]["source_fixtures"],
-                "rows_sha256": reference["dataset"]["rows_sha256"], "windows": WINDOWS,
-                "eligibility": "All six gases finite at each hourly t-23..t and t+1..t+6; full sequence within phase"}
-    manifest = {"status": "PREREGISTERED", "protocol": protocol, "audit_sha256": digest(Path(__file__))}
+    protocol = {
+        "source_fixtures": reference["dataset"]["source_fixtures"],
+        "rows_sha256": reference["dataset"]["rows_sha256"],
+        "windows": WINDOWS,
+        "eligibility": "All six gases finite at each hourly t-23..t and t+1..t+6; full sequence within phase",
+    }
+    manifest = {
+        "status": "PREREGISTERED",
+        "protocol": protocol,
+        "audit_sha256": digest(Path(__file__)),
+    }
     write(manifest_path, manifest)
     image = modal.Image.debian_slim(python_version="3.12")
     for name in ("__init__.py", "naqi.py"):
         image = image.add_local_file(str(ROOT / "src/baahar" / name), "/opt/src/baahar/" + name)
     app = modal.App("baahar-pollutant-sequence-support", image=image)
-    function = app.function(cpu=1, memory=2048, timeout=300, retries=0,
-                            volumes={"/artifacts": modal.Volume.from_name("baahar-training")})(audit)
+    function = app.function(
+        cpu=1,
+        memory=2048,
+        timeout=300,
+        retries=0,
+        volumes={"/artifacts": modal.Volume.from_name("baahar-training")},
+    )(audit)
     with app.run(detach=True):
         call = function.spawn(protocol)
         manifest.update(status="SUBMITTED", call_id=call.object_id, app_id=app.app_id)

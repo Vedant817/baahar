@@ -51,9 +51,12 @@ def training_origin_weight(ordinal):
 
 def validate_pair(frozen, times, truth, labels, actual_pollutants):
     """Refuse comparisons with different origins or any changed actual targets."""
-    if (frozen["times"] != times or frozen["actual_naqi"] != truth
-            or frozen["actual_legacy_bands"] != labels
-            or frozen["actual_pollutants"] != actual_pollutants):
+    if (
+        frozen["times"] != times
+        or frozen["actual_naqi"] != truth
+        or frozen["actual_legacy_bands"] != labels
+        or frozen["actual_pollutants"] != actual_pollutants
+    ):
         raise ValueError("Paired reference origins/targets differ")
 
 
@@ -240,10 +243,21 @@ def remote_train(manifest):
         }
     write(Path("/artifacts/pollutant_sequence_v4_support.json"), support)
 
-    training_ordinals = [BANDS.index(band_for_index(float(bd.compute_naqi(
-        {bd.AQ_VAR_TO_KEY[g]: float(v) for g, v in zip(GASES, row, strict=True)}
-    ).index))) for row in train["y"][:, -1]]
-    training_weights = np.asarray([training_origin_weight(v) for v in training_ordinals], dtype=np.float32)
+    training_ordinals = [
+        BANDS.index(
+            band_for_index(
+                float(
+                    bd.compute_naqi(
+                        {bd.AQ_VAR_TO_KEY[g]: float(v) for g, v in zip(GASES, row, strict=True)}
+                    ).index
+                )
+            )
+        )
+        for row in train["y"][:, -1]
+    ]
+    training_weights = np.asarray(
+        [training_origin_weight(v) for v in training_ordinals], dtype=np.float32
+    )
     if int((training_weights > 1).sum()) != support["train"]["poor_or_worse_hours"]:
         raise ValueError("Training weight support mismatch")
 
@@ -284,7 +298,11 @@ def remote_train(manifest):
         model = TCN().to(device)
         optimizer = torch.optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.0001)
         loader = DataLoader(
-            TensorDataset(torch.from_numpy(train["inputs"]), torch.from_numpy(train["targets"]), torch.from_numpy(training_weights)),
+            TensorDataset(
+                torch.from_numpy(train["inputs"]),
+                torch.from_numpy(train["targets"]),
+                torch.from_numpy(training_weights),
+            ),
             batch_size=256,
             shuffle=True,
             generator=torch.Generator().manual_seed(seed),
@@ -297,7 +315,9 @@ def remote_train(manifest):
             model.train()
             for x, y, weights in loader:
                 optimizer.zero_grad()
-                element_loss = nn.functional.smooth_l1_loss(model(x.to(device)), y.to(device), reduction="none")
+                element_loss = nn.functional.smooth_l1_loss(
+                    model(x.to(device)), y.to(device), reduction="none"
+                )
                 origin_loss = element_loss.mean(dim=(1, 2))
                 weights = weights.to(device)
                 loss = (origin_loss * weights).sum() / weights.sum()
@@ -312,7 +332,9 @@ def remote_train(manifest):
                         for i in range(0, len(development["times"]), 256)
                     ]
                 )
-                residual_score = float(torch.mean(torch.abs(values - torch.from_numpy(development["targets"]))))
+                residual_score = float(
+                    torch.mean(torch.abs(values - torch.from_numpy(development["targets"])))
+                )
                 decoded = decode_residual(values.numpy(), development["current"], ystd)
                 score = float(np.mean(np.abs(decoded - development["y"]) / ystd))
                 if not np.isclose(score, residual_score, rtol=2e-6, atol=2e-6):
@@ -354,7 +376,9 @@ def remote_train(manifest):
                         for i in range(0, len(part["times"]), 256)
                     ]
                 ).numpy()
-            predictions[name][f"tcn_seed_{seed}"] = decode_residual(value, part["current"], ystd)[:, -1]
+            predictions[name][f"tcn_seed_{seed}"] = decode_residual(value, part["current"], ystd)[
+                :, -1
+            ]
     trees = []
     for gas in range(6):
         tree = LGBMRegressor(**manifest["tree_parameters"])
@@ -389,7 +413,10 @@ def remote_train(manifest):
     if digest(reference_path) != manifest["reference"]["result_sha256"]:
         raise ValueError("V3 reference SHA mismatch")
     reference = json.loads(reference_path.read_text())
-    if reference["manifest"]["replay"] != manifest["replay"] or reference["manifest"]["partitions"] != manifest["partitions"]:
+    if (
+        reference["manifest"]["replay"] != manifest["replay"]
+        or reference["manifest"]["partitions"] != manifest["partitions"]
+    ):
         raise ValueError("Reference dataset or partitions differ")
     reference_periods = {p["partition"]: p for p in reference["results"]}
     results = []
@@ -482,8 +509,10 @@ def remote_train(manifest):
         frozen = reference_periods[name]
         validate_pair(frozen, part["times"], truth, labels, part["y"][:, -1].tolist())
         for baseline in ("paired_lightgbm", "persistence"):
-            if not np.array_equal(np.asarray(frozen["models"][baseline]["predicted_pollutants"]),
-                                  np.asarray(models[baseline]["predicted_pollutants"])):
+            if not np.array_equal(
+                np.asarray(frozen["models"][baseline]["predicted_pollutants"]),
+                np.asarray(models[baseline]["predicted_pollutants"]),
+            ):
                 raise ValueError("Unchanged baseline failed reproduction: " + baseline)
         models["v3_fixed_mean"] = frozen["models"]["tcn_fixed_mean"]
         results.append(
@@ -504,7 +533,10 @@ def remote_train(manifest):
         "support": support,
         "exact_future_target_checks": len(rows),
         "training": histories,
-        "training_weight_support": {"weighted_origins": int((training_weights > 1).sum()), "eligible_origins": len(training_weights)},
+        "training_weight_support": {
+            "weighted_origins": int((training_weights > 1).sum()),
+            "eligible_origins": len(training_weights),
+        },
         "elapsed_seconds": time.monotonic() - started,
         "target_contract": "Hourly canonical breakpoint proxy, not CPCB averaging-compliant station NAQI. Official 301+ Very Poor and 401+ Severe; historical code labels these severe/hazardous respectively.",
         "limitations": "Consumed modeled CAMS/ERA5 archive; no station/prospective evidence, no future weather input, no probabilities, no automatic promotion.",
@@ -546,13 +578,25 @@ def main():
     if MANIFEST.exists():
         raise SystemExit("Manifest already exists; refusing duplicate submission")
     reference_path = ROOT / "eval/raw/pollutant_sequence_v3_results.json"
-    reference_manifest = json.loads((ROOT / "eval/raw/pollutant_sequence_v3_manifest.json").read_text())
-    if reference_manifest["status"] != "COMPLETED" or digest(reference_path) != reference_manifest["result_sha256"]:
+    reference_manifest = json.loads(
+        (ROOT / "eval/raw/pollutant_sequence_v3_manifest.json").read_text()
+    )
+    if (
+        reference_manifest["status"] != "COMPLETED"
+        or digest(reference_path) != reference_manifest["result_sha256"]
+    ):
         raise ValueError("Frozen v3 reference is incomplete or changed")
     for relative, expected in reference_manifest["source_sha256"].items():
-        if (relative.startswith("src/baahar/") or relative in (
-                "scripts/build_dataset.py", "eval/raw/pollutant_sequence_support_results.json",
-                "docs/DEEP_POLLUTANT_STUDY_PROTOCOL.md", "docs/POLLUTANT_SEQUENCE_V3_PROTOCOL.md")) and digest(ROOT / relative) != expected:
+        if (
+            relative.startswith("src/baahar/")
+            or relative
+            in (
+                "scripts/build_dataset.py",
+                "eval/raw/pollutant_sequence_support_results.json",
+                "docs/DEEP_POLLUTANT_STUDY_PROTOCOL.md",
+                "docs/POLLUTANT_SEQUENCE_V3_PROTOCOL.md",
+            )
+        ) and digest(ROOT / relative) != expected:
             raise ValueError("Representation experiment encountered changed v3 source: " + relative)
     old = json.loads((ROOT / "eval/raw/forecast_risk_v3_results.json").read_text())
     files = list((ROOT / "src/baahar").glob("*.py")) + [
@@ -571,9 +615,12 @@ def main():
         "run_name": "pollutant_sequence_v4",
         "replay": old["dataset"],
         "seeds": [0, 1, 2],
-        "reference": {"name": "v3_fixed_mean", "result_sha256": digest(reference_path),
-                      "call_id": reference_manifest["call_id"],
-                      "path": "eval/raw/pollutant_sequence_v3_results.json"},
+        "reference": {
+            "name": "v3_fixed_mean",
+            "result_sha256": digest(reference_path),
+            "call_id": reference_manifest["call_id"],
+            "path": "eval/raw/pollutant_sequence_v3_results.json",
+        },
         "single_training_change": "current-referenced residual forecasts with unchanged absolute training target scales; relative to v3",
         "partitions": {
             "train": ["2023-01-01", "2025-04-01"],
@@ -598,7 +645,12 @@ def main():
             "timeout_seconds": 7200,
         },
         "target_representation": "(future-current_at_t)/absolute_training_ystd; decode current_at_t+output*ystd; no target mean",
-        "training_origin_weighting": {"poor_or_worse": 2.0, "otherwise": 1.0, "labels": "training final-sixth-hour canonical rounded category only", "normalization": "batch weighted mean"},
+        "training_origin_weighting": {
+            "poor_or_worse": 2.0,
+            "otherwise": 1.0,
+            "labels": "training final-sixth-hour canonical rounded category only",
+            "normalization": "batch weighted mean",
+        },
         "source_sha256": {p.relative_to(ROOT).as_posix(): digest(p) for p in files},
     }
     audit = json.loads((ROOT / "eval/raw/pollutant_sequence_support_results.json").read_text())
