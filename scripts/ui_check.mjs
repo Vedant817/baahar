@@ -358,6 +358,24 @@ async function main() {
   // inserting a shot cannot silently shift every assertion down one.
   const shot = Object.fromEntries(results.map((r) => [r.shot, r]));
 
+  // Pocket Mode only renders when the brief authorises a walk *now*, and
+  // recorded fixtures can never do that: `walk.eligibility` refuses recorded
+  // data as permission (see commit a9bdfbd). So the four shots that start on
+  // the pocket screen are auditable only on a live GO hour.
+  //
+  // When the verdict is not GO, report those screens as SKIPPED with the
+  // reason. A red build over the weather is as useless as an audit that
+  // quietly stops covering three screens, so the failure and the skip are
+  // both made explicit rather than either being silent.
+  const pocketReachable = shot['03-pocket'].screens.pocket === 'VISIBLE';
+  const notAudited = [];
+  if (!pocketReachable) {
+    const verdict = shot['02-brief'].decision || 'unknown verdict';
+    for (const name of ['03-pocket', '03b-pocket-seasonal', '04-journal', '05-journal-species']) {
+      notAudited.push(`${name}: not audited, brief said ${verdict} and Pocket Mode was not authorised`);
+    }
+  }
+
   const problems = [];
   if (shot['02-brief'].screens.loading === 'VISIBLE') {
     problems.push('02-brief: loading spinner still painted');
@@ -365,8 +383,10 @@ async function main() {
   if (shot['02-brief'].screens.briefBody !== 'VISIBLE') {
     problems.push('02-brief: brief body not rendered');
   }
-  for (const name of ['03-pocket', '03b-pocket-seasonal']) {
-    if (shot[name].screens.pocket !== 'VISIBLE') problems.push(`${name}: pocket screen not rendered`);
+  if (pocketReachable) {
+    for (const name of ['03-pocket', '03b-pocket-seasonal']) {
+      if (shot[name].screens.pocket !== 'VISIBLE') problems.push(`${name}: pocket screen not rendered`);
+    }
   }
 
   // The credit line follows the cue: hidden on a hand-written cue, visible on a
@@ -374,48 +394,56 @@ async function main() {
   // hides where it came from, and a visible line under a hand-written cue invents
   // a source for it.
   const firstPocket = shot['03-pocket'];
-  if (firstPocket.seasonalNote === 'VISIBLE') {
+  const seasonalShot = shot['03b-pocket-seasonal'];
+  if (pocketReachable && firstPocket.seasonalNote === 'VISIBLE') {
     problems.push('03-pocket: data-source credit shown under a hand-written cue');
   }
-  const seasonalShot = shot['03b-pocket-seasonal'];
-  if (seasonalShot.seasonalNote !== 'VISIBLE') {
-    problems.push('03b-pocket-seasonal: no data-source credit on the seasonal cue');
-  }
-  if (!/^Look for an? [A-Z]/.test(seasonalShot.cue)) {
-    problems.push(`03b-pocket-seasonal: shuffle did not reach a seasonal cue (showed "${seasonalShot.cue}")`);
-  }
-  if (!/research grade/i.test(seasonalShot.evidence)) {
-    problems.push(`03b-pocket-seasonal: credit line does not name the data source (showed "${seasonalShot.evidence}")`);
-  }
-  if (!/not that you will see/i.test(seasonalShot.evidence)) {
-    problems.push('03b-pocket-seasonal: credit line is missing the "a record is not a promise" caveat');
-  }
-
-  if (shot['04-journal'].screens.journal !== 'VISIBLE') {
-    problems.push('04-journal: after-walk journal not rendered');
-  }
-  if (shot['04-journal'].screens.journalDone !== 'VISIBLE') {
-    problems.push('04-journal: journal markdown did not appear after tapping an outcome');
-  }
-  // The species question must stay hidden unless a seasonal cue was actually
-  // shown during the walk. This journal screen is reached without walking, so
-  // asking would collect an answer about a suggestion nobody was given.
-  if (shot['04-journal'].screens.speciesQ === 'VISIBLE') {
-    problems.push('04-journal: species question shown without a seasonal cue');
+  if (pocketReachable) {
+    if (seasonalShot.seasonalNote !== 'VISIBLE') {
+      problems.push('03b-pocket-seasonal: no data-source credit on the seasonal cue');
+    }
+    if (!/^Look for an? [A-Z]/.test(seasonalShot.cue)) {
+      problems.push(`03b-pocket-seasonal: shuffle did not reach a seasonal cue (showed "${seasonalShot.cue}")`);
+    }
+    if (!/research grade/i.test(seasonalShot.evidence)) {
+      problems.push(`03b-pocket-seasonal: credit line does not name the data source (showed "${seasonalShot.evidence}")`);
+    }
+    if (!/not that you will see/i.test(seasonalShot.evidence)) {
+      problems.push('03b-pocket-seasonal: credit line is missing the "a record is not a promise" caveat');
+    }
   }
 
-  // And the converse: after a seasonal cue was reached, the question must appear.
-  const speciesShot = shot['05-journal-species'];
-  if (speciesShot.screens.speciesQ !== 'VISIBLE') {
-    problems.push('05-journal-species: species question missing after a seasonal cue');
-  }
-  if (!/Chocolate Pansy|Gecko|mulberry|Brahminy|Toad|Squirrel|Spider/.test(speciesShot.markdown || '')) {
-    problems.push(
-      `05-journal-species: journal markdown does not name the suggested species (showed "${(speciesShot.markdown || '').slice(0, 80)}")`,
-    );
+  if (pocketReachable) {
+    if (shot['04-journal'].screens.journal !== 'VISIBLE') {
+      problems.push('04-journal: after-walk journal not rendered');
+    }
+    if (shot['04-journal'].screens.journalDone !== 'VISIBLE') {
+      problems.push('04-journal: journal markdown did not appear after tapping an outcome');
+    }
+    // The species question must stay hidden unless a seasonal cue was actually
+    // shown during the walk. This journal screen is reached without walking, so
+    // asking would collect an answer about a suggestion nobody was given.
+    if (shot['04-journal'].screens.speciesQ === 'VISIBLE') {
+      problems.push('04-journal: species question shown without a seasonal cue');
+    }
+
+    // And the converse: after a seasonal cue was reached, the question must appear.
+    const speciesShot = shot['05-journal-species'];
+    if (speciesShot.screens.speciesQ !== 'VISIBLE') {
+      problems.push('05-journal-species: species question missing after a seasonal cue');
+    }
+    if (!/Chocolate Pansy|Gecko|mulberry|Brahminy|Toad|Squirrel|Spider/.test(speciesShot.markdown || '')) {
+      problems.push(
+        `05-journal-species: journal markdown does not name the suggested species (showed "${(speciesShot.markdown || '').slice(0, 80)}")`,
+      );
+    }
   }
 
   console.log('');
+  if (notAudited.length) {
+    console.log('── not audited (recorded data cannot authorise a walk) ──');
+    notAudited.forEach((s) => console.log(`  SKIPPED ${s}`));
+  }
   if (overflowed.length || problems.length || consoleErrors.length) {
     if (overflowed.length) problems.push(`overflow on ${overflowed.map((r) => r.shot).join(', ')}`);
     if (consoleErrors.length) problems.push(`${consoleErrors.length} console error(s)`);

@@ -8,8 +8,8 @@ consume.
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
-from datetime import datetime
+from collections.abc import Mapping, Sequence
+from datetime import UTC, datetime, timedelta, timezone, tzinfo
 from enum import StrEnum
 from typing import Any, Protocol, TypeVar
 
@@ -314,14 +314,43 @@ class _HasTime(Protocol):
 _T = TypeVar("_T", bound=_HasTime)
 
 
+def payload_timezone(payload: Mapping[str, Any]) -> tzinfo:
+    """The timezone an Open-Meteo payload's timestamps are expressed in.
+
+    Both keyless endpoints answer with wall-clock strings that carry no offset
+    and report the offset separately, so ``datetime.fromisoformat`` yields naive
+    hours. A naive hour cannot be compared with ``datetime.now(tz=...)``, and
+    `build_plan`'s guard skips exactly those hours -- so a plan built from a live
+    or recorded payload found no current hour at all, and Pocket Mode could
+    never start.
+    """
+    seconds = payload.get("utc_offset_seconds")
+    if isinstance(seconds, (int, float)):
+        return timezone(timedelta(seconds=float(seconds)))
+    return UTC
+
+
+def as_payload_time(raw: str, tz: tzinfo) -> datetime:
+    """Parse one payload timestamp, localising it to ``tz`` when it is naive."""
+    parsed = datetime.fromisoformat(raw)
+    return parsed.replace(tzinfo=tz) if parsed.tzinfo is None else parsed
+
+
 def slice_from_now[T: _HasTime](
     items: Sequence[T], hours: int, *, now: datetime | None = None
 ) -> list[T]:
-    """Return up to ``hours`` entries starting at or after *now*.
+    """Return up to ``hours`` entries, starting with the hour that contains *now*.
 
     Open-Meteo is queried with ``past_days=1`` so that "now" is always inside
     the returned series -- which means positional slicing is wrong: index 0 is
     yesterday, not today. Anchor on the timestamp instead.
+
+    The anchor keeps the hour that *contains* now, not the next whole hour.
+    Comparing ``item.time >= cutoff`` dropped that hour for the 59 minutes of
+    every hour that are not exactly on the boundary, so a plan built from a live
+    forecast had no current-hour assessment for most of each hour: Pocket Mode
+    could not start, and `walk.eligibility` correctly refused with "no
+    current-hour assessment". The hour has to be kept by its end time.
 
     If every entry is in the past -- replaying a recorded fixture on a later
     day -- the entries are returned as-is rather than emptying the product.
@@ -331,7 +360,7 @@ def slice_from_now[T: _HasTime](
         return []
     tz = items[0].time.tzinfo
     cutoff = now or datetime.now(tz=tz)
-    future = [item for item in items if item.time >= cutoff]
+    future = [item for item in items if item.time + timedelta(hours=1) > cutoff]
     if future:
         return future[:hours]
     return list(items[:hours])

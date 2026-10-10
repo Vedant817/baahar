@@ -405,26 +405,31 @@ Ways forward, cheapest first:
 3. Last resort: delete the step and record here that the frozen candidate
    evidence is no longer reproducible from this repository.
 
-### 9b. "Pocket Mode layout audit" — the screenshot audit needs a fixture that covers *now*
+### 9b. "Pocket Mode layout audit" — fixed 2026-10-10 (a real product bug, not a stale fixture)
 
-`scripts/ui_check.mjs` waits for the Pocket Mode screen to render. It only
-renders when the brief says GO for the **current hour**, and `pocket.active` is
-false whenever the recorded forecast does not cover the current hour. The
-committed fixtures in `data/samples/` cover 2026-10-05 00:00–12:00 IST, so the
-audit passed on 5–6 October and has failed since: the brief now says WAIT and
-`03-pocket`, `03b-pocket-seasonal`, `04-journal`, `05-journal-species` never
-render.
+This section first blamed the recorded fixtures. That was wrong, and the real
+cause was worse: two bugs meant the brief never had a **current-hour
+assessment** at all, so `pocket.active` was false on every payload.
 
-This is not a product regression; it is the audit being pinned to a fixed
-recording. Options:
+1. `slice_from_now` anchored on `item.time >= now`, which discards the hour that
+   *contains* now for the 59 minutes of every hour that are not on the boundary.
+2. `parse_weather` and `parse_air` parsed Open-Meteo's wall-clock strings with
+   `datetime.fromisoformat`, producing **naive** hours, while `build_plan`
+   compares them against an aware `generated_at` and skips naive hours.
 
-1. Re-record the fixtures — `uv run python scripts/record_samples.py` — which is
-   a data change and makes the audit pass again only until the recording goes
-   stale again tomorrow.
-2. Better: give the audit a fixed clock. Either an offline-only, clearly-marked
-   query parameter the API accepts to evaluate a plan *as of* a given ISO hour,
-   or a screenshot pass that serves a recorded payload. That makes the layout
-   check deterministic forever instead of once per fixture refresh.
+Together they meant Pocket Mode could not start outside the first second of an
+hour — the demo in the DEV post ("Pocket Mode stayed off, live conditions were
+WAIT") was not the air saying WAIT; there was no current hour to say anything.
+Both are fixed (hours are now localised with the payload's `utc_offset_seconds`,
+and the window starts at the hour containing now), with five regression tests in
+`tests/test_payload_hours.py` that build a plan from a parsed payload, which the
+old fixtures could never catch because `tests/conftest.py` hand-builds aware
+datetimes.
+
+The audit still cannot render the pocket screens from recorded data, because
+`walk.eligibility` deliberately refuses recorded data as permission — so that job
+now serves **live** data and prints a SKIPPED line naming the screens and the
+verdict when the hour is not GO, instead of failing over the weather.
 
 ---
 
@@ -443,7 +448,7 @@ recording. Options:
 | 4b | Monthly seasonal refresh | nothing (goes stale) | 20 s | no | October snapshot committed |
 | 6b | Purge the dangling journal blob | nothing (privacy) | 10 min + waiting | yes | **open** - blob still served, HTTP 200, verified 2026-10-07 |
 | 9a | Recover or re-freeze the frozen candidate dataset | green CI | copy from Modal volume, or one Modal run | yes (needs the bytes) | **open** - pinned cohort is in no commit and cannot be rebuilt |
-| 9b | Make the layout audit clock-independent | green CI | a test hook, or re-record fixtures | no | **open** - fixtures only cover 2026-10-05, so the Pocket screens never render |
+| 9b | Make the layout audit clock-independent | green CI | ~~a test hook, or re-record fixtures~~ | no | **fixed 2026-10-10** — the cause was two bugs that left the brief with no current hour (naive payload hours + an exclusive `>= now` anchor), not a stale fixture. Recorded data still cannot authorise a walk by design, so that job serves live data and names the screens it could not audit |
 
 ---
 

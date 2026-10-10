@@ -14,12 +14,18 @@ Two properties matter more than features here:
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 from typing import Any
 
 from .config import get_settings
 from .http_client import UpstreamError, get_json, load_sample
-from .models import DataSource, HourlyWeather, WeatherSeverity, slice_from_now
+from .models import (
+    DataSource,
+    HourlyWeather,
+    WeatherSeverity,
+    as_payload_time,
+    payload_timezone,
+    slice_from_now,
+)
 
 log = logging.getLogger(__name__)
 
@@ -131,12 +137,13 @@ def parse_weather(payload: dict[str, Any]) -> list[HourlyWeather]:
     """Turn a raw Open-Meteo forecast payload into typed hours."""
     hourly = payload.get("hourly") or {}
     times = hourly.get("time") or []
+    tz = payload_timezone(payload)
     out: list[HourlyWeather] = []
     for i, raw_time in enumerate(times):
         code = _num(hourly.get("weather_code"), i)
         out.append(
             HourlyWeather(
-                time=datetime.fromisoformat(raw_time),
+                time=as_payload_time(raw_time, tz),
                 temp_c=_num(hourly.get("temperature_2m"), i),
                 apparent_c=_num(hourly.get("apparent_temperature"), i),
                 precip_mm=_num(hourly.get("precipitation"), i),

@@ -27,12 +27,17 @@ This module is where Baahar earns its honesty claim. Two things are deliberate:
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 from typing import Any
 
 from .config import get_settings
 from .http_client import UpstreamError, get_json, load_sample
-from .models import DataSource, HourlyAir, slice_from_now
+from .models import (
+    DataSource,
+    HourlyAir,
+    as_payload_time,
+    payload_timezone,
+    slice_from_now,
+)
 from .naqi import (
     NAQI_BASIS,
     assert_chronological,
@@ -133,6 +138,7 @@ def parse_air(payload: dict[str, Any]) -> list[HourlyAir]:
         all_values.append(values)
 
     out: list[HourlyAir] = []
+    tz = payload_timezone(payload)
     for i, raw_time in enumerate(times):
         # An hour with no readings at all still gets an (unusable) instantaneous
         # result and no trailing value: `compute_naqi({})` is exactly the
@@ -143,7 +149,7 @@ def parse_air(payload: dict[str, Any]) -> list[HourlyAir]:
 
         out.append(
             HourlyAir(
-                time=datetime.fromisoformat(raw_time),
+                time=as_payload_time(raw_time, tz),
                 **all_values[i],
                 naqi=None if not instant.is_usable else round(instant.index, 1),
                 naqi_trailing=None if trailing is None else round(trailing.index, 1),

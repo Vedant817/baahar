@@ -214,9 +214,14 @@ jobs:
           uv python install 3.12
           uv sync --group dev
 
-      - name: Serve Baahar with recorded fixtures
+      # Live data on purpose. Pocket Mode only renders when the brief
+      # authorises a walk *now*, and `walk.eligibility` deliberately refuses
+      # recorded data as permission, so an offline server can never show the
+      # pocket, journal or species screens. With live data this job audits
+      # them on a GO hour and prints a SKIPPED line naming the screens and the
+      # verdict when the hour is not GO -- see scripts/ui_check.mjs.
+      - name: Serve Baahar
         env:
-          BAAHAR_OFFLINE: "1"
           GEMINI_API_KEY: ""
         run: |
           nohup uv run baahar serve --port 8000 > server.log 2>&1 &
