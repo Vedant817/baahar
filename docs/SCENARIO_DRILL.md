@@ -44,10 +44,11 @@ reports are in [`eval/raw/scenario_drill_2026-10-10.md`](../eval/raw/scenario_dr
    opposite of the truth, in the unsafe direction. **Fixed** in
    `src/baahar/forecast.py`; regression test in `tests/test_payload_hours.py`.
 2. **Three verdict voices on one screen.** `brief` printed `WAIT  Go at 06:00.`;
-   the badge said `WAIT`; `score --json` said `"overall": "GO"`,
-   `"current_decision": "GO"`. All three are true of different hours, so a user
-   asking "can I walk now?" reads "Go" and "WAIT" together. Not yet fixed; it is
-   a copy decision, not a bug.
+   the badge said `WAIT`; `score --json` said `"overall": "GO"`. All three are
+   true of different hours. **Fixed** in the CLI, Pocket copy, and web headline:
+   the badge-facing sentence is now `Next GO hour is 06:00.`; `plan.headline`
+   still names the best hour. The briefing sentence is `The next hour to recheck
+   is 06:00.` so WAIT prose never contains a GO token.
 3. **The headline feature is dead in recorded mode.** Pocket Mode requires a live
    current-hour GO, deliberately, so an offline demo always shows the button
    disabled with "Recorded or unavailable data cannot authorize a walk now." Two
@@ -59,11 +60,15 @@ reports are in [`eval/raw/scenario_drill_2026-10-10.md`](../eval/raw/scenario_dr
    a live call." first.
 5. **Backend jargon on the first screen.** The options panel exposed "heuristic
    policy", "TabPFN", "Tinker fine-tune" before the user had an answer.
+   **Fixed** in `index.html`: scorer is "documented outdoor policy"; TabPFN and
+   Tinker are labelled advanced. Options stay inside `<details>`.
 6. **`journal --markdown` on this machine printed walks that never happened.**
    `data/journal.jsonl` is gitignored local state, so the repository is clean and
    CI guards it — but the file on this laptop contradicted
-   `FIELD_TEST.md`'s "NOT YET DONE". The two entries this drill created have been
-   removed; one older entry (2026-10-06) remains and is the author's to judge.
+   `FIELD_TEST.md`'s "NOT YET DONE". **Fixed** in `render_markdown`: every dump
+   now opens with a local-journal disclaimer that the field test is still blank.
+   The two entries this drill created have been removed; one older entry
+   (2026-10-06) remains and is the author's to judge.
 
 ## What held up
 

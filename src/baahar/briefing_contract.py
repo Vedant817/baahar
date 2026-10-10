@@ -23,7 +23,7 @@ or no rain. Mention only the supplied park. Use only supplied numbers, no
 invented duration, opening hours, future forecasts, clean-air or medical claims.
 Only GO may end by inviting Pocket Mode. Keep WAIT/SKIP practical and calm.
 All measurements describe current conditions, never a scheduled future hour.
-A scheduled_time is only a forecast window to recheck, not walking permission.
+A scheduled_time is the next hour to recheck (write "The next hour to recheck is HH:MM"), not walking permission. Never put a GO token in a WAIT or SKIP briefing.
 Never calculate an unsupplied duration or borrow another hour's number or band.
 No headings, bullets, markdown, JSON, or commentary about these instructions."""
 
@@ -56,6 +56,7 @@ def _finite(value: Any) -> float | None:
 
 def build_contract_case(plan: Any, park: Any = None) -> dict[str, Any]:
     """Adapt the app plan without importing optional or heavy dependencies."""
+    from baahar.naqi import band_health_impact
     from baahar.parks import load_parks
 
     selected = park or plan.park
@@ -97,6 +98,14 @@ def build_contract_case(plan: Any, park: Any = None) -> dict[str, Any]:
         "weather_code": weather.weather_code if weather else None,
         "reasons": next(
             (list(s.reasons) for s in plan.slots if slot and s.time == slot.weather.time), []
+        ),
+        "health_impact": (
+            (air.naqi_health_impact if air else None)
+            or (
+                band_health_impact(air.naqi_effective_band)
+                if air and air.naqi_effective_band
+                else None
+            )
         ),
         "allowed_park_names": [p.name for p in load_parks()],
     }
@@ -158,9 +167,16 @@ def deterministic_fallback(case: dict[str, Any], variant: int = 0) -> str:
     else:
         pieces.append("A later forecast must be checked before making another plan.")
         if f.get("scheduled_time") and f.get("walk_allowed") is False:
+            # Do not write "GO" here: evaluate() treats a second GO token as a
+            # contradictory decision. Name the hour as a recheck, not a walk.
             pieces.append(
-                f"Forecast window {f['scheduled_time']}. Refresh conditions before walking."
+                f"The next hour to recheck is {f['scheduled_time']}. "
+                "Refresh conditions before walking."
             )
+        band = (f.get("band") or "").lower()
+        impact = f.get("health_impact") or ""
+        if band in {"moderate", "poor", "severe", "hazardous"} and impact:
+            pieces.append(impact)
     return " ".join(pieces)
 
 

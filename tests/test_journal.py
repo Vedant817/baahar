@@ -136,6 +136,13 @@ class TestMarkdown:
         out = render_markdown([])
         assert "No walks recorded" in out
         assert "baahar journal" in out
+        assert "not the field test" in out.lower()
+
+    def test_markdown_cannot_be_mistaken_for_the_field_test(self, jpath) -> None:
+        record("went", note="drill entry, not a real walk", path=jpath)
+        out = render_markdown(load(jpath))
+        assert "FIELD_TEST.md" in out
+        assert "NOT YET DONE" in out
 
     def test_latest_entry_by_default(self, jpath) -> None:
         record("went", note="first", path=jpath)

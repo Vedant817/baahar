@@ -229,7 +229,7 @@ function renderPlan(data) {
       (plan.overall === 'SKIP' ? 'SKIP' : 'WAIT'));
   $('decision').textContent = action;
   $('decision').dataset.d = action;
-  $('headline').textContent = plan.headline || '';
+  $('headline').textContent = data.now_headline || plan.headline || '';
   $('window').textContent = plan.best_time
     ? `${fmtISTDay(plan.best_time)} · ${fmtTime(plan.best_time)} · ${plan.city}`
     : plan.city;

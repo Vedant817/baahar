@@ -260,15 +260,20 @@ def render_markdown(entries: list[Entry], *, include_all: bool = False) -> str:
     someone pasting into the post wants. ``include_all=True`` emits the full
     history.
     """
+    honesty = (
+        "_Local journal only. This is not the field test. "
+        "`docs/FIELD_TEST.md` stays NOT YET DONE until a human fills it._\n\n"
+    )
     if not entries:
         return (
-            "_No walks recorded yet._\n\n"
+            honesty
+            + "_No walks recorded yet._\n\n"
             "Record one with:\n\n"
             '```bash\nuv run baahar journal --outcome went --note "looked up more than usual"\n```'
         )
 
     chosen = entries if include_all else entries[-1:]
-    lines: list[str] = []
+    lines: list[str] = [honesty.rstrip(), ""]
     for entry in chosen:
         when = entry.walked_at
         with contextlib.suppress(ValueError):

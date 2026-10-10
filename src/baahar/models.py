@@ -296,6 +296,10 @@ class BriefResponse(BaseModel):
     plan: OutdoorPlan
     briefing: Briefing
     pocket: PocketMode
+    #: Badge-facing sentence for *this hour*. `plan.headline` still names the
+    #: best hour in the window ("Go at 06:00."); this field is what the UI
+    #: prints next to WAIT/SKIP so the two cannot disagree.
+    now_headline: str = ""
     disclaimer: str = (
         "Informational outdoor planning only. Not medical advice, and not a "
         "replacement for the official CPCB advisory."

@@ -73,8 +73,20 @@ class TestPolicy:
 
     def test_night_with_good_air_is_wait_not_skip(self, night_slot: HourSlot) -> None:
         """Park gates shut at night, so WAIT -- but the air is fine."""
-        decision, _ = heuristic_decision(night_slot)
+        decision, reasons = heuristic_decision(night_slot)
         assert decision is Decision.WAIT
+        assert any("air is" in r.lower() for r in reasons)
+        assert not any("good air" in r.lower() for r in reasons)
+
+    def test_night_does_not_call_moderate_air_good(self, slot) -> None:
+        hour = slot(
+            0, temp_c=26.0, apparent_c=26.0, pm25=40.0, pm10=70.0, naqi=106.0, is_day=0
+        )
+        decision, reasons = heuristic_decision(hour)
+        assert decision is Decision.WAIT
+        joined = " ".join(reasons).lower()
+        assert "good air" not in joined
+        assert "moderate" in joined
 
     def test_missing_air_data_is_skip_not_go(self, missing_air_slot: HourSlot) -> None:
         """The one case that must never become a cheerful answer."""

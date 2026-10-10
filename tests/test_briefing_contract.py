@@ -140,6 +140,24 @@ def test_thunderstorm_and_night_cannot_be_omitted(case):
     assert "missing_night_reason" in result["errors"]
 
 
+def test_blocked_wait_names_the_recheck_hour_without_a_go_token(case):
+    case["facts"].update(
+        decision="WAIT",
+        naqi=130,
+        band="moderate",
+        walk_allowed=False,
+        scheduled_time="06:00",
+        health_impact="Breathing discomfort for people with lung, asthma or heart conditions.",
+    )
+    text = deterministic_fallback(case)
+    assert "Forecast window" not in text
+    assert "The next hour to recheck is 06:00" in text
+    assert "Breathing discomfort" in text
+    assert "GO" not in text
+    result = evaluate(text, case)
+    assert result["accepted"], result
+
+
 def test_runtime_adapter_uses_current_hour_reasons_when_future_is_go(slot):
     from baahar.models import DataSource
     from baahar.parks import park_by_id

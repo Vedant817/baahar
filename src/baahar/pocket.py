@@ -146,13 +146,45 @@ def _cue_pool(plan: OutdoorPlan) -> list[Cue]:
     return conditions + _seasonal_for(plan)
 
 
+def now_action(plan: OutdoorPlan, *, allowed: bool) -> Decision:
+    """The badge for *this hour*, not the best hour in the window."""
+    if allowed:
+        return plan.overall
+    if plan.current_decision not in (None, Decision.GO):
+        return plan.current_decision
+    return Decision.SKIP if plan.overall is Decision.SKIP else Decision.WAIT
+
+
+def now_lead(plan: OutdoorPlan, *, allowed: bool, action: Decision) -> str:
+    """One sentence next to the badge. Never 'WAIT  Go at 06:00.'"""
+    when = plan.best_time.strftime("%H:%M") if plan.best_time else None
+    if allowed or not when:
+        return plan.headline
+    if action is Decision.WAIT:
+        return f"Next GO hour is {when}."
+    if action is Decision.SKIP:
+        return f"No GO hour in this window. Best is {when}, and it is not a walk."
+    return plan.headline
+
+
+def now_headline_for(plan: OutdoorPlan) -> str:
+    from .walk import eligibility
+
+    allowed, _ = eligibility(plan)
+    action = now_action(plan, allowed=allowed)
+    return now_lead(plan, allowed=allowed, action=action)
+
+
 def _headline_for(plan: OutdoorPlan, park_name: str | None) -> tuple[str, str]:
     if plan.overall is Decision.GO:
         return ("Phone in pocket.", f"Look up. Walk {park_name or 'the park'}")
     if plan.overall is Decision.WAIT:
         when = _next_hint(plan)
         if when:
-            return ("Not yet.", f"Forecast window {when}. Recheck conditions before walking.")
+            # Name the hour, in words. "Forecast window 19:20." was the phrase a
+            # first-time reader could not parse: it named neither a permission nor
+            # an hour in a sentence.
+            return ("Not yet.", f"Next GO hour is {when}. Recheck conditions before walking.")
         # `pick_best` ranks GO above WAIT across the full scored window.
         # A planner-produced WAIT therefore has no clean hour to promise.
         return ("Not yet.", "No clean hour left in this window.")
@@ -229,7 +261,9 @@ def build_pocket(plan: OutdoorPlan, walk_minutes: int | None = None) -> PocketMo
     if not allowed and plan.overall is Decision.GO:
         headline = "Not yet."
         when = plan.best_time.strftime("%H:%M") if plan.best_time else "the selected hour"
-        subline = f"Forecast window {when}. Refresh conditions before walking."
+        # The one thing a blocked user needs is the hour they *can* have, and the
+        # reason they cannot have this one. "Forecast window 06:00." named neither.
+        subline = f"Next GO hour is {when}. Refresh conditions before walking."
     pool = _cue_pool(plan)
     notice = pool[0].text if pool else _CUES_DEFAULT[0]
 

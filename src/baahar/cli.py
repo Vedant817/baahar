@@ -93,7 +93,12 @@ def _build(
         voice=voice,
         notice_this=pocket_mod.briefing_cue(plan),
     )
-    return BriefResponse(plan=plan, briefing=briefing, pocket=pocket)
+    return BriefResponse(
+        plan=plan,
+        briefing=briefing,
+        pocket=pocket,
+        now_headline=pocket_mod.now_headline_for(plan),
+    )
 
 
 @app.command()
@@ -139,17 +144,10 @@ def render_brief(resp: BriefResponse) -> None:
     from .walk import eligibility
 
     allowed, permission_reason = eligibility(plan)
-    action = (
-        plan.overall
-        if allowed
-        else (
-            plan.current_decision
-            if plan.current_decision not in (None, Decision.GO)
-            else (Decision.SKIP if plan.overall is Decision.SKIP else Decision.WAIT)
-        )
-    )
+    action = pocket_mod.now_action(plan, allowed=allowed)
+    lead = pocket_mod.now_lead(plan, allowed=allowed, action=action)
     console.print(f"  {action.value}", style=DECISION_STYLE[action], end="")
-    console.print(f"  {plan.headline}", style="bold")
+    console.print(f"  {lead}", style="bold")
     if not allowed:
         console.print(f"  {permission_reason}", style="yellow")
     console.print()
@@ -209,11 +207,19 @@ def render_brief(resp: BriefResponse) -> None:
 
     console.print()
     console.print("  Pocket Mode", style="bold")
-    console.print(f"    {pocket.headline}", style="bold white")
-    console.print(f"    [dim]{pocket.subline}[/]")
-    console.print(f"    notice this: {pocket.notice_this}")
-    console.print(f"    walk: {pocket.walk_minutes} min")
-    console.print(f"    [dim]{pocket.safety_note}[/]")
+    if pocket.active:
+        console.print(f"    {pocket.headline}", style="bold white")
+        console.print(f"    [dim]{pocket.subline}[/]")
+        console.print(f"    notice this: {pocket.notice_this}")
+        console.print(f"    walk: {pocket.walk_minutes} min")
+    else:
+        # A blocked walk gets the verdict, the hour it can have, and one reason --
+        # in that order, and nothing else. Printing the cue and the walk length
+        # here described a walk that cannot start, and the old block showed two
+        # different reasons for the same refusal.
+        console.print(f"    {pocket.headline}", style="bold white")
+        console.print(f"    [dim]{pocket.subline}[/]")
+        console.print(f"    [dim]{pocket.safety_note}[/]")
     console.print()
     console.print(f"  [dim]{resp.disclaimer}[/]")
     console.print()
@@ -282,7 +288,14 @@ def score(
     console.print()
     console.print(table)
     console.print()
-    console.print(f"  {plan.overall.value}: {plan.headline}")
+    from .walk import eligibility as walk_eligibility
+
+    allowed, _ = walk_eligibility(plan)
+    action = pocket_mod.now_action(plan, allowed=allowed)
+    lead = pocket_mod.now_lead(plan, allowed=allowed, action=action)
+    console.print(f"  {action.value}: {lead}")
+    if lead != plan.headline:
+        console.print(f"  Best hour in the window: {plan.headline}")
     if plan.scorer_note:
         console.print(f"  [dim]{plan.scorer_note}[/]")
     console.print()

@@ -124,6 +124,7 @@ def api_brief(
         plan=plan,
         briefing=briefing,
         pocket=pocket,
+        now_headline=pocket_mod.now_headline_for(plan),
         meta={
             "elapsed_ms": briefing.latency_ms,
             "scorer": plan.scorer,

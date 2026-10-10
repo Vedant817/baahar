@@ -25,7 +25,7 @@ from baahar.models import (
     SlotScore,
 )
 from baahar.parks import park_by_id
-from baahar.pocket import _next_hint, build_pocket
+from baahar.pocket import _next_hint, build_pocket, now_action, now_headline_for, now_lead
 from baahar.score import build_plan, score_heuristic
 
 
@@ -135,7 +135,7 @@ class TestPocketHonesty:
 
         assert pocket.active is False
         assert pocket.headline == "Not yet."
-        assert pocket.subline == "Forecast window 19:20. Recheck conditions before walking."
+        assert pocket.subline == "Next GO hour is 19:20. Recheck conditions before walking."
 
     def test_go_plan_is_active_with_park_invitation(self) -> None:
         t0 = datetime(2026, 10, 6, 10, 0, tzinfo=UTC)
@@ -200,3 +200,38 @@ class TestPlannerWaitInvariant:
         assert pocket.headline == "Not yet."
         assert pocket.subline == "No clean hour left in this window."
         assert _next_hint(plan) == ""
+
+
+class TestNowLead:
+    def test_wait_badge_does_not_say_go_at(self) -> None:
+        t0 = datetime(2026, 10, 6, 10, 0)
+        t2 = datetime(2026, 10, 6, 19, 20)
+        plan = _make_plan(
+            Decision.WAIT,
+            [_make_slot_score(t0, Decision.WAIT), _make_slot_score(t2, Decision.GO)],
+            best_time=t2,
+        )
+        lead = now_lead(plan, allowed=False, action=Decision.WAIT)
+        assert lead == "Next GO hour is 19:20."
+        assert "Go at" not in lead
+
+    def test_now_headline_matches_the_blocked_badge(self, monkeypatch) -> None:
+        from baahar import walk
+
+        monkeypatch.setattr(walk, "utc_now", lambda: datetime(2026, 10, 6, 10, 0, tzinfo=UTC))
+        t0 = datetime(2026, 10, 6, 10, 0, tzinfo=UTC)
+        plan = _make_plan(
+            Decision.GO,
+            [_make_slot_score(t0, Decision.GO)],
+            best_time=t0,
+        )
+        plan = plan.model_copy(
+            update={
+                "headline": "Go at 10:00.",
+                "weather_source": DataSource.FIXTURE,
+                "air_source": DataSource.FIXTURE,
+                "current_decision": Decision.WAIT,
+            }
+        )
+        assert now_action(plan, allowed=False) is Decision.WAIT
+        assert now_headline_for(plan) == "Next GO hour is 10:00."
