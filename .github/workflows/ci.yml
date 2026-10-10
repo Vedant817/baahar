@@ -138,11 +138,15 @@ jobs:
       - name: Check RESULTS.md against the raw artifacts
         run: uv run python scripts/check_results.py
 
+      # The frozen briefing candidate evidence, verified as far as this
+      # repository honestly can. `report_briefing_candidates.py` re-derives the
+      # decision from the graded dataset, and run 20261007T184549Z-fb0d6990's
+      # dataset is not in any commit -- it predates the first commit of
+      # data/ft_v2 and its builder was never committed. This checks the contract
+      # snapshot, re-derives every published number from the recorded
+      # generations, and fails if the acknowledged gap stops being documented.
       - name: Verify frozen briefing candidate evidence
-        run: >-
-          uv run python scripts/report_briefing_candidates.py
-          eval/raw/candidate_submission_v2_frozen.json
-          --out /tmp/baahar-candidate-checked.json
+        run: uv run python scripts/check_frozen_candidate_evidence.py
 
       # The other published prose. post.md, README.md and docs/DOD.md had drifted
       # four separate ways -- a wrong judge model, two stale test counts, a

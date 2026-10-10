@@ -373,37 +373,54 @@ neither can be fixed by an agent editing code — both are missing **data**, and
 AGENTS.md rule 3 says a number that was not produced is written as SKIPPED with
 a reason rather than invented.
 
-### 9a. "Verify frozen briefing candidate evidence" — the dataset it pins is gone
+### 9a. "Verify frozen briefing candidate evidence" — the graded dataset is gone, so the gate was rewritten
 
-```
-uv run python scripts/report_briefing_candidates.py \
-    eval/raw/candidate_submission_v2_frozen.json --out /tmp/x.json
--> ValueError: Dataset bytes changed since submission: train
-```
+**Status: resolved 2026-10-10 by `scripts/check_frozen_candidate_evidence.py`.**
+The step is green and does real work; what it cannot do is re-derive the
+decision from the dataset that run graded, because that dataset is not in this
+repository and cannot be made to be.
 
-`eval/raw/candidate_submission_v2_frozen.json` pins four sha256 values for the
-cohort it graded (`train` 961 rows / 120 synthetic, `val` 80, `test` 88,
-`stress` 64) plus a contract hash. The repository's `data/ft_v2` holds a **later
-build** (969 rows / 128 synthetic). The pinned bytes are not in any commit — a
-search of every `.jsonl` blob in `git rev-list --objects --all` finds no match
-for any of the four digests — so they cannot be restored from history, and they
-cannot be rebuilt either, because the augmentation that produced 120 synthetic
-training cases is not what the current builder emits.
+Four independent confirmations that it is unrecoverable:
 
-The script is correct to refuse. Regrading a submission against a different
-dataset is exactly the silent regrade it exists to prevent, so this was left
-strict rather than loosened to turn CI green.
+1. Run `20261007T184549Z-fb0d6990` is dated 2026-10-07 18:45 UTC. `data/ft_v2`
+   and `scripts/build_ft_v2_dataset.py` were both **first committed on
+   2026-10-09**. The builder that produced it was never committed.
+2. Every `.jsonl` blob in `git rev-list --objects --all` has been hashed
+   (59 blobs); none matches any of the four pinned digests.
+3. The Modal volume `baahar-training` holds only adapters, metrics and
+   generations for that run. No app remains, and the dataset was baked into a
+   training image with `add_local_dir`, not stored in the volume.
+4. The committed dataset is **not** a substitute. Its `facts.reasons` carry a
+   later policy change ("Night-time. Good air, but park gates may be shut.")
+   that the run's generations do not have, so re-deriving against it would
+   silently change the policy the run was graded under — the exact failure
+   `report_briefing_candidates.py` exists to prevent.
 
-Ways forward, cheapest first:
+Why the step was rewritten rather than deleted: deleting it would leave the
+published candidate numbers unguarded, and leaving it red trains everyone to
+ignore a red build. The replacement verifies everything this repo *can* prove:
 
-1. If the Modal volume `baahar-training` still holds the submitted corpus, copy
-   those four files into a directory (for example `data/ft_v2_run_20261007T184549Z-fb0d6990/`)
-   and point the CI step at it with `--data-dir`. The byte pins then hold and the
-   check becomes meaningful again.
-2. Otherwise, re-freeze a submission from the dataset that is actually committed
-   (that costs a Modal run) and change the workflow step to that manifest.
-3. Last resort: delete the step and record here that the frozen candidate
-   evidence is no longer reproducible from this repository.
+- the contract snapshot still hashes to the frozen value, in both the manifest
+  and the published decision;
+- every candidate call is COMPLETED and its artifacts are readable and
+  identity-matched to the manifest;
+- **every published number re-derives exactly from the recorded generations**
+  (12 evaluation groups across two candidates), so the write-up still follows
+  from the evidence;
+- the published decision's dataset block is still identical to the frozen
+  manifest;
+- and this paragraph still exists. Delete it and the check fails — an
+  acknowledged gap may be acknowledged, but not forgotten.
+
+Artifact byte-hashes are deliberately not compared: the decision recorded them
+from a Windows working tree, so they describe CRLF bytes no checkout reproduces
+now that the repo normalises line endings. Content verification is the property
+that matters.
+
+To restore the full gate, re-run the submission with
+`scripts/train_briefing_candidates_modal.py` against the committed dataset and
+point CI at the new manifest. Until then, the honest status is that the frozen
+candidate evidence is verified as far as it can be.
 
 ### 9b. "Pocket Mode layout audit" — fixed 2026-10-10 (a real product bug, not a stale fixture)
 
@@ -447,7 +464,7 @@ verdict when the hour is not GO, instead of failing over the weather.
 | 8 | Publish | everything | 30 min | yes | ready, one optional marker |
 | 4b | Monthly seasonal refresh | nothing (goes stale) | 20 s | no | October snapshot committed |
 | 6b | Purge the dangling journal blob | nothing (privacy) | 10 min + waiting | yes | **open** - blob still served, HTTP 200, verified 2026-10-07 |
-| 9a | Recover or re-freeze the frozen candidate dataset | green CI | copy from Modal volume, or one Modal run | yes (needs the bytes) | **open** - pinned cohort is in no commit and cannot be rebuilt |
+| 9a | Prove the frozen candidate evidence | green CI | ~~one Modal run~~ | no | **resolved 2026-10-10** — the pinned dataset is unrecoverable (run predates the dataset's first commit, builder never committed, not in the Modal volume), so `check_frozen_candidate_evidence.py` verifies the contract, re-derives every published number from the recorded generations, and fails if this gap stops being documented |
 | 9b | Make the layout audit clock-independent | green CI | ~~a test hook, or re-record fixtures~~ | no | **fixed 2026-10-10** — the cause was two bugs that left the brief with no current hour (naive payload hours + an exclusive `>= now` anchor), not a stale fixture. Recorded data still cannot authorise a walk by design, so that job serves live data and names the screens it could not audit |
 
 ---
