@@ -40,8 +40,8 @@ const BASE = arg('url', 'http://127.0.0.1:8000/');
 
 const SHOTS = [
   { name: '01-ask', url: BASE, ready: 'screen-ask', wait: 1500 },
-  { name: '02-brief', url: `${BASE}?auto=1&model=template`, ready: 'brief-body', wait: 30000 },
-  { name: '03-pocket', url: `${BASE}?model=template#pocket`, ready: 'screen-pocket', wait: 30000 },
+  { name: '02-brief', url: `${BASE}?auto=1&model=template`, ready: 'brief-body', wait: 45000 },
+  { name: '03-pocket', url: `${BASE}?model=template#pocket`, ready: 'screen-pocket', wait: 45000 },
   {
     // Cycle the shuffle button to the end of the cue pool. This is the only way a
     // seasonal cue is ever seen, so it is the only way the credit line is ever
@@ -49,7 +49,7 @@ const SHOTS = [
     name: '03b-pocket-seasonal',
     url: `${BASE}?model=template#pocket`,
     ready: 'screen-pocket',
-    wait: 30000,
+    wait: 45000,
     afterReady: async (send) => {
       await send('Runtime.evaluate', {
         expression: `(() => {
@@ -87,10 +87,14 @@ const SHOTS = [
     // Reach a seasonal cue, then open the journal. The species question only
     // appears if one was actually shown, so this is the only path where it can
     // be screenshotted -- or asserted.
+    //
+    // Waits for the journal, not the pocket screen: `?journal=1` ends on the
+    // journal, and waiting on a screen the app has already moved past made this
+    // shot a race with the live fetch behind it.
     name: '05-journal-species',
     url: `${BASE}?model=template&journal=1`,
-    ready: 'screen-pocket',
-    wait: 30000,
+    ready: 'journal',
+    wait: 45000,
     afterReady: async (send) => {
       await send('Runtime.evaluate', {
         expression: `(() => {
