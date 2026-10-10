@@ -1,7 +1,7 @@
 # Definition of Done
 
 The checklist from the HF26 Week 1 brief, with an honest status for each item.
-Last updated **2026-10-08 IST**.
+Last updated **2026-10-10 IST**.
 
 Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 **BLOCKED** (needs a human) · **NOT DONE**
@@ -16,9 +16,9 @@ Legend: **DONE** · **PARTIAL** (implemented, one thing outstanding) ·
 | **DONE** | MIT licence | [`LICENSE`](../LICENSE) |
 | **DONE** | Green README: quickstart, architecture, why-open, field test | [`README.md`](../README.md) |
 | **DONE** | CLI exercised as a subprocess, exit codes asserted | `tests/test_cli.py`, 17 tests |
-| **PARTIAL** | CI for current changes | Local tests, lint, format and evidence checks pass. Current remote CI has not run; prior committed CI was green. |
+| **DONE** | CI for current changes | [ci.yml](../.github/workflows/ci.yml): lint, format, offline tests, evidence checks, live layout audit. TabPFN job is manual (`workflow_dispatch`) so copy pushes do not pull PyTorch. |
 | **DONE** | No secrets in git | `.env` gitignored; `.env.example` complete and empty |
-| **DONE** | Tests pass offline | 652 default tests passed without Modal; five additional optional Modal tests passed. External sockets blocked; `eval/raw/offline_validation_v2.json` |
+| **DONE** | Tests pass offline | 734 tests pass offline. External sockets blocked; `eval/raw/offline_validation_v2.json` |
 | **DONE** | Lint clean | `uv run ruff check .` |
 | **DONE** | Conventional commits with real explanations | `git log` |
 

@@ -9,6 +9,7 @@ from types import SimpleNamespace
 
 import pytest
 
+pytestmark = pytest.mark.modal
 modal = pytest.importorskip("modal", reason="optional Modal client not installed")
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("modal_runner", ROOT / "scripts/fine_tune_modal.py")

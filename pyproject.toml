@@ -115,6 +115,7 @@ markers = [
   "network: test needs live internet access",
   "gemini: test needs a real GEMINI_API_KEY",
   "ml: test needs the heavy optional ML group",
+  "modal: test needs the optional Modal client",
 ]
 
 [tool.coverage.run]

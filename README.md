@@ -1,6 +1,6 @@
 # Baahar (बाहर) — Bengaluru outdoor-planning assistant
 
-Remote GPU training without local model downloads: [Modal setup and run steps](docs/MODAL_TRAINING.md).
+[![ci](https://github.com/Vedant817/baahar/actions/workflows/ci.yml/badge.svg)](https://github.com/Vedant817/baahar/actions/workflows/ci.yml)
 
 > *Find Bengaluru's next clean outdoor hour (NAQI + heat + rain), generate a ~30s
 > park briefing with open AI, then Pocket Mode so your phone goes dark while you
@@ -10,9 +10,13 @@ Built for the **Hugging Face / DEV Challenge 2026** (Week 1). MIT-licensed,
 India-first, beginner-friendly, runnable in five minutes with zero API keys and
 no paid services.
 
+Remote GPU training notes live in [docs/MODAL_TRAINING.md](docs/MODAL_TRAINING.md).
+
 ---
 
-![Baahar web UI: 12-hour decision strip and one-tap park briefing](docs/media/01-briefing.png)
+![Baahar web UI: 12-hour decision strip and one-tap park briefing](docs/media/02-brief.png)
+
+[Recorded local demo](docs/media/demo-brief-wait.mp4) of a live WAIT hour: the briefing names the next hour to recheck, and Pocket Mode stays off until the current hour is GO.
 
 ## Why this exists
 
@@ -51,11 +55,9 @@ counter and nothing to come back to. The success metric is you leaving.
    heuristic when ML dependencies are absent.
 4. Generates a short park briefing with Gemma or the local deterministic writer.
    Model drafts must pass a 35–80-word grounding contract; rejected drafts get a
-   visible local fallback. Two stronger Qwen adapters are being evaluated on
-   Modal; training does not by itself promote or deploy a writer. See
-   [the experiment plan](docs/MODEL_IMPROVEMENT_PLAN.md).
-5. Optionally speaks it aloud, then drops into **Pocket Mode**: near-black
-   screen, one line of text, a walk timer. No feeds, no badges, no notifications.
+   visible local fallback. The template writer is the default.
+5. Drops into **Pocket Mode** on a current-hour GO: near-black screen, one line
+   of text, a walk timer. No feeds, no badges, no notifications.
 
 If the air is bad or it is genuinely too hot, Baahar says **SKIP** and means it.
 It will not cheer you into bad air.
@@ -70,16 +72,11 @@ Node, no Docker, no account, **no credit card**.
 ```bash
 git clone https://github.com/Vedant817/baahar.git
 cd baahar
-
-# Option A — uv (fastest)
 uv sync --group dev
 uv run baahar brief --city Bengaluru          # live Open-Meteo, offline LLM template
-
-# Option B — plain pip
-python -m venv .venv && . .venv\Scripts\activate   # Windows
-python -m pip install -e .
-python -m baahar brief --city Bengaluru
 ```
+
+Plain pip also works: `python -m pip install -e .` then `python -m baahar brief --city Bengaluru`.
 
 That command prints a 12-hour GO/WAIT/SKIP table and a real briefing from live
 forecast data. **No API keys are needed** — without a `GEMINI_API_KEY`, Baahar
@@ -222,8 +219,8 @@ PDT is UTC−7, so Oct 11 23:59 PDT = Oct 12 06:59 UTC = Oct 12 12:29 IST.
             └────────────────────┼──────────────────────┘
                                  ▼
                       ┌──────────────────────┐
-                      │ brief.py             │  Gemma  ──or──▶  Tinker FT
-                      │ ≤120 words + caveats │  (optional ElevenLabs voice)
+                      │ brief.py             │  template (default)
+                      │ ≤120 words + caveats │  or Gemma
                       └──────────┬───────────┘
                                  ▼
                           Pocket Mode
@@ -316,7 +313,7 @@ baahar/
     parks.py       curated Bengaluru parks
     features.py    tabular features for the go/no-go model
     score.py       TabPFN scorer + documented heuristic fallback
-    brief.py       Gemma / Tinker / offline briefing writers
+    brief.py       template / Gemma briefing writers
     pocket.py      Pocket Mode state + copy
     seasonal.py    research-grade species cues from recorded iNaturalist data
     app.py         FastAPI: /api/brief, /api/score, static UI
@@ -326,9 +323,9 @@ baahar/
     samples/       recorded real API responses (offline mode + tests)
     seasonal/      committed monthly iNaturalist snapshots
     eval/          briefing cases, labelled go/no-go rows
-  scripts/         feature build, eval runners, seasonal snapshot recorder
+  scripts/         eval runners and dataset builders
   eval/            RESULTS.md + raw/ run artifacts
-  docs/            ADRs, architecture, field test, human-only steps
+  docs/            start with docs/README.md
   post.md          DEV submission draft
 ```
 

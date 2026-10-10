@@ -158,6 +158,10 @@ jobs:
 
   ml:
     name: TabPFN path (PyTorch, slow)
+    # PyTorch install plus the TabPFN adapter check. It does not need to run on
+    # every docs or copy push; those were burning minutes and stacking red X's.
+    # Re-run it from Actions → "Run workflow" when score.py or the ml extra moves.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:

@@ -99,3 +99,59 @@ desktop.ini
 # Field-test photos/voice notes are added by the human walk; keep them small
 # and deliberate rather than blindly ignored.
 docs/field-media/*.mov
+
+# --- local lab studies (not the shipped product) -----------------------------
+# Closed Modal/station/ozone work lives on this machine. Do not publish it
+# with `git add .`; the public repo already has the eval record it needs.
+docs/BAPUJI_OZONE_TRANSFER_V1_PROTOCOL.md
+docs/CONTINUED_RESEARCH_AUTOMATION.md
+docs/CONTINUED_RESEARCH_V7_REVIEWS.md
+docs/DONOR_SIGNAL_V1_PROTOCOL.md
+docs/OPENCITY_OZONE_CATALOG_V1_PROTOCOL.md
+docs/POLLUTANT_SEQUENCE_V6_PROTOCOL.md
+docs/POLLUTANT_SEQUENCE_V6_RESEARCH_REVIEWS.md
+docs/POLLUTANT_SEQUENCE_V6_RESULT_REVIEWS.md
+docs/REGIONAL_SUPPORT_V1_PROTOCOL.md
+docs/REGIONAL_SUPPORT_V1_RESEARCH_REVIEWS.md
+docs/REGIONAL_SUPPORT_V2_PROTOCOL.md
+docs/REGIONAL_SUPPORT_V2_RESULT_REVIEWS.md
+docs/STATION_EXTREME_EVENT_AUDIT_V1_PROTOCOL.md
+docs/STATION_OZONE_SUPPORT_V1_PROTOCOL.md
+docs/STATION_SUPPORT_V1_RESEARCH_REVIEWS.md
+docs/TRAINING_2022_SUPPORT_V1_PROTOCOL.md
+data/samples/opencity_hebbal_15min_header_v1.csv
+eval/raw/bapuji_ozone_transfer_v1_*
+eval/raw/continued_research_monitor_queue.json
+eval/raw/donor_signal_v1_*
+eval/raw/gono_20261010T134421+0530.json
+eval/raw/opencity_ozone_catalog_v1_*
+eval/raw/pollutant_sequence_v6_*
+eval/raw/regional_support_v1_*
+eval/raw/regional_support_v2_*
+eval/raw/station_extreme_event_audit_v1_*
+eval/raw/station_ozone_support_v1_*
+eval/raw/station_support_v1_completion_*
+eval/raw/training_2022_support_v1_*
+scripts/audit_opencity_ozone_catalog_modal.py
+scripts/audit_regional_support_modal.py
+scripts/audit_regional_support_v2_modal.py
+scripts/audit_station_extreme_events_modal.py
+scripts/audit_station_ozone_support_modal.py
+scripts/audit_training_2022_modal.py
+scripts/report_bapuji_ozone_transfer_v1.py
+scripts/report_donor_signal_v1.py
+scripts/report_opencity_ozone_catalog_v1.py
+scripts/report_pollutant_sequence_v6.py
+scripts/report_station_ozone_support_v1.py
+scripts/train_bapuji_ozone_transfer_v1_modal.py
+scripts/train_donor_signal_v1_modal.py
+scripts/train_pollutant_sequence_v6_modal.py
+tests/test_bapuji_ozone_transfer_v1.py
+tests/test_donor_signal_v1.py
+tests/test_opencity_ozone_catalog_v1.py
+tests/test_pollutant_sequence_v6.py
+tests/test_regional_support_audit.py
+tests/test_regional_support_v2_audit.py
+tests/test_station_extreme_event_audit.py
+tests/test_station_ozone_support_v1.py
+tests/test_training_2022_support_audit.py

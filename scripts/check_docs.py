@@ -111,14 +111,43 @@ class Problem(list):
         return sum(1 for row in self if row.startswith("!!"))
 
 
+# Present in git, collected only when an optional extra is installed. CI's
+# default `uv sync --group dev` never loads them, so they must not move the
+# number post.md claims.
+_OPTIONAL_COLLECT = frozenset({"tests/test_modal_runner.py"})
+
+
+def tracked_test_files() -> list[str]:
+    """Test modules the default CI suite actually publishes."""
+    proc = subprocess.run(
+        ["git", "ls-files", "--", "tests"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    files: list[str] = []
+    for line in proc.stdout.splitlines():
+        path = line.strip().replace("\\", "/")
+        name = Path(path).name
+        if path.endswith(".py") and name.startswith("test_") and path not in _OPTIONAL_COLLECT:
+            files.append(path)
+    return files
+
+
 def collect_test_counts() -> tuple[int | None, dict[str, int]]:
     """Count what pytest collects: the suite total, and a per-file breakdown.
 
     Counting files or test functions by hand would be a second source of truth,
-    which is the thing this script exists to eliminate.
+    which is the thing this script exists to eliminate. Only tracked test
+    modules are counted, so a local untracked study cannot make CI disagree
+    with post.md.
     """
+    tracked = tracked_test_files()
+    if not tracked:
+        return None, {}
     proc = subprocess.run(
-        [sys.executable, "-m", "pytest", "--collect-only", "-q"],
+        [sys.executable, "-m", "pytest", "--collect-only", "-q", *tracked],
         cwd=ROOT,
         capture_output=True,
         text=True,
